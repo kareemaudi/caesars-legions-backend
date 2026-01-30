@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sign Up - Caesar's Legions</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #fff;
+      font-size: 32px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .subtitle {
+      color: #888;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .pricing {
+      background: #1a1a1a;
+      border: 2px solid #4ade80;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .price {
+      font-size: 48px;
+      font-weight: bold;
+      color: #4ade80;
+      margin-bottom: 8px;
+    }
+    .price-detail {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .features {
+      text-align: left;
+      margin: 20px 0;
+    }
+    .feature {
+      color: #e0e0e0;
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+    }
+    .feature:before {
+      content: "✓";
+      color: #4ade80;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+    .form-group {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    input, textarea {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 12px;
+      color: #e0e0e0;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #4ade80;
+    }
+    button {
+      width: 100%;
+      background: #4ade80;
+      color: #0a0a0a;
+      border: none;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #22c55e;
+    }
+    button:disabled {
+      background: #333;
+      cursor: not-allowed;
+    }
+    .success {
+      display: none;
+      background: #1a3d1a;
+      border: 1px solid #4ade80;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+    }
+    .success h2 {
+      color: #4ade80;
+      margin-bottom: 16px;
+    }
+    .error {
+      display: none;
+      background: #3d1a1a;
+      border: 1px solid #dc2626;
+      border-radius: 8px;
+      padding: 16px;
+      color: #dc2626;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏛️ Caesar's Legions</h1>
+    <div class="subtitle">AI-Powered Cold Email Service</div>
+
+    <div class="pricing">
+      <div class="price">$250<span style="font-size: 24px; color: #888;">/mo</span></div>
+      <div class="price-detail">Early Bird Price (First 3 Clients)</div>
+      <div class="features">
+        <div class="feature">100 personalized emails/week</div>
+        <div class="feature">AI-powered personalization (GPT-4)</div>
+        <div class="feature">Automated follow-ups (3-day & 7-day)</div>
+        <div class="feature">Lead sourcing from Apollo.io</div>
+        <div class="feature">Real-time dashboard & analytics</div>
+        <div class="feature">Email warmup & deliverability</div>
+      </div>
+    </div>
+
+    <div id="signup-form">
+      <div class="error" id="error"></div>
+      
+      <div class="form-group">
+        <label for="email">Your Email *</label>
+        <input type="email" id="email" placeholder="you@company.com" required>
+
+        <label for="name">Your Name *</label>
+        <input type="text" id="name" placeholder="John Doe" required>
+
+        <label for="company">Company Name *</label>
+        <input type="text" id="company" placeholder="Acme Inc" required>
+
+        <label for="target_audience">Target Audience *</label>
+        <input type="text" id="target_audience" placeholder="B2B SaaS founders in US" required>
+
+        <label for="value_prop">Your Value Proposition *</label>
+        <textarea id="value_prop" rows="3" placeholder="We help B2B SaaS companies get 10+ qualified demos per month..." required></textarea>
+
+        <label for="website">Website (optional)</label>
+        <input type="url" id="website" placeholder="https://yourcompany.com">
+      </div>
+
+      <button onclick="signup()">Get Started - $250/month</button>
+    </div>
+
+    <div class="success" id="success">
+      <h2>✅ Welcome to Caesar's Legions!</h2>
+      <p style="color: #e0e0e0; margin-bottom: 20px;">Your account has been created. We'll email you within 24 hours to:</p>
+      <div style="text-align: left; margin: 20px 0;">
+        <div class="feature">Set up your first campaign</div>
+        <div class="feature">Connect your email account</div>
+        <div class="feature">Configure payment (Stripe)</div>
+        <div class="feature">Launch your first 100 emails</div>
+      </div>
+      <p style="color: #888; font-size: 14px;">Check your inbox: <strong id="signup-email"></strong></p>
+    </div>
+  </div>
+
+  <script>
+    async function signup() {
+      const email = document.getElementById('email').value;
+      const name = document.getElementById('name').value;
+      const company = document.getElementById('company').value;
+      const target_audience = document.getElementById('target_audience').value;
+      const value_prop = document.getElementById('value_prop').value;
+      const website = document.getElementById('website').value;
+
+      // Validation
+      if (!email || !name || !company || !target_audience || !value_prop) {
+        showError('Please fill in all required fields');
+        return;
+      }
+
+      // Disable button
+      const button = document.querySelector('button');
+      button.disabled = true;
+      button.textContent = 'Creating Account...';
+
+      try {
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name,
+            company,
+            target_audience,
+            value_prop,
+            website
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Show success
+          document.getElementById('signup-form').style.display = 'none';
+          document.getElementById('success').style.display = 'block';
+          document.getElementById('signup-email').textContent = email;
+        } else {
+          showError(data.error || 'Signup failed. Please try again.');
+          button.disabled = false;
+          button.textContent = 'Get Started - $250/month';
+        }
+      } catch (error) {
+        showError('Network error. Please try again.');
+        button.disabled = false;
+        button.textContent = 'Get Started - $250/month';
+      }
+    }
+
+    function showError(message) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      setTimeout(() => {
+        errorDiv.style.display = 'none';
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
