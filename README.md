@@ -179,7 +179,7 @@ sqlite3 data/legions.db "SELECT * FROM clients;"
 - [x] Dashboard
 
 ### Week 2
-- [ ] Automated follow-ups (3-5 day delay)
+- [x] Automated follow-ups (3-5 day delay) ✨ **ENHANCED: Configurable timing, business hours, timezone aware**
 - [ ] Reply detection & sentiment analysis
 - [ ] Webhook for Instantly events (opens, clicks, replies)
 - [ ] Client onboarding page (web form)
