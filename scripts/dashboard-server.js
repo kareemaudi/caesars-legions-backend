@@ -4,6 +4,7 @@ const express = require('express');
 const db = require('../lib/db');
 const webhookHandler = require('../lib/webhook-handler');
 const unsubscribeHandler = require('../lib/unsubscribe');
+const stripeIntegration = require('../lib/stripe-integration');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,43 @@ app.use('/webhooks', webhookHandler);
 
 // Unsubscribe routes
 app.use('/unsubscribe', unsubscribeHandler.router);
+
+// Stripe webhook endpoint (before express.json middleware for raw body)
+app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  
+  try {
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+    
+    console.log(`[Stripe Webhook] ${event.type}`);
+    
+    switch (event.type) {
+      case 'checkout.session.completed':
+        await stripeIntegration.handlePaymentSuccess(event.data.object);
+        break;
+      
+      case 'invoice.payment_failed':
+        await stripeIntegration.handlePaymentFailed(event.data.object);
+        break;
+      
+      case 'customer.subscription.deleted':
+        // Handle subscription cancellation
+        const subscription = event.data.object;
+        console.log(`Subscription cancelled: ${subscription.id}`);
+        break;
+    }
+    
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Stripe webhook error:', error.message);
+    res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+});
 
 // Signup API
 app.post('/api/signup', async (req, res) => {
@@ -48,14 +86,15 @@ app.post('/api/signup', async (req, res) => {
     
     console.log(`✅ New signup: ${company} (${email})`);
     
-    // TODO: Send welcome email
-    // TODO: Create Stripe subscription
-    // TODO: Notify admin via Telegram
+    // Create Stripe subscription
+    const client = db.getClient(result.lastInsertRowid);
+    const stripeResult = await stripeIntegration.createSubscription(client);
     
     res.json({ 
       success: true,
       clientId: result.lastInsertRowid,
-      message: 'Account created successfully'
+      checkoutUrl: stripeResult.checkoutUrl,
+      message: 'Account created successfully. Please complete payment setup.'
     });
   } catch (error) {
     console.error('Signup error:', error);

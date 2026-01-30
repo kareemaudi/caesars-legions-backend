@@ -226,10 +226,15 @@
         const data = await response.json();
 
         if (response.ok) {
-          // Show success
-          document.getElementById('signup-form').style.display = 'none';
-          document.getElementById('success').style.display = 'block';
-          document.getElementById('signup-email').textContent = email;
+          // Redirect to Stripe Checkout if URL provided
+          if (data.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+          } else {
+            // Show success if no checkout needed
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('signup-email').textContent = email;
+          }
         } else {
           showError(data.error || 'Signup failed. Please try again.');
           button.disabled = false;
