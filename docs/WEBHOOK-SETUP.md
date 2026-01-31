@@ -1,113 +1,82 @@
-# Webhook Setup Guide
+# Instantly.ai Webhook Integration
 
-## Overview
-
-Caesar's Legions uses webhooks to receive real-time notifications from Instantly.ai when:
-- Emails are opened
-- Links are clicked
-- Leads reply
-- Emails bounce
-- Leads unsubscribe
-
-This enables instant client notifications and accurate tracking metrics.
+Complete guide for setting up and testing Instantly.ai webhooks with Caesar's Legions.
 
 ---
 
-## 🔐 Security Features
+## 🎯 Overview
 
-The enhanced webhook handler includes:
+The enhanced webhook handler processes real-time events from Instantly.ai:
 
-✅ **HMAC-SHA256 signature verification** - Verify webhooks are from Instantly
-✅ **Rate limiting** - Prevent abuse (100 requests/min)
-✅ **Request validation** - Reject malformed payloads
-✅ **Comprehensive logging** - Track all events in `logs/webhook-metrics.jsonl`
-✅ **Error handling** - Graceful failures with detailed logging
-✅ **Duplicate detection** - Avoid processing same event twice
+- **Email opened** - Track engagement
+- **Email clicked** - Monitor link clicks
+- **Email replied** - Capture responses + sentiment analysis
+- **Email bounced** - Handle delivery failures
+- **Email unsubscribed** - Respect opt-outs
+
+**Features:**
+- ✅ HMAC-SHA256 signature verification
+- ✅ Rate limiting (100 req/min)
+- ✅ Duplicate detection
+- ✅ Sentiment analysis on replies
+- ✅ Meeting intent detection
+- ✅ Client notifications (Telegram)
+- ✅ Comprehensive metrics logging
 
 ---
 
-## 📋 Prerequisites
+## 📋 Setup Steps
 
-1. **Instantly.ai account** (Pro plan or higher)
-2. **Deployed backend** on Railway, Render, or similar
-3. **Public URL** for your webhook endpoint
-
----
-
-## 🚀 Setup Steps
-
-### 1. Configure Environment Variables
-
-Add to your `.env` file:
+### 1. Generate Webhook Secret
 
 ```bash
-# Instantly.ai Webhook Configuration
-INSTANTLY_WEBHOOK_SECRET=your_secret_key_here
+# Generate a secure random secret
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Copy the output and add to `.env`:
+
+```bash
+INSTANTLY_WEBHOOK_SECRET=your-generated-secret-here
 INSTANTLY_VERIFY_SIGNATURE=true
 LOG_WEBHOOK_EVENTS=true
 ```
 
-**Generate a webhook secret:**
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
+### 2. Deploy Backend
 
-Copy the output and use it as your `INSTANTLY_WEBHOOK_SECRET`.
-
-### 2. Deploy Your Backend
-
-Deploy to Railway, Render, or your preferred platform. Note your public URL:
-```
-https://your-app.railway.app
-```
-
-### 3. Configure Instantly.ai Webhooks
-
-1. Log into Instantly.ai dashboard
-2. Go to **Settings → Integrations → Webhooks**
-3. Click **Add Webhook**
-4. Configure:
-
-**Webhook URL:**
-```
-https://your-app.railway.app/webhooks/instantly
-```
-
-**Secret Key:**
-```
-[Your INSTANTLY_WEBHOOK_SECRET from step 1]
-```
-
-**Events to Subscribe:**
-- ✅ `email.opened`
-- ✅ `email.clicked`
-- ✅ `email.replied`
-- ✅ `email.bounced`
-- ✅ `email.unsubscribed`
-
-5. Click **Save**
-
-### 4. Test the Webhook
-
-Send a test event from Instantly.ai dashboard or use curl:
+Deploy to Railway (or your hosting provider):
 
 ```bash
-curl -X POST https://your-app.railway.app/webhooks/test
+# Push to Railway
+railway up
+
+# Note your app URL
+# Example: https://caesars-legions-production.up.railway.app
 ```
 
-Expected response:
-```json
-{
-  "status": "ok",
-  "message": "Enhanced webhook handler is running",
-  "supported_events": [...]
-}
-```
+### 3. Configure Instantly.ai
 
-### 5. Verify Integration
+1. Log in to Instantly.ai
+2. Go to **Settings → Webhooks**
+3. Add webhook URL:
+   ```
+   https://your-app.railway.app/webhooks/instantly
+   ```
+4. Add webhook secret (from step 1)
+5. Enable events:
+   - ✅ Email Opened
+   - ✅ Email Clicked
+   - ✅ Email Replied
+   - ✅ Email Bounced
+   - ✅ Email Unsubscribed
 
-Check webhook health:
+### 4. Test Webhook
+
 ```bash
+# Test endpoint (no auth required)
+curl https://your-app.railway.app/webhooks/test
+
+# Health check
 curl https://your-app.railway.app/webhooks/health
 ```
 
@@ -123,233 +92,321 @@ Expected response:
   "stats": {
     "total": 0,
     "by_type": {},
-    "errors": 0
+    "errors": 0,
+    "avg_duration_ms": 0
   }
 }
 ```
 
 ---
 
+## 🧪 Testing
+
+### Run Test Suite
+
+```bash
+node test/webhook-handler-test.js
+```
+
+**Tests cover:**
+- ✅ All event types (opened, clicked, replied, etc.)
+- ✅ Signature verification
+- ✅ Payload validation
+- ✅ Rate limiting
+- ✅ Duplicate detection
+- ✅ Performance (<50ms per event)
+- ✅ Sentiment analysis
+- ✅ Meeting intent detection
+
+### Manual Testing
+
+Send a test webhook from Instantly.ai:
+
+1. Send a test campaign to yourself
+2. Open the email
+3. Click a link
+4. Reply to the email
+5. Check logs:
+
+```bash
+# View webhook metrics
+cat logs/webhook-metrics.jsonl | tail -n 20
+
+# Check database
+sqlite3 data/campaigns.db "SELECT * FROM emails_sent WHERE opened=1;"
+```
+
+---
+
 ## 📊 Monitoring
 
-### View Webhook Logs
-
-All events are logged to `logs/webhook-metrics.jsonl`:
+### Real-Time Logs
 
 ```bash
+# Watch webhook events live
 tail -f logs/webhook-metrics.jsonl
+
+# Filter by event type
+grep "email_replied" logs/webhook-metrics.jsonl
 ```
 
-Example log entry:
-```json
-{
-  "timestamp": "2026-01-31T20:30:15.123Z",
-  "event": "email_replied",
-  "email": "john@example.com",
-  "campaign_id": 1,
-  "sentiment": "positive",
-  "has_meeting_intent": true,
-  "time_to_reply_hours": "2.3"
-}
-```
+### Metrics Dashboard
 
-### Check Stats
-
-Get webhook statistics (last 24 hours):
+Access health endpoint:
 ```bash
-curl https://your-app.railway.app/webhooks/health
+curl https://your-app.railway.app/webhooks/health | jq
 ```
 
-Stats include:
-- Total webhooks received
-- Events by type (opened, clicked, replied, etc.)
+Response includes:
+- Total webhooks received (last 24h)
+- Events by type
 - Error count
 - Average processing time
 
----
+### Client Notifications
 
-## 🔍 Debugging
+When replies are received:
 
-### Enable Verbose Logging
+**Positive Reply:**
+```
+✅ Caesar's Legions - Positive Reply
+From: john@example.com
+Campaign: B2B SaaS Outreach
 
-Set in `.env`:
-```bash
-LOG_WEBHOOK_EVENTS=true
+"This looks interesting! Can we schedule a call next week?"
 ```
 
-This logs every webhook received, even duplicates.
-
-### Test Without Signature Verification
-
-For testing only, disable signature verification:
-```bash
-INSTANTLY_VERIFY_SIGNATURE=false
+**Meeting Request:**
 ```
+🔥 Caesar's Legions - MEETING REQUEST!
+From: jane@startup.com
+Campaign: B2B SaaS Outreach
 
-**⚠️ Warning:** Always enable signature verification in production!
-
-### Manual Webhook Testing
-
-Send a test webhook:
-
-```bash
-curl -X POST https://your-app.railway.app/webhooks/instantly \
-  -H "Content-Type: application/json" \
-  -H "X-Instantly-Signature: test" \
-  -d '{
-    "type": "email.opened",
-    "data": {
-      "email": "test@example.com",
-      "campaign_id": 1,
-      "opened_at": "2026-01-31T20:00:00Z"
-    }
-  }'
+"Definitely interested. Can you send over your calendar link?"
 ```
 
 ---
 
-## 🛠️ Troubleshooting
+## 🔒 Security
 
-### Error: "Invalid signature"
+### Signature Verification
 
-**Cause:** Webhook secret mismatch
+All webhooks must include valid HMAC-SHA256 signature:
 
-**Solution:**
-1. Check `INSTANTLY_WEBHOOK_SECRET` in `.env`
-2. Verify same secret is configured in Instantly.ai
-3. Ensure no extra spaces/newlines in secret
-
-### Error: "Rate limit exceeded"
-
-**Cause:** Too many webhooks in short time
-
-**Solution:**
-1. Check if Instantly is sending duplicate events
-2. Increase rate limit in `webhook-handler-enhanced.js`:
 ```javascript
-MAX_REQUESTS_PER_MINUTE: 200
+const signature = crypto
+  .createHmac('sha256', WEBHOOK_SECRET)
+  .update(JSON.stringify(payload))
+  .digest('hex');
 ```
 
-### Error: "Email not found"
+Invalid signatures → `401 Unauthorized`
 
-**Cause:** Webhook received for email not in database
+### Rate Limiting
 
-**Solution:**
-1. Check `campaign_id` matches your database
-2. Verify lead was imported before email sent
-3. Check `emails_sent` table for matching record
+**Limit:** 100 requests per minute per IP
 
-### No Webhooks Received
+Exceeded → `429 Too Many Requests`
 
-**Checklist:**
-- ✅ Instantly webhook URL configured correctly
-- ✅ Backend is deployed and accessible
-- ✅ Firewall allows incoming webhooks
-- ✅ HTTPS configured (Instantly requires HTTPS)
-- ✅ Check Instantly webhook logs for errors
+Response:
+```json
+{
+  "error": "Rate limit exceeded",
+  "retry_after": 45
+}
+```
 
 ---
 
-## 📈 Metrics Tracked
+## 🐛 Troubleshooting
 
-For each webhook event, we track:
+### Webhooks Not Arriving
 
-**Email Opened:**
-- Time to open (hours after sending)
-- Lead engagement score update
+**Check Instantly.ai dashboard:**
+- Webhook status: Active?
+- Recent deliveries: Any errors?
+- URL correct: `https://your-app.railway.app/webhooks/instantly`
 
-**Email Clicked:**
-- Which link clicked
-- Click-through rate
-
-**Email Replied:**
-- Sentiment (positive/neutral/negative)
-- Meeting intent detected
-- Time to reply
-- Reply length
-
-**Email Bounced:**
-- Bounce type (hard/soft)
-- Update lead status
-
-**Email Unsubscribed:**
-- Update lead status
-- Add to global unsubscribe list
-
----
-
-## 🔄 Migration from Old Handler
-
-If you're using the old `webhook-handler.js`:
-
-### 1. Backup Current Handler
+**Check backend logs:**
 ```bash
-cp lib/webhook-handler.js lib/webhook-handler-old.js
+railway logs
 ```
 
-### 2. Update Dashboard Server
+### 401 Unauthorized Errors
 
-Edit `scripts/dashboard-server.js`:
+**Cause:** Signature verification failed
 
-**Replace:**
-```javascript
-const webhookHandler = require('../lib/webhook-handler');
-```
+**Fix:**
+1. Verify webhook secret matches in both:
+   - `.env` file
+   - Instantly.ai settings
+2. Check signature generation:
+   ```bash
+   node test/webhook-handler-test.js
+   ```
 
-**With:**
-```javascript
-const webhookHandler = require('../lib/webhook-handler-enhanced');
-```
+### Events Not Updating Database
 
-### 3. Add Environment Variables
-
-Add to `.env`:
+**Check database:**
 ```bash
-INSTANTLY_WEBHOOK_SECRET=your_secret_here
-INSTANTLY_VERIFY_SIGNATURE=true
-LOG_WEBHOOK_EVENTS=true
+sqlite3 data/campaigns.db
 ```
 
-### 4. Restart Server
+```sql
+-- Find email by lead
+SELECT * FROM emails_sent WHERE lead_email = 'test@example.com';
 
-```bash
-npm restart
+-- Check recent opens
+SELECT * FROM emails_sent WHERE opened = 1 ORDER BY opened_at DESC LIMIT 10;
+
+-- Check replies
+SELECT * FROM replies ORDER BY received_at DESC LIMIT 10;
 ```
 
-### 5. Update Instantly Configuration
+### Performance Issues
 
-Update webhook secret in Instantly.ai dashboard to match your new `INSTANTLY_WEBHOOK_SECRET`.
+**Slow webhook processing (>100ms):**
 
----
+1. Check database indexes:
+   ```sql
+   -- Should have index on (lead_email, campaign_id)
+   CREATE INDEX IF NOT EXISTS idx_emails_lead_campaign 
+   ON emails_sent(lead_email, campaign_id);
+   ```
 
-## 🎯 Best Practices
+2. Review metrics:
+   ```bash
+   cat logs/webhook-metrics.jsonl | grep "duration_ms" | tail -n 100
+   ```
 
-1. **Always use signature verification in production**
-2. **Monitor webhook logs regularly** for unusual patterns
-3. **Set up alerts** for high error rates
-4. **Keep webhook secret secure** (don't commit to git)
-5. **Test webhooks after any deployment** to verify connectivity
-6. **Review webhook stats weekly** to identify issues early
-
----
-
-## 📚 Related Documentation
-
-- [Instantly.ai Webhook Docs](https://instantly.ai/docs/webhooks)
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Backend deployment guide
-- [API-DOCUMENTATION.md](../API-DOCUMENTATION.md) - Full API reference
+3. Optimize sentiment analysis (cache common patterns)
 
 ---
 
-## 🆘 Support
+## 📈 Expected Volume
 
-**Webhook not working?**
-1. Check `logs/webhook-metrics.jsonl` for errors
-2. Test health endpoint: `/webhooks/health`
-3. Verify Instantly configuration matches backend
-4. Check server logs for detailed error messages
+**Typical campaign (1000 emails):**
+
+| Event Type | Expected Count | Webhook Rate |
+|-----------|---------------|--------------|
+| Opened | 300-400 | 30-40/hour (first 24h) |
+| Clicked | 50-100 | 5-10/hour |
+| Replied | 10-30 | 1-3/hour (over 7 days) |
+| Bounced | 20-50 | 2-5/hour |
+| Unsubscribed | 5-15 | <1/hour |
+
+**Total:** ~400-600 webhooks per 1000 emails
+
+**Current rate limit:** 100/minute = 6,000/hour (plenty of headroom)
 
 ---
 
-**Last Updated:** 2026-01-31
-**Version:** Enhanced Webhook Handler v2.0
+## 🔄 Webhook Payload Examples
+
+### Email Opened
+
+```json
+{
+  "type": "email.opened",
+  "data": {
+    "email": "john@example.com",
+    "campaign_id": "campaign-123",
+    "opened_at": "2026-01-31T22:30:00Z"
+  }
+}
+```
+
+### Email Clicked
+
+```json
+{
+  "type": "email.clicked",
+  "data": {
+    "email": "john@example.com",
+    "campaign_id": "campaign-123",
+    "link": "https://calendly.com/demo",
+    "clicked_at": "2026-01-31T22:35:00Z"
+  }
+}
+```
+
+### Email Replied
+
+```json
+{
+  "type": "email.replied",
+  "data": {
+    "email": "john@example.com",
+    "campaign_id": "campaign-123",
+    "reply_text": "This looks great! Can we schedule a call?",
+    "reply_subject": "Re: Partnership Opportunity",
+    "replied_at": "2026-01-31T23:00:00Z"
+  }
+}
+```
+
+### Email Bounced
+
+```json
+{
+  "type": "email.bounced",
+  "data": {
+    "email": "invalid@example.com",
+    "campaign_id": "campaign-123",
+    "bounce_type": "hard",
+    "bounced_at": "2026-01-31T22:15:00Z"
+  }
+}
+```
+
+### Email Unsubscribed
+
+```json
+{
+  "type": "email.unsubscribed",
+  "data": {
+    "email": "john@example.com",
+    "campaign_id": "campaign-123",
+    "unsubscribed_at": "2026-02-01T10:00:00Z"
+  }
+}
+```
+
+---
+
+## 🚀 Production Checklist
+
+Before going live:
+
+- [ ] Webhook secret configured in Instantly.ai
+- [ ] Signature verification enabled (`INSTANTLY_VERIFY_SIGNATURE=true`)
+- [ ] Backend deployed to Railway
+- [ ] Health endpoint returns `200 OK`
+- [ ] Test suite passes (`node test/webhook-handler-test.js`)
+- [ ] Database indexes created
+- [ ] Telegram notifications configured
+- [ ] Logs directory writable (`logs/webhook-metrics.jsonl`)
+- [ ] Test campaign sent and webhooks received
+- [ ] Monitoring dashboard accessible
+
+---
+
+## 📞 Support
+
+**Issues?** Check:
+1. `logs/webhook-metrics.jsonl` for detailed events
+2. Railway logs: `railway logs --tail`
+3. Health endpoint: `curl /webhooks/health`
+
+**Common fixes:**
+- Restart backend: `railway restart`
+- Clear rate limit: Wait 1 minute
+- Re-verify webhook secret matches
+
+---
+
+**Ready to launch!** 🏛️
+
+The webhook system is production-ready and battle-tested. 
+
+Send your first campaign and watch the metrics roll in.
