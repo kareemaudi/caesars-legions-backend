@@ -16,6 +16,11 @@ app.use(express.json());
 // Serve static files (signup page)
 app.use(express.static('public'));
 
+// Health check endpoint (for Railway)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'caesars-legions', timestamp: new Date().toISOString() });
+});
+
 // Webhook routes
 app.use('/webhooks', webhookHandler);
 
