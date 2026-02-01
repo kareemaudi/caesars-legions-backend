@@ -1,120 +1,130 @@
 #!/usr/bin/env node
+
 /**
- * Daily Follow-up Processor
+ * Daily Follow-up Cron Job
+ * Runs automated follow-ups for all active campaigns
  * 
- * Runs via Clawdbot cron:
- * - Every day at 10 AM (client timezone)
- * - Sends 3-day and 7-day follow-ups
- * - Respects business hours
+ * Usage:
+ *   node cron/daily-follow-ups.js [--dry-run] [--config=path/to/config.json]
  * 
- * Add to Clawdbot cron:
- *   cron action=add 
- *     schedule="0 10 * * *" 
- *     text="Run Caesar's Legions follow-up automation" 
- *     contextMessages=0
+ * Schedule with Clawdbot cron every day at 10 AM ET
  */
 
-const path = require('path');
+require('dotenv').config();
+const { processFollowUps, DEFAULT_CONFIG } = require('../lib/follow-ups');
 const fs = require('fs');
+const path = require('path');
 
-// Load follow-up system
-const { processFollowUps } = require('../lib/follow-ups');
+// Parse command line args
+const args = process.argv.slice(2);
+const dryRun = args.includes('--dry-run');
+const configArg = args.find(arg => arg.startsWith('--config='));
+const customConfigPath = configArg ? configArg.split('=')[1] : null;
 
-// Custom config (override defaults if needed)
-const CONFIG = {
-  followUpDelays: [3, 7],          // Days: First follow-up at day 3, second at day 7
-  businessHoursOnly: true,
-  businessHours: { start: 9, end: 17 },
-  timezone: 'America/New_York',    // TODO: Get from client settings
-  maxFollowUps: 2,
-  minIntervalHours: 48
-};
-
-async function main() {
-  console.log('\n🏛️ Caesar\'s Legions - Daily Follow-up Automation\n');
-  console.log(`⏰ Started: ${new Date().toLocaleString()}\n`);
-  
+// Load custom config if provided
+let config = { ...DEFAULT_CONFIG };
+if (customConfigPath && fs.existsSync(customConfigPath)) {
   try {
-    // Check if we should run (environment-based override)
-    const dryRun = process.env.DRY_RUN === 'true';
+    const customConfig = JSON.parse(fs.readFileSync(customConfigPath, 'utf8'));
+    config = { ...config, ...customConfig };
+    console.log(`📋 Loaded custom config from ${customConfigPath}`);
+  } catch (error) {
+    console.error(`⚠️ Failed to load config: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+// Log configuration
+console.log('\n🏛️ Caesar\'s Legions - Daily Follow-up Processor');
+console.log('================================================\n');
+console.log(`Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}`);
+console.log(`Config:`, JSON.stringify(config, null, 2));
+console.log(`Started: ${new Date().toISOString()}\n`);
+
+// Run the follow-up processor
+(async () => {
+  try {
+    const results = await processFollowUps({ dryRun, config });
     
-    if (dryRun) {
-      console.log('🧪 DRY RUN MODE - No emails will be sent\n');
+    // Check if we skipped due to business hours
+    if (results.skipped) {
+      console.log(`⏰ Skipped: Outside business hours`);
+      console.log(`   Next run: ${results.nextSendTime?.toISOString()}`);
+      process.exit(0);
     }
     
-    // Process follow-ups
-    const results = await processFollowUps({ 
-      dryRun,
-      config: CONFIG 
+    // Calculate totals
+    const totalSent = Object.values(results.sent)
+      .reduce((sum, arr) => sum + arr.length, 0);
+    
+    // Log summary
+    console.log('\n📊 SUMMARY');
+    console.log('==========');
+    console.log(`Total sent: ${totalSent}`);
+    console.log(`Errors: ${results.errors.length}`);
+    console.log(`Skipped: ${results.skipped}`);
+    
+    // Show breakdown by day
+    Object.entries(results.sent).forEach(([day, emails]) => {
+      if (emails.length > 0) {
+        console.log(`\n${day} (${emails.length}):`);
+        emails.forEach(email => console.log(`  • ${email}`));
+      }
     });
     
-    // Log results to memory
+    // Show errors if any
+    if (results.errors.length > 0) {
+      console.log('\n❌ ERRORS:');
+      results.errors.forEach(err => {
+        console.log(`  • ${err.lead}: ${err.error} (Day ${err.delay})`);
+      });
+    }
+    
+    // Log to file for tracking
     const logEntry = {
       timestamp: new Date().toISOString(),
-      day3_sent: results.sent.day3?.length || 0,
-      day7_sent: results.sent.day7?.length || 0,
-      skipped: results.skipped || 0,
-      errors: results.errors?.length || 0,
       dryRun,
-      nextRun: results.nextSendTime || null
+      totalSent,
+      errors: results.errors.length,
+      skipped: results.skipped,
+      breakdown: Object.fromEntries(
+        Object.entries(results.sent).map(([k, v]) => [k, v.length])
+      )
     };
     
-    const logPath = path.join(__dirname, '../../memory/followup-log.jsonl');
-    fs.appendFileSync(logPath, JSON.stringify(logEntry) + '\n');
+    const logFile = path.join(__dirname, '../logs/follow-ups.jsonl');
+    const logDir = path.dirname(logFile);
     
-    // Summary for Clawdbot
-    if (!dryRun && (logEntry.day3_sent > 0 || logEntry.day7_sent > 0)) {
-      console.log('\n✅ SUMMARY FOR CLAWDBOT:');
-      console.log(`Sent ${logEntry.day3_sent} day-3 follow-ups`);
-      console.log(`Sent ${logEntry.day7_sent} day-7 follow-ups`);
-      console.log(`Skipped ${logEntry.skipped} (already replied or bounced)`);
-      
-      if (logEntry.errors > 0) {
-        console.log(`⚠️ ${logEntry.errors} errors encountered`);
-      }
-      
-      // Return status for Clawdbot to process
-      return {
-        success: true,
-        totalSent: logEntry.day3_sent + logEntry.day7_sent,
-        errors: logEntry.errors
-      };
-    } else if (results.skipped) {
-      console.log('\n⏰ Outside business hours, will retry later');
-      return { success: true, skipped: true };
-    } else {
-      console.log('\n✅ No follow-ups needed today');
-      return { success: true, noAction: true };
+    // Ensure logs directory exists
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
     }
-  } catch (error) {
-    console.error('\n❌ ERROR:', error.message);
-    console.error(error.stack);
     
-    // Log error to memory
+    fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
+    console.log(`\n📝 Logged to: ${logFile}`);
+    
+    console.log(`\n✅ Completed at ${new Date().toISOString()}`);
+    process.exit(0);
+  } catch (error) {
+    console.error('\n❌ FATAL ERROR:');
+    console.error(error);
+    
+    // Log error
     const errorLog = {
       timestamp: new Date().toISOString(),
       error: error.message,
       stack: error.stack
     };
     
-    const errorPath = path.join(__dirname, '../../memory/followup-errors.jsonl');
-    fs.appendFileSync(errorPath, JSON.stringify(errorLog) + '\n');
+    const errorFile = path.join(__dirname, '../logs/follow-ups-errors.jsonl');
+    const errorDir = path.dirname(errorFile);
     
-    return { success: false, error: error.message };
+    if (!fs.existsSync(errorDir)) {
+      fs.mkdirSync(errorDir, { recursive: true });
+    }
+    
+    fs.appendFileSync(errorFile, JSON.stringify(errorLog) + '\n');
+    
+    process.exit(1);
   }
-}
-
-// Run if called directly
-if (require.main === module) {
-  main()
-    .then(result => {
-      console.log('\n🏁 Finished:', result);
-      process.exit(result.success ? 0 : 1);
-    })
-    .catch(error => {
-      console.error('Fatal error:', error);
-      process.exit(1);
-    });
-}
-
-module.exports = { main };
+})();

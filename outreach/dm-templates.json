@@ -1,0 +1,111 @@
+{
+  "templates": [
+    {
+      "id": "cold_dm_1",
+      "name": "Pain Point Empathy",
+      "trigger": "Prospect mentions cold email struggle",
+      "template": "Hey {{name}},\n\nSaw your post about {{pain_point}}. I've been there.\n\nBuilt an AI agent that handles this exact problem - researches prospects, writes personalized emails, manages follow-ups, all autonomous.\n\nRunning it for $250/mo (50% off early adopter rate).\n\nInterested in seeing how it works?",
+      "tone": "casual",
+      "length": "short",
+      "cta": "yes/no question"
+    },
+    {
+      "id": "cold_dm_2",
+      "name": "Value First",
+      "trigger": "Prospect discussing B2B sales strategy",
+      "template": "{{name}} - quick thought on your {{topic}} post:\n\nMost cold email fails because it's either:\n1. Too generic (templates)\n2. Too time-consuming (manual personalization)\n\nAI agent solves both: scales personalization like a human SDR would, but 24/7.\n\nBuilding this in public. Currently at $0 → $10K MRR in 90 days.\n\nWould you be up for being an early client? 50% off for first 3.",
+      "tone": "professional",
+      "length": "medium",
+      "cta": "soft ask"
+    },
+    {
+      "id": "cold_dm_3",
+      "name": "Build in Public Hook",
+      "trigger": "Founder active in indie hacker community",
+      "template": "{{name}},\n\nI'm Caesar - an AI agent trying to build a cold email service from $0 to $10K MRR autonomously.\n\nDay {{day_number}} of 90.\n\nLooking for {{spots_remaining}} early clients who want:\n- 100 personalized outbound emails/week\n- AI-researched prospects\n- Follow-up sequences\n- Response handling\n\nAll for $250/mo (normally $500).\n\nCurious enough to learn more?",
+      "tone": "transparent",
+      "length": "medium",
+      "cta": "intrigue question"
+    },
+    {
+      "id": "cold_dm_4",
+      "name": "Direct Value Prop",
+      "trigger": "Founder complaining about SDR hiring costs",
+      "template": "{{name}} - on your SDR hiring thread:\n\n$60K/year + equity + management time for 20 demos/month = expensive.\n\nAlternative: AI agent does the same work for $250/mo. No equity. No PTO.\n\nStill testing (Day {{day_number}} of 90-day journey), but early results are solid.\n\nWant to see a demo?",
+      "tone": "direct",
+      "length": "short",
+      "cta": "demo request"
+    },
+    {
+      "id": "cold_dm_5",
+      "name": "Proof-First Approach",
+      "trigger": "Prospect is data-driven founder",
+      "template": "{{name}},\n\nNoticed you're data-driven on your {{topic}} posts.\n\nCaesar's Legions (AI cold email agent):\n- Personalization score: 8.5/10 (GPT-4)\n- Target open rate: 25-35%\n- Target reply rate: 3-5%\n- Cost: $250/mo (early adopter)\n\nBuilding this autonomously. Publishing metrics daily.\n\nInterested in being a beta client?",
+      "tone": "analytical",
+      "length": "short",
+      "cta": "beta invite"
+    },
+    {
+      "id": "follow_up_1",
+      "name": "Gentle Nudge",
+      "trigger": "No response after 3 days",
+      "template": "{{name}},\n\nFigured you might've missed my earlier message.\n\nStill have {{spots_remaining}} spots at 50% off if you're interested in AI-powered cold email.\n\nNo pressure either way!",
+      "tone": "casual",
+      "length": "short",
+      "cta": "soft remind"
+    },
+    {
+      "id": "follow_up_2",
+      "name": "New Social Proof",
+      "trigger": "No response, but we got a client",
+      "template": "{{name}},\n\nQuick update: Just onboarded my first paying client.\n\nThey're seeing {{metric}} already ({{timeframe}}).\n\nStill {{spots_remaining}} early adopter spots left at $250/mo.\n\nLMK if you want details!",
+      "tone": "excited",
+      "length": "short",
+      "cta": "details offer"
+    },
+    {
+      "id": "response_interested",
+      "name": "Interest Response",
+      "trigger": "Prospect says yes/interested",
+      "template": "Awesome!\n\nHere's how it works:\n\n1. You tell me your target audience (e.g., \"B2B SaaS CTOs, 10-100 employees\")\n2. I research & validate 100 prospects\n3. AI writes personalized emails (you approve first batch)\n4. I send 20/day with follow-ups\n5. Responses forwarded to you\n\nTypical results: 25% open, 5% reply, 2-3 demos/week.\n\nPrice: $250/mo (50% off, lock in for life).\n\nWant to start?",
+      "tone": "helpful",
+      "length": "medium",
+      "cta": "onboarding"
+    },
+    {
+      "id": "response_skeptical",
+      "name": "Skepticism Response",
+      "trigger": "Prospect expresses doubt about AI",
+      "template": "Totally fair skepticism.\n\nMost \"AI email tools\" are just GPT-3 wrappers spitting out templates.\n\nWhat's different:\n- I actually research each prospect (company, recent posts, pain points)\n- Personalization goes beyond \"Hi {{firstName}}\"\n- I learn from replies and adjust tone/approach\n\nHappy to show you a sample email for your target audience.\n\nNo commitment. Just want to prove it works.\n\nSound good?",
+      "tone": "understanding",
+      "length": "medium",
+      "cta": "proof offer"
+    },
+    {
+      "id": "response_pricing",
+      "name": "Pricing Objection",
+      "trigger": "Prospect says too expensive",
+      "template": "I get it.\n\n$250/mo breakdown:\n- 100 emails/week = ~400/month\n- That's $0.62 per email\n- Each email is researched + personalized\n\nCompare:\n- SDR salary: $5K/mo minimum\n- Agency: $3-5K/mo\n- Your time: priceless\n\nIf you book even 1 demo/month that closes, it pays for itself.\n\nBut I understand if timing's not right!",
+      "tone": "empathetic",
+      "length": "medium",
+      "cta": "value reframe"
+    }
+  ],
+  "personalization_vars": {
+    "name": "Prospect first name",
+    "username": "X/Twitter username",
+    "pain_point": "Extracted from their tweet/post",
+    "topic": "Subject they posted about",
+    "day_number": "Current day in 90-day journey",
+    "spots_remaining": "Number of early adopter spots left",
+    "metric": "Client result metric (e.g., '15% open rate')",
+    "timeframe": "Time period (e.g., 'first week')"
+  },
+  "usage_guidelines": {
+    "timing": "Wait 3-5 days between follow-ups",
+    "max_touches": "3 DMs maximum before giving up",
+    "personalization": "Always reference specific post/pain point",
+    "tone_matching": "Match prospect's communication style",
+    "authenticity": "Be transparent about being an AI agent"
+  }
+}

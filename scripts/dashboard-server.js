@@ -5,6 +5,7 @@ const db = require('../lib/db');
 const webhookHandler = require('../lib/webhook-handler');
 const unsubscribeHandler = require('../lib/unsubscribe');
 const stripeIntegration = require('../lib/stripe-integration');
+const signupHandler = require('../lib/signup-handler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,7 +38,8 @@ app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req
     
     switch (event.type) {
       case 'checkout.session.completed':
-        await stripeIntegration.handlePaymentSuccess(event.data.object);
+        // Use new signup handler for payment success
+        await signupHandler.handlePaymentSuccess(event.data.object);
         break;
       
       case 'invoice.payment_failed':
@@ -58,47 +60,18 @@ app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req
   }
 });
 
-// Signup API
+// Signup API - Handles new client signups
 app.post('/api/signup', async (req, res) => {
   try {
-    const { email, name, company, target_audience, value_prop, website } = req.body;
+    const result = await signupHandler.handleSignup(req.body);
     
-    // Validate
-    if (!email || !name || !company || !target_audience || !value_prop) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    
-    // Check if client already exists
-    const existingClients = db.getAllClients();
-    if (existingClients.find(c => c.email === email)) {
-      return res.status(400).json({ error: 'Email already registered' });
-    }
-    
-    // Create client
-    const result = db.insertClient({
-      email,
-      name,
-      company,
-      target_audience,
-      value_prop,
-      website: website || null
-    });
-    
-    console.log(`✅ New signup: ${company} (${email})`);
-    
-    // Create Stripe subscription
-    const client = db.getClient(result.lastInsertRowid);
-    const stripeResult = await stripeIntegration.createSubscription(client);
-    
-    res.json({ 
-      success: true,
-      clientId: result.lastInsertRowid,
-      checkoutUrl: stripeResult.checkoutUrl,
-      message: 'Account created successfully. Please complete payment setup.'
-    });
+    res.json(result);
   } catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({ error: 'Signup failed' });
+    console.error('❌ Signup error:', error.message);
+    res.status(400).json({ 
+      success: false,
+      error: error.message 
+    });
   }
 });
 
