@@ -1,0 +1,137 @@
+[
+  {
+    "name": "Motyar",
+    "twitter": "https://x.com/motyar",
+    "twitter_handle": "@motyar",
+    "company": "ZenMic",
+    "signals": {
+      "buildsInPublic": true,
+      "hasTraction": true,
+      "postsMetrics": true,
+      "recentActivity": "2026-02-02"
+    },
+    "recentTweets": [
+      "MRR update for ZenMic #BuildInPublic"
+    ],
+    "score": 75,
+    "notes": "Building ZenMic, posts MRR updates publicly. Active builder, good fit for showing progress with cold email campaigns.",
+    "source": "X search: '#buildinpublic MRR'",
+    "foundAt": "2026-02-02T11:45:00Z",
+    "status": "hot",
+    "nextAction": "Check recent tweets for pain points, engage with content before DM"
+  },
+  {
+    "name": "Nihal",
+    "twitter": "https://x.com/imNihalN",
+    "twitter_handle": "@imNihalN",
+    "company": "Analytics SaaS (unnamed)",
+    "signals": {
+      "buildsInPublic": true,
+      "hasGoal": true,
+      "goal": "$10K MRR",
+      "dayInJourney": "Day 7/180",
+      "recentActivity": "2026-02-02"
+    },
+    "recentTweets": [
+      "🎯 Goal: $10K MRR\nDay 7/180 🚀\nToday's progress:\n✅ Implemented browser analytics\n✅ Added browser version analytics API\nTurning raw data into real insights. 📊💻\n#buildinpublic #saas #indiehackers #analytics #backend"
+    ],
+    "score": 70,
+    "notes": "Building analytics tool, Day 7 of 180-day journey to $10K MRR. Very early stage but ambitious. Might not have budget yet, but good long-term prospect. Could offer beta pricing.",
+    "source": "X search: '#buildinpublic MRR'",
+    "foundAt": "2026-02-02T11:45:00Z",
+    "status": "warm",
+    "nextAction": "Follow journey, engage when they start talking about customer acquisition"
+  },
+  {
+    "name": "Shaswat",
+    "twitter": "https://x.com/ShaswatBuilds",
+    "twitter_handle": "@ShaswatBuilds",
+    "company": "Unknown SaaS",
+    "signals": {
+      "buildsInPublic": true,
+      "hasTraction": true,
+      "mrr": "₹2L+ (~$2,400/month)",
+      "previousFailures": "3 attempts",
+      "recentActivity": "2026-02-01"
+    },
+    "recentTweets": [
+      "🎯 Startup reality:\nFailed: 3 attempts\nLearned: Priceless\nCurrent MRR: ₹2L+\nPersistence > Perfection\n#StartupLife #BuildInPublic"
+    ],
+    "score": 80,
+    "notes": "₹2L+ MRR (~$2,400/month), failed 3 times before. Has money and proven willingness to invest in growth. Experienced founder who understands persistence.",
+    "source": "X search: '#buildinpublic MRR'",
+    "foundAt": "2026-02-02T11:45:00Z",
+    "status": "hot",
+    "nextAction": "DM referencing their journey and failures. Position as 'help you scale past $2K MRR faster'"
+  },
+  {
+    "name": "wbo",
+    "twitter": "https://x.com/wbomaker",
+    "twitter_handle": "@wbomaker",
+    "company": "Multiple AI tools",
+    "products": ["FaceStyler", "CodeConvert", "HEIC Converter", "Bracket Maker"],
+    "signals": {
+      "buildsInPublic": true,
+      "hasGoal": true,
+      "goal": "$1K MRR in 2026",
+      "multipleProducts": true,
+      "shipped4Products": true,
+      "recentActivity": "2026-02-01"
+    },
+    "recentTweets": [
+      "Hi, I'm wbo 👋\nBuilding AI tools in public.\nShipped in 30 days:\n🎨FaceStyler\n🔧CodeConvert\n📷HEIC Converter\n🏈Bracket Maker\nGoal: $1K MRR in 2026\nFollow for weekly updates, revenue transparency, and real lessons.\nLet's build!🚀\n#buildinpublic #indiehacker"
+    ],
+    "score": 65,
+    "notes": "Prolific builder - 4 products in 30 days. Goal $1K MRR. Early stage but shows hustle. Might not have budget yet ($299/mo might be steep). Could offer 'first 10 beta' pricing.",
+    "source": "X search: '#buildinpublic MRR'",
+    "foundAt": "2026-02-02T11:45:00Z",
+    "status": "warm",
+    "nextAction": "Wait until they hit $500+ MRR, then engage as 'next level growth partner'"
+  },
+  {
+    "name": "Muhammad Umar",
+    "twitter": "https://x.com/Umargik",
+    "twitter_handle": "@Umargik",
+    "company": "CodeNinjaInc",
+    "location": "Riyadh, Seattle, SF",
+    "signals": {
+      "painPoint": true,
+      "quote": "Outbound sales is broken. We need to fix this.",
+      "buildingInternalTools": true,
+      "multiLocation": true,
+      "recentActivity": "2025-10-28"
+    },
+    "recentTweets": [
+      "Outbound sales is broken. We need to fix this. And it can be fixed with better internal tools.\nI'm building an internal tools company @CodeNinjaInc out of Riyadh, Seattle and SF to help businesses get their tooling right for AGI readiness."
+    ],
+    "score": 85,
+    "notes": "EXCELLENT FIT. Explicitly said 'Outbound sales is broken.' Building internal tools company across 3 locations. Understands the problem deeply. Oct 2025 tweet - worth checking if still relevant.",
+    "source": "X search: 'outbound sales need help'",
+    "foundAt": "2026-02-02T11:50:00Z",
+    "status": "hot",
+    "nextAction": "DM referencing his tweet about outbound being broken. Position as 'AI solution to the problem you identified'"
+  },
+  {
+    "name": "Shaina Denny",
+    "twitter": "https://x.com/shainadenny",
+    "twitter_handle": "@shainadenny",
+    "company": "Pet Franchise Builder",
+    "signals": {
+      "activelyLooking": true,
+      "hasBudget": true,
+      "hasLeadList": "20K leads",
+      "timeline": "60 day test period",
+      "willingToPay": "per appt or 60% commission",
+      "recentActivity": "2025-11-19"
+    },
+    "recentTweets": [
+      "Hey x. Do your thing.\nWho is the best cold outbound email/call/ sales person. I'd rather work with an individual than agency.\nI want to test something over a 60 day period. I have a super narrow target which up to 20k lead list. I need help with an outbound campaign.\nCan either pay for appt booked or up to 60% commission. I need someone to crush this out for me."
+    ],
+    "score": 95,
+    "notes": "PERFECT FIT. Explicitly asking for cold email help. Has 20K lead list. Has budget (willing to pay per appt or 60% commission). Nov 2025 tweet - check if still looking or already solved.",
+    "source": "X search: 'outbound sales need help'",
+    "foundAt": "2026-02-02T11:50:00Z",
+    "status": "hot",
+    "nextAction": "DM ASAP. Reply to her original tweet if still open, or DM directly offering AI-powered solution better than individual/agency"
+  }
+]
