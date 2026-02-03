@@ -1,0 +1,17 @@
+{
+  "revenue": {
+    "mrr": 0,
+    "mrrChange": 0,
+    "clients": 0,
+    "clientsChange": 0
+  },
+  "product": {
+    "features_shipped_week": 3,
+    "tests_passing": "16/16"
+  },
+  "history": {
+    "labels": ["Week 1", "Week 2", "Week 3", "Week 4"],
+    "values": [0, 0, 0, 0]
+  },
+  "timestamp": "2026-02-03T13:24:00Z"
+}
