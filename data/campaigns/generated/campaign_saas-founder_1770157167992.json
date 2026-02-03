@@ -1,0 +1,80 @@
+{
+  "template": "saas-founder-v1",
+  "template_name": "SaaS Founder - Cold Email Pain",
+  "generated_at": "2026-02-03T22:19:27.992Z",
+  "total_leads": 1,
+  "total_emails": 3,
+  "status": "ready_to_send",
+  "campaigns": [
+    {
+      "lead_email": "test@example.com",
+      "lead_name": "Marcus",
+      "company": "TechStartup Inc",
+      "sequence": [
+        {
+          "step": 1,
+          "type": "initial",
+          "day_offset": 0,
+          "subject": "Noticed something about TechStartup Inc",
+          "subject_variants": [
+            "Quick question about TechStartup Inc",
+            "Marcus, question about outbound",
+            "Noticed something about TechStartup Inc"
+          ],
+          "body": "Marcus,\n\nQuick question: is TechStartup Inc's outbound working as well as you'd like?\n\nI ask because I run an AI-powered outbound system that's booking 5-10 meetings/month for SaaS founders like you — at a fraction of what agencies charge.\n\nWe handle everything: research, personalization, sending, follow-ups. You just take the calls.\n\nWorth 15 minutes to see if it makes sense for TechStartup Inc?\n\nCaesar\nFounder, Caesar's Legions",
+          "to": "test@example.com",
+          "lead": {
+            "firstName": "Marcus",
+            "lastName": "",
+            "company": "TechStartup Inc",
+            "email": "test@example.com",
+            "title": ""
+          },
+          "status": "ready",
+          "created_at": "2026-02-03T22:19:27.991Z"
+        },
+        {
+          "step": 2,
+          "type": "follow_up",
+          "day_offset": 3,
+          "subject": "Following up",
+          "subject_variants": [
+            "Re: Quick question about TechStartup Inc",
+            "Following up"
+          ],
+          "body": "Marcus,\n\nJust wanted to bump this up — know your inbox is probably crazy.\n\nQuick version: we do your cold email for you. 100 personalized emails/week. Clients typically see 5-10 meetings booked monthly.\n\nInterested in seeing how it works?\n\nCaesar",
+          "to": "test@example.com",
+          "lead": {
+            "firstName": "Marcus",
+            "lastName": "",
+            "company": "TechStartup Inc",
+            "email": "test@example.com",
+            "title": ""
+          },
+          "status": "ready",
+          "created_at": "2026-02-03T22:19:27.992Z"
+        },
+        {
+          "step": 3,
+          "type": "follow_up",
+          "day_offset": 7,
+          "subject": "Last one from me",
+          "subject_variants": [
+            "Last one from me"
+          ],
+          "body": "Marcus,\n\nDon't want to be annoying, so this is my last email.\n\nIf TechStartup Inc's outbound is a priority, I'd love to show you how we're helping SaaS founders book more meetings without hiring SDRs.\n\nIf not, no worries — I'll assume timing isn't right and close your file.\n\nEither way, appreciate your time.\n\nCaesar",
+          "to": "test@example.com",
+          "lead": {
+            "firstName": "Marcus",
+            "lastName": "",
+            "company": "TechStartup Inc",
+            "email": "test@example.com",
+            "title": ""
+          },
+          "status": "ready",
+          "created_at": "2026-02-03T22:19:27.992Z"
+        }
+      ]
+    }
+  ]
+}

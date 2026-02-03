@@ -1,0 +1,71 @@
+{
+  "template_id": "b2b-services-v1",
+  "name": "B2B Services - Lead Gen Help",
+  "description": "For B2B service companies (consulting, professional services) needing leads",
+  "target_persona": {
+    "titles": ["Founder", "CEO", "Partner", "Principal", "Managing Director", "Owner"],
+    "company_type": "Consulting, Professional Services, IT Services, Accounting, Legal, HR Services",
+    "company_size": "1-100 employees",
+    "pain_signals": [
+      "need more clients",
+      "referrals not enough",
+      "feast or famine",
+      "want predictable pipeline",
+      "tired of networking events"
+    ],
+    "fit_signals": [
+      "B2B focus (sells to businesses)",
+      "Deal size $5K+",
+      "Has capacity for more clients",
+      "Decision maker reachable by email"
+    ]
+  },
+  "sequence": [
+    {
+      "step": 1,
+      "type": "initial",
+      "day_offset": 0,
+      "framework": "PAS",
+      "subject_variants": [
+        "Referrals slowing down?",
+        "Question about {company}'s pipeline",
+        "{firstName}, quick thought"
+      ],
+      "body_template": "{firstName},\n\nMost {industry} firms I talk to have the same problem: referrals are great, but unpredictable.\n\nOne month you're slammed. The next, crickets.\n\nWe've been helping B2B service companies build a predictable pipeline through targeted cold email outreach — 100 personalized emails per week to your exact ICP.\n\nThe result? Clients typically book 5-10 qualified calls monthly, creating a steady stream of opportunities instead of waiting for the phone to ring.\n\nWorth a quick conversation to see if it fits {company}?\n\nCaesar\nFounder, Caesar's Legions",
+      "notes": "Hits the 'feast or famine' pain directly. Shows understanding of their world."
+    },
+    {
+      "step": 2,
+      "type": "follow_up",
+      "day_offset": 4,
+      "framework": "QUESTION",
+      "subject_variants": [
+        "Re: Referrals slowing down?"
+      ],
+      "body_template": "{firstName},\n\nWanted to follow up with a quick example:\n\nA consulting firm we work with was 100% referral-dependent. After 2 months of targeted outreach, they had 8 new discovery calls booked — and closed 2 new clients at $15K each.\n\nNow they're not panicking when referrals slow down.\n\nIs predictable pipeline something {company} is thinking about?\n\nCaesar",
+      "notes": "Specific case study with numbers. Ends with question to get response."
+    },
+    {
+      "step": 3,
+      "type": "follow_up",
+      "day_offset": 8,
+      "framework": "DIRECT",
+      "subject_variants": [
+        "Should I close your file?"
+      ],
+      "body_template": "{firstName},\n\nI know timing isn't always right, so I won't keep bugging you.\n\nIf building a more predictable pipeline is on {company}'s radar, I'd love to chat.\n\nIf not, just let me know and I'll close your file — no hard feelings.\n\nCaesar",
+      "notes": "Clean breakup with direct question. High reply rate due to 'close your file' psychology."
+    }
+  ],
+  "variables": {
+    "required": ["firstName", "company"],
+    "optional": ["industry", "currentClientAcquisition"]
+  },
+  "expected_metrics": {
+    "open_rate": "38-48%",
+    "reply_rate": "7-11%",
+    "meeting_rate": "3-5%"
+  },
+  "created_at": "2026-02-04T00:40:00Z",
+  "version": "1.0"
+}

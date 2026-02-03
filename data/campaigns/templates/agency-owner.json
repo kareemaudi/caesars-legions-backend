@@ -1,0 +1,71 @@
+{
+  "template_id": "agency-owner-v1",
+  "name": "Agency Owner - White Label Opportunity",
+  "description": "For marketing/sales agency owners who need cold email capability",
+  "target_persona": {
+    "titles": ["Founder", "CEO", "Owner", "Managing Director", "Partner"],
+    "company_type": "Marketing Agency, Sales Agency, Lead Gen Agency, Growth Agency",
+    "company_size": "2-50 employees",
+    "pain_signals": [
+      "clients asking for cold email",
+      "need to add outbound services",
+      "looking for white label",
+      "want to scale without hiring",
+      "need email infrastructure"
+    ],
+    "fit_signals": [
+      "Already serving B2B clients",
+      "Has client base to upsell",
+      "Revenue $200K+ ARR",
+      "Looking to grow services"
+    ]
+  },
+  "sequence": [
+    {
+      "step": 1,
+      "type": "initial",
+      "day_offset": 0,
+      "framework": "QUESTION",
+      "subject_variants": [
+        "Adding outbound for your clients?",
+        "Quick thought for {company}",
+        "{firstName} - partnership idea"
+      ],
+      "body_template": "{firstName},\n\nQuick question: are your clients asking about cold email / outbound?\n\nI run an AI-powered cold email system that agencies are white-labeling to add a new revenue stream.\n\nHow it works:\n- We do the actual outbound (research, writing, sending)\n- You sell it to your clients\n- You keep the margin\n\nSome agencies are adding $10-20K/mo in recurring revenue with zero extra headcount.\n\nWorth a quick chat to see if it fits {company}'s model?\n\nCaesar\nFounder, Caesar's Legions",
+      "notes": "Focuses on the revenue opportunity, not the pain. Agencies care about margin."
+    },
+    {
+      "step": 2,
+      "type": "follow_up",
+      "day_offset": 4,
+      "framework": "PAS",
+      "subject_variants": [
+        "Re: Adding outbound for your clients?"
+      ],
+      "body_template": "{firstName},\n\nKnow you're probably slammed, but wanted to share a quick example:\n\nOne agency partner added our outbound service to 5 existing clients last month. That's $12,500 in new MRR with zero fulfillment on their end.\n\nWe handle everything. They just collect the margin.\n\nIf {company} has clients who need leads, might be worth 15 minutes to explore.\n\nCaesar",
+      "notes": "Social proof with specific numbers. Shows the opportunity."
+    },
+    {
+      "step": 3,
+      "type": "follow_up",
+      "day_offset": 8,
+      "framework": "DIRECT",
+      "subject_variants": [
+        "Closing the loop"
+      ],
+      "body_template": "{firstName},\n\nLast note from me on this.\n\nIf adding an outbound/lead gen service for your clients is on your radar, happy to show you how the white-label partnership works.\n\nIf not the right time, totally understand. I'll close your file and maybe reconnect in a few months.\n\nAppreciate your time either way.\n\nCaesar",
+      "notes": "Clean breakup. Leaves door open for future."
+    }
+  ],
+  "variables": {
+    "required": ["firstName", "company"],
+    "optional": ["clientTypes", "currentServices"]
+  },
+  "expected_metrics": {
+    "open_rate": "35-45%",
+    "reply_rate": "6-10%",
+    "meeting_rate": "2-4%"
+  },
+  "created_at": "2026-02-04T00:35:00Z",
+  "version": "1.0"
+}

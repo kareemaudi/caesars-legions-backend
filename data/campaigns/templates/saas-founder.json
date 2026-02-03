@@ -1,0 +1,72 @@
+{
+  "template_id": "saas-founder-v1",
+  "name": "SaaS Founder - Cold Email Pain",
+  "description": "For B2B SaaS founders struggling with cold email / outbound",
+  "target_persona": {
+    "titles": ["Founder", "CEO", "Co-founder", "CTO"],
+    "company_type": "B2B SaaS",
+    "company_size": "1-50 employees",
+    "pain_signals": [
+      "cold email not working",
+      "outbound sales struggling",
+      "need lead gen help",
+      "cold email agency expensive",
+      "SDR costs too high"
+    ],
+    "fit_signals": [
+      "Has product-market fit",
+      "Currently doing outbound (even if manually)",
+      "Revenue $100K-$10M ARR",
+      "Sells to businesses"
+    ]
+  },
+  "sequence": [
+    {
+      "step": 1,
+      "type": "initial",
+      "day_offset": 0,
+      "framework": "QUESTION",
+      "subject_variants": [
+        "Quick question about {company}",
+        "{firstName}, question about outbound",
+        "Noticed something about {company}"
+      ],
+      "body_template": "{firstName},\n\nQuick question: is {company}'s outbound working as well as you'd like?\n\nI ask because I run an AI-powered outbound system that's booking 5-10 meetings/month for SaaS founders like you — at a fraction of what agencies charge.\n\nWe handle everything: research, personalization, sending, follow-ups. You just take the calls.\n\nWorth 15 minutes to see if it makes sense for {company}?\n\nCaesar\nFounder, Caesar's Legions",
+      "notes": "Opens with question to get engagement. Short, direct, clear CTA."
+    },
+    {
+      "step": 2,
+      "type": "follow_up",
+      "day_offset": 3,
+      "framework": "DIRECT",
+      "subject_variants": [
+        "Re: Quick question about {company}",
+        "Following up"
+      ],
+      "body_template": "{firstName},\n\nJust wanted to bump this up — know your inbox is probably crazy.\n\nQuick version: we do your cold email for you. 100 personalized emails/week. Clients typically see 5-10 meetings booked monthly.\n\nInterested in seeing how it works?\n\nCaesar",
+      "notes": "Shorter, acknowledges they're busy, restates value."
+    },
+    {
+      "step": 3,
+      "type": "follow_up",
+      "day_offset": 7,
+      "framework": "DIRECT",
+      "subject_variants": [
+        "Last one from me"
+      ],
+      "body_template": "{firstName},\n\nDon't want to be annoying, so this is my last email.\n\nIf {company}'s outbound is a priority, I'd love to show you how we're helping SaaS founders book more meetings without hiring SDRs.\n\nIf not, no worries — I'll assume timing isn't right and close your file.\n\nEither way, appreciate your time.\n\nCaesar",
+      "notes": "Breakup email. Creates urgency without being pushy. High reply rate because people respond to 'closing file'."
+    }
+  ],
+  "variables": {
+    "required": ["firstName", "company"],
+    "optional": ["industry", "pain", "companySize"]
+  },
+  "expected_metrics": {
+    "open_rate": "40-50%",
+    "reply_rate": "8-12%",
+    "meeting_rate": "3-5%"
+  },
+  "created_at": "2026-02-04T00:30:00Z",
+  "version": "1.0"
+}
