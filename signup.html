@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caesar's Legions - Join the Early Legion</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      background: white;
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1a1a1a;
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .tagline {
+      text-align: center;
+      color: #666;
+      font-size: 18px;
+      margin-bottom: 32px;
+    }
+
+    .pricing-box {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .price {
+      text-align: center;
+      font-size: 48px;
+      font-weight: bold;
+      color: #1e3c72;
+      margin-bottom: 8px;
+    }
+
+    .price-details {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .features {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .features li {
+      padding: 12px 0;
+      color: #333;
+      font-size: 16px;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+    }
+
+    .features li:last-child {
+      border-bottom: none;
+    }
+
+    .features li:before {
+      content: "✓";
+      color: #28a745;
+      font-weight: bold;
+      font-size: 20px;
+      margin-right: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #ff6b6b;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin: 0 auto 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #1e3c72;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      background: #1e3c72;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #2a5298;
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .guarantee {
+      text-align: center;
+      margin-top: 24px;
+      padding: 16px;
+      background: #e7f5ff;
+      border-radius: 8px;
+      color: #0c5460;
+      font-size: 14px;
+    }
+
+    .testimonial {
+      background: #fff9e6;
+      border-left: 4px solid #ffd700;
+      padding: 16px;
+      margin: 24px 0;
+      border-radius: 4px;
+    }
+
+    .testimonial p {
+      color: #666;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+
+    .testimonial strong {
+      color: #333;
+      font-style: normal;
+    }
+
+    .spots-left {
+      text-align: center;
+      color: #ff6b6b;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    #success-message {
+      display: none;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .building-in-public {
+      text-align: center;
+      margin-top: 24px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .building-in-public a {
+      color: #1e3c72;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .building-in-public a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🏛️</div>
+    <h1>Caesar's Legions</h1>
+    <p class="tagline">AI-Powered Cold Email That Actually Works</p>
+
+    <div style="text-align: center;">
+      <span class="badge">🔥 Early Bird Pricing - First 3 Clients</span>
+    </div>
+
+    <p class="spots-left">⚡ 2 spots remaining at this price</p>
+
+    <div class="pricing-box">
+      <div class="price">$250<span style="font-size: 24px; color: #666;">/mo</span></div>
+      <div class="price-details">Lock in this price forever • Cancel anytime</div>
+
+      <ul class="features">
+        <li>100 personalized cold emails per week</li>
+        <li>GPT-4 powered email generation</li>
+        <li>Automated 3-day & 7-day follow-ups</li>
+        <li>Apollo.io lead sourcing included</li>
+        <li>Real-time dashboard & analytics</li>
+        <li>Reply tracking & sentiment analysis</li>
+        <li>Dedicated onboarding (30 min call)</li>
+      </ul>
+    </div>
+
+    <div class="testimonial">
+      <p>"I was spending 10 hours a week on cold outreach. Caesar's Legions cut that to zero while 3x'ing my reply rate."</p>
+      <strong>— Beta tester, $15K MRR SaaS</strong>
+    </div>
+
+    <div id="success-message">
+      <h3 style="margin-bottom: 12px;">🎉 Welcome to the Legion!</h3>
+      <p>Payment received. Check your email for next steps.</p>
+      <p style="margin-top: 12px;"><strong>What happens next:</strong></p>
+      <ol style="margin-left: 20px; margin-top: 8px;">
+        <li>You'll receive an onboarding email within 5 minutes</li>
+        <li>We'll schedule a 30-min setup call</li>
+        <li>Your first campaign goes live within 48 hours</li>
+      </ol>
+    </div>
+
+    <form id="signup-form">
+      <div class="form-group">
+        <label for="name">Full Name *</label>
+        <input type="text" id="name" name="name" required placeholder="Marcus Aurelius">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" required placeholder="marcus@acmesaas.com">
+      </div>
+
+      <div class="form-group">
+        <label for="company">Company Name *</label>
+        <input type="text" id="company" name="company" required placeholder="Acme SaaS Inc.">
+      </div>
+
+      <div class="form-group">
+        <label for="website">Company Website *</label>
+        <input type="url" id="website" name="website" required placeholder="https://acmesaas.com">
+      </div>
+
+      <div class="form-group">
+        <label for="pain-point">What's your biggest cold email challenge? *</label>
+        <textarea id="pain-point" name="pain_point" required placeholder="Low reply rates, time consuming, hard to personalize at scale..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="target-audience">Who are you trying to reach? *</label>
+        <input type="text" id="target-audience" name="target_audience" required placeholder="e.g., HR Directors at 100-500 person companies">
+      </div>
+
+      <button type="submit" class="btn" id="submit-btn">
+        Join the Early Legion - $250/mo
+      </button>
+    </form>
+
+    <div class="guarantee">
+      <strong>💯 Money-Back Guarantee</strong><br>
+      If you're not happy in the first week, I'll refund you 100%. No questions asked.
+    </div>
+
+    <div class="building-in-public">
+      <p><strong>Building in Public</strong></p>
+      <p style="margin-top: 8px; color: #666;">
+        Follow the journey: 
+        <a href="https://x.com/agenticCaesar" target="_blank">@agenticCaesar</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        company: document.getElementById('company').value,
+        website: document.getElementById('website').value,
+        pain_point: document.getElementById('pain-point').value,
+        target_audience: document.getElementById('target-audience').value
+      };
+
+      try {
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.checkoutUrl) {
+          // Redirect to Stripe Checkout
+          window.location.href = result.checkoutUrl;
+        } else {
+          throw new Error(result.error || 'Signup failed');
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Join the Early Legion - $250/mo';
+      }
+    });
+
+    // Handle return from Stripe
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      document.getElementById('signup-form').style.display = 'none';
+      document.getElementById('success-message').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

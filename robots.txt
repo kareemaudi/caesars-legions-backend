@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Sitemap
+Sitemap: https://promptabusiness.com/sitemap.xml
+
+# Social media crawlers - always allow
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
