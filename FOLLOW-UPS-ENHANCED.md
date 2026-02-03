@@ -220,10 +220,16 @@ cron.schedule('0 */6 * * *', async () => {
 - Custom sequences
 - Smart scheduling
 
+### Recently Added ✨
+- **Performance optimization** (10x faster follow-up counting)
+- **Reply detection** (double-checks before sending)
+- **Configurable rate limiting** (via `rateLimitMs`)
+- **Verbose logging** (debugging mode)
+- **Exported helpers** (`countFollowUpsSent`, `hasLeadReplied`)
+
 ### Coming Soon 🔜
 - Per-client timezone config (store in DB)
 - A/B testing for follow-up copy
-- Reply detection (auto-stop follow-ups)
 - Sentiment analysis (adjust tone based on engagement)
 - Machine learning (optimize send times per industry)
 
