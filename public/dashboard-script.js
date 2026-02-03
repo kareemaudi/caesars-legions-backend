@@ -1,5 +1,5 @@
-// Configuration
-const API_ENDPOINT = 'https://promptabusiness.com/api/metrics';
+// Configuration - UPDATE THIS after Railway deployment
+const API_ENDPOINT = 'http://localhost:3000/api/metrics'; // Will update to Railway URL
 const REFRESH_INTERVAL = 30000; // 30 seconds
 
 // Chart instance
