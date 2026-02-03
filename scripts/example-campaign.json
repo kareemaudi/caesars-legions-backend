@@ -1,0 +1,21 @@
+{
+  "campaignName": "B2B SaaS - Sales Leaders",
+  "painPoint": "low cold email reply rates",
+  "solutionOneLiner": "increase reply rates from 1% to 8% with AI-personalized outreach",
+  "valueProposition": "We write personalized cold emails that actually get responses",
+  "senderName": "Caesar",
+  "senderTitle": "Founder, Caesar's Legions",
+  "senderEmail": "caesar@caesarslegions.com",
+  "replyToEmail": "caesar@caesarslegions.com",
+  "calendarLink": "https://cal.com/caesar",
+  "socialProof": {
+    "similarCompany": "a B2B SaaS company in your space",
+    "stat": "increased reply rates from 1.2% to 7.8% in 30 days",
+    "testimonial": "Caesar's approach is completely different - and it works."
+  },
+  "messaging": {
+    "hook": "scaling sales teams waste 60% of outreach budget on bad emails",
+    "differentiator": "AI-native, not humans using AI",
+    "cta": "15-min call to see if this fits your team"
+  }
+}

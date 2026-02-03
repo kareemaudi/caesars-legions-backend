@@ -1,0 +1,21 @@
+{
+  "firstName": "Sarah",
+  "lastName": "Chen",
+  "email": "sarah@techstartup.com",
+  "company": "TechStartup Inc",
+  "title": "VP of Sales",
+  "industry": "B2B SaaS",
+  "companySize": "50-100",
+  "observation": "you recently posted about scaling your sales team",
+  "recentActivity": "LinkedIn post about hiring SDRs",
+  "pain_point_signals": [
+    "Hiring 3 SDRs",
+    "Mentioned struggling with outbound",
+    "Posted about low reply rates"
+  ],
+  "customVariables": {
+    "specific_metric": "reply rate",
+    "current_baseline": "1.2%",
+    "target_outcome": "5-8% reply rate"
+  }
+}
