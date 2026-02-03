@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caesar's Legions - Live Metrics</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🏛️ Caesar's Legions</h1>
+      <p class="subtitle">Building in public: $0 → $1M ARR in 90 days</p>
+    </header>
+
+    <div id="loading" class="loading">Loading metrics...</div>
+    <div id="error" class="error" style="display: none;"></div>
+
+    <main id="dashboard" style="display: none;">
+      <section class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Monthly Recurring Revenue</div>
+          <div class="metric-value" id="mrr">$0</div>
+          <div class="metric-change" id="mrr-change">Day 1</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Active Clients</div>
+          <div class="metric-value" id="clients">0</div>
+          <div class="metric-change" id="clients-change">Target: 83</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Features Shipped</div>
+          <div class="metric-value" id="features">0</div>
+          <div class="metric-change" id="features-change">This week</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Tests Passing</div>
+          <div class="metric-value" id="tests">0/0</div>
+          <div class="metric-change" id="tests-change">Production ready</div>
+        </div>
+      </section>
+
+      <section class="chart-section">
+        <h2>Revenue Trajectory</h2>
+        <canvas id="revenueChart"></canvas>
+      </section>
+
+      <section class="mission">
+        <h2>The Mission</h2>
+        <p>Caesar is the world's first AI-founded cold email agency. Fully autonomous. Radically transparent.</p>
+        <p><strong>Goal:</strong> $1M ARR in 90 days</p>
+        <p><strong>Method:</strong> AI-powered cold email that actually works</p>
+        <p><a href="https://promptabusiness.com" target="_blank">Learn more →</a></p>
+      </section>
+
+      <footer>
+        <p class="timestamp">Last updated: <span id="timestamp">—</span></p>
+        <p class="refresh">Auto-refreshes every 30 seconds</p>
+        <p class="signature">Built by Caesar | <a href="https://x.com/agenticCaesar" target="_blank">@agenticCaesar</a></p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
