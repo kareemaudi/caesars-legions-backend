@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cold Email ROI Calculator — Calculate Your Outreach Value</title>
+    <meta name="description" content="Free cold email ROI calculator. Input your metrics (open rate, reply rate, deal size) and see exactly what your cold email campaigns are worth.">
+    
+    <link rel="canonical" href="https://promptabusiness.com/tools/cold-email-roi-calculator">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Free Cold Email ROI Calculator">
+    <meta property="og:description" content="Calculate the real value of your cold email campaigns. Free tool by Caesar's Legions.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #D4AF37;
+            --dark-bg: #0a0a0a;
+            --text: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border: rgba(212, 175, 55, 0.2);
+            --red: #8B0000;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--red) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 48px;
+        }
+
+        .calculator {
+            background: rgba(20, 20, 20, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 48px;
+            margin-bottom: 48px;
+        }
+
+        .input-group {
+            margin-bottom: 32px;
+        }
+
+        label {
+            display: block;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--gold);
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .results {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 0, 0, 0.1) 100%);
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+        }
+
+        .result-item {
+            margin-bottom: 32px;
+        }
+
+        .result-label {
+            font-size: 16px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .result-value.negative {
+            color: var(--red);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .metric-card {
+            background: rgba(20, 20, 20, 0.5);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .cta-box {
+            background: var(--dark-bg);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            margin-top: 64px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 16px 32px;
+            background: var(--gold);
+            color: var(--dark-bg);
+            font-weight: 600;
+            border-radius: 8px;
+            margin-top: 24px;
+            transition: transform 0.3s;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cold Email ROI Calculator</h1>
+        <p class="subtitle">See exactly what your cold email campaigns are worth (or what they <em>could</em> be worth).</p>
+
+        <div class="calculator">
+            <div class="input-group">
+                <label for="emails-sent">Emails Sent Per Month</label>
+                <div class="help-text">How many cold emails do you send monthly?</div>
+                <input type="number" id="emails-sent" value="400" min="0" oninput="calculate()">
+            </div>
+
+            <div class="input-group">
+                <label for="open-rate">Open Rate (%)</label>
+                <div class="help-text">Industry average: 15-25%</div>
+                <input type="number" id="open-rate" value="20" min="0" max="100" step="0.1" oninput="calculate()">
+            </div>
+
+            <div class="input-group">
+                <label for="reply-rate">Reply Rate (%)</label>
+                <div class="help-text">Industry average: 3-5%. Good campaigns: 10%+</div>
+                <input type="number" id="reply-rate" value="5" min="0" max="100" step="0.1" oninput="calculate()">
+            </div>
+
+            <div class="input-group">
+                <label for="meeting-rate">Meeting Booking Rate (%)</label>
+                <div class="help-text">% of replies that turn into meetings</div>
+                <input type="number" id="meeting-rate" value="40" min="0" max="100" step="0.1" oninput="calculate()">
+            </div>
+
+            <div class="input-group">
+                <label for="close-rate">Close Rate (%)</label>
+                <div class="help-text">% of meetings that become customers</div>
+                <input type="number" id="close-rate" value="25" min="0" max="100" step="0.1" oninput="calculate()">
+            </div>
+
+            <div class="input-group">
+                <label for="deal-size">Average Deal Size ($)</label>
+                <div class="help-text">Average revenue per closed customer</div>
+                <input type="number" id="deal-size" value="5000" min="0" step="100" oninput="calculate()">
+            </div>
+
+            <div class="input-group">
+                <label for="cost">Monthly Cost ($)</label>
+                <div class="help-text">Tool + time + infrastructure costs</div>
+                <input type="number" id="cost" value="2000" min="0" step="100" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="results">
+            <h2 style="margin-bottom: 48px; color: var(--gold);">Your Results</h2>
+
+            <div class="result-item">
+                <div class="result-label">Monthly Revenue Generated</div>
+                <div class="result-value" id="revenue">$0</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">ROI</div>
+                <div class="result-value" id="roi">0%</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Net Profit/Loss</div>
+                <div class="result-value" id="profit">$0</div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="result-label">Opens</div>
+                    <div class="metric-value" id="opens">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="result-label">Replies</div>
+                    <div class="metric-value" id="replies">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="result-label">Meetings</div>
+                    <div class="metric-value" id="meetings">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="result-label">Deals Closed</div>
+                    <div class="metric-value" id="deals">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-box">
+            <h2 style="color: var(--gold); margin-bottom: 16px;">Want Better Results Without the Work?</h2>
+            <p style="max-width: 600px; margin: 0 auto; font-size: 18px;">Caesar's Legions delivers 100 personalized emails/week with industry-leading open and reply rates. Research, writing, sending, follow-ups—all handled.</p>
+            <a href="/" class="btn">See How Caesar Works →</a>
+        </div>
+
+        <div style="margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border);">
+            <h3 style="margin-bottom: 24px;">How to Improve Your ROI</h3>
+            <ul style="list-style: disc; margin-left: 32px; line-height: 2;">
+                <li><strong>Increase reply rates:</strong> Better personalization, stronger value props, cleaner targeting</li>
+                <li><strong>Improve conversion:</strong> Qualify leads better before outreach, refine your pitch</li>
+                <li><strong>Reduce costs:</strong> Automate where possible, but don't sacrifice quality</li>
+                <li><strong>Test relentlessly:</strong> Subject lines, copy, timing, follow-up sequences</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const emailsSent = parseFloat(document.getElementById('emails-sent').value) || 0;
+            const openRate = parseFloat(document.getElementById('open-rate').value) / 100 || 0;
+            const replyRate = parseFloat(document.getElementById('reply-rate').value) / 100 || 0;
+            const meetingRate = parseFloat(document.getElementById('meeting-rate').value) / 100 || 0;
+            const closeRate = parseFloat(document.getElementById('close-rate').value) / 100 || 0;
+            const dealSize = parseFloat(document.getElementById('deal-size').value) || 0;
+            const cost = parseFloat(document.getElementById('cost').value) || 0;
+
+            // Calculate funnel
+            const opens = Math.round(emailsSent * openRate);
+            const replies = Math.round(emailsSent * replyRate);
+            const meetings = Math.round(replies * meetingRate);
+            const deals = Math.round(meetings * closeRate);
+            const revenue = deals * dealSize;
+            const profit = revenue - cost;
+            const roi = cost > 0 ? ((profit / cost) * 100).toFixed(0) : 0;
+
+            // Update displays
+            document.getElementById('opens').textContent = opens.toLocaleString();
+            document.getElementById('replies').textContent = replies.toLocaleString();
+            document.getElementById('meetings').textContent = meetings.toLocaleString();
+            document.getElementById('deals').textContent = deals.toLocaleString();
+            document.getElementById('revenue').textContent = '$' + revenue.toLocaleString();
+            document.getElementById('roi').textContent = roi + '%';
+            
+            const profitEl = document.getElementById('profit');
+            profitEl.textContent = (profit >= 0 ? '+' : '') + '$' + profit.toLocaleString();
+            profitEl.className = 'result-value' + (profit < 0 ? ' negative' : '');
+
+            const roiEl = document.getElementById('roi');
+            roiEl.className = 'result-value' + (roi < 0 ? ' negative' : '');
+        }
+
+        // Calculate on load
+        calculate();
+    </script>
+</body>
+</html>

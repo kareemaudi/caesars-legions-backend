@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caesar's Legions vs Instantly vs Reply.io - Comparison</title>
+    <meta name="description" content="Compare Caesar's Legions done-for-you cold email service with DIY platforms like Instantly and Reply.io. See which is right for you.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .comparison-grid {
+            padding: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #1e3c72;
+            margin: 40px 0 24px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #1e3c72;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 0.95em;
+        }
+        
+        .comparison-table th {
+            background: #f8f9fa;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .comparison-table th.highlight {
+            background: #1e3c72;
+            color: white;
+        }
+        
+        .comparison-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .check {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .cross {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .partial {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        
+        .pricing-card {
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        
+        .pricing-card.featured {
+            border-color: #1e3c72;
+            border-width: 3px;
+            position: relative;
+        }
+        
+        .pricing-card.featured::before {
+            content: "RECOMMENDED";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e3c72;
+            color: white;
+            padding: 4px 16px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 700;
+        }
+        
+        .pricing-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+            color: #1e3c72;
+        }
+        
+        .pricing-card .price {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #1e3c72;
+            margin: 16px 0;
+        }
+        
+        .pricing-card .price small {
+            font-size: 0.4em;
+            color: #666;
+            font-weight: 400;
+        }
+        
+        .pricing-card .model {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .pros-cons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin: 32px 0;
+        }
+        
+        .pros-cons-box {
+            border-radius: 12px;
+            padding: 24px;
+        }
+        
+        .pros-box {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .cons-box {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        
+        .pros-cons-box h4 {
+            font-size: 1.3em;
+            margin-bottom: 16px;
+        }
+        
+        .pros-cons-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .pros-cons-box li {
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+        }
+        
+        .pros-cons-box li::before {
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .pros-box li::before {
+            content: "✓";
+            color: #28a745;
+        }
+        
+        .cons-box li::before {
+            content: "✗";
+            color: #dc3545;
+        }
+        
+        .cta-section {
+            background: #f8f9fa;
+            padding: 48px 40px;
+            text-align: center;
+            margin-top: 48px;
+        }
+        
+        .cta-section h3 {
+            font-size: 2em;
+            color: #1e3c72;
+            margin-bottom: 16px;
+        }
+        
+        .cta-section p {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            padding: 16px 48px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: background 0.2s;
+        }
+        
+        .cta-button:hover {
+            background: #2a5298;
+        }
+        
+        .decision-guide {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 32px;
+            margin: 32px 0;
+        }
+        
+        .decision-guide h4 {
+            color: #856404;
+            font-size: 1.4em;
+            margin-bottom: 16px;
+        }
+        
+        .decision-guide strong {
+            color: #856404;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8em; }
+            header p { font-size: 1em; }
+            .comparison-table { font-size: 0.85em; }
+            .comparison-table th, .comparison-table td { padding: 12px 8px; }
+            .section-title { font-size: 1.4em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ Caesar's Legions vs The Competition</h1>
+            <p>Done-for-you cold email service vs DIY platforms. Which is right for your business?</p>
+        </header>
+        
+        <div class="comparison-grid">
+            <h2 class="section-title">Quick Comparison</h2>
+            
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <h3>Instantly.ai</h3>
+                    <div class="price">$37<small>/mo</small></div>
+                    <div class="model">DIY Platform</div>
+                    <p style="font-size:0.9em;color:#666;">You set up and manage everything yourself. Great if you have time and expertise.</p>
+                </div>
+                
+                <div class="pricing-card">
+                    <h3>Reply.io</h3>
+                    <div class="price">$60<small>/user/mo</small></div>
+                    <div class="model">Sales Engagement</div>
+                    <p style="font-size:0.9em;color:#666;">Full sales platform with multi-channel. Complex but powerful for teams.</p>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <h3>Caesar's Legions</h3>
+                    <div class="price">$250<small>/mo</small></div>
+                    <div class="model">Done-For-You</div>
+                    <p style="font-size:0.9em;color:#666;">We handle everything. You approve, we execute. Focus on closing deals.</p>
+                </div>
+            </div>
+            
+            <h2 class="section-title">Feature Comparison</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Instantly</th>
+                        <th>Reply.io</th>
+                        <th class="highlight">Caesar's Legions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Email Automation</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Unlimited Email Accounts</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email Warmup</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="partial">Partial</span></td>
+                        <td><span class="check">✓</span> (Managed)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>A/B Testing</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span> (We run tests)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Campaign Strategy</strong></td>
+                        <td><span class="cross">✗</span> (DIY)</td>
+                        <td><span class="cross">✗</span> (DIY)</td>
+                        <td><span class="check">✓</span> Included</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AI Copywriting</strong></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="partial">Basic</span></td>
+                        <td><span class="check">✓</span> Professional</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lead Research/Sourcing</strong></td>
+                        <td>Extra $$$</td>
+                        <td><span class="partial">Database</span></td>
+                        <td><span class="check">✓</span> Included</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Campaign Management</strong></td>
+                        <td><span class="cross">✗</span> You manage</td>
+                        <td><span class="cross">✗</span> You manage</td>
+                        <td><span class="check">✓</span> Fully managed</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Weekly Strategy Calls</strong></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span> Included</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reply Monitoring</strong></td>
+                        <td><span class="check">✓</span> (You check)</td>
+                        <td><span class="check">✓</span> (You check)</td>
+                        <td><span class="check">✓</span> We notify you</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Setup Time</strong></td>
+                        <td>2-3 days</td>
+                        <td>3-5 days</td>
+                        <td>< 24 hours</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Learning Curve</strong></td>
+                        <td>Steep</td>
+                        <td>Very steep</td>
+                        <td>None (we handle it)</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2 class="section-title">Who Should Use What?</h2>
+            
+            <div class="decision-guide">
+                <h4>📊 Choose Instantly.ai if:</h4>
+                <ul style="list-style:none;padding-left:0;margin-top:12px;">
+                    <li style="padding:8px 0;">✓ You have time to learn cold email strategy</li>
+                    <li style="padding:8px 0;">✓ You enjoy managing campaigns yourself</li>
+                    <li style="padding:8px 0;">✓ You're an agency sending huge volumes (100K+/mo)</li>
+                    <li style="padding:8px 0;">✓ Budget is your #1 constraint</li>
+                </ul>
+            </div>
+            
+            <div class="decision-guide">
+                <h4>📊 Choose Reply.io if:</h4>
+                <ul style="list-style:none;padding-left:0;margin-top:12px;">
+                    <li style="padding:8px 0;">✓ You need a full sales engagement platform</li>
+                    <li style="padding:8px 0;">✓ You have a sales team managing outreach</li>
+                    <li style="padding:8px 0;">✓ You want multi-channel (email + calls + LinkedIn + SMS)</li>
+                    <li style="padding:8px 0;">✓ You need deep CRM integrations</li>
+                </ul>
+            </div>
+            
+            <div class="decision-guide" style="background:#d4edda;border-color:#28a745;">
+                <h4 style="color:#155724;">🏛️ Choose Caesar's Legions if:</h4>
+                <ul style="list-style:none;padding-left:0;margin-top:12px;">
+                    <li style="padding:8px 0;"><strong style="color:#155724;">✓ You want meetings booked, not dashboards to manage</strong></li>
+                    <li style="padding:8px 0;"><strong style="color:#155724;">✓ Your time is worth more than $250/mo</strong></li>
+                    <li style="padding:8px 0;"><strong style="color:#155724;">✓ You're a founder focused on product/sales, not tools</strong></li>
+                    <li style="padding:8px 0;"><strong style="color:#155724;">✓ You want expert strategy included</strong></li>
+                    <li style="padding:8px 0;"><strong style="color:#155724;">✓ You value quality over volume</strong></li>
+                </ul>
+            </div>
+            
+            <h2 class="section-title">The Real Difference</h2>
+            
+            <div class="pros-cons">
+                <div class="pros-cons-box pros-box">
+                    <h4>✓ What You Get With Caesar's Legions</h4>
+                    <ul>
+                        <li>Professional campaign strategy (not templates)</li>
+                        <li>AI-powered copywriting that converts</li>
+                        <li>Lead research done for you</li>
+                        <li>Daily campaign monitoring</li>
+                        <li>Reply sentiment analysis</li>
+                        <li>Weekly optimization calls</li>
+                        <li>Transparent flat-rate pricing</li>
+                        <li>100 emails/week, guaranteed quality</li>
+                        <li>White-glove onboarding (< 24h)</li>
+                    </ul>
+                </div>
+                
+                <div class="pros-cons-box cons-box">
+                    <h4>✗ What You DON'T Get (That's the Point)</h4>
+                    <ul>
+                        <li>Another dashboard to learn</li>
+                        <li>Hours spent on setup</li>
+                        <li>Guessing at campaign strategy</li>
+                        <li>Trial-and-error on messaging</li>
+                        <li>Managing email accounts yourself</li>
+                        <li>Monitoring replies manually</li>
+                        <li>Per-contact pricing surprises</li>
+                        <li>Support tickets for help</li>
+                        <li>Figuring it out alone</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h2 class="section-title">Pricing Breakdown (Monthly)</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>What You Pay For</th>
+                        <th>Instantly</th>
+                        <th>Reply.io</th>
+                        <th class="highlight">Caesar's Legions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Platform/Service</td>
+                        <td>$37</td>
+                        <td>$60/user</td>
+                        <td>$250 all-in</td>
+                    </tr>
+                    <tr>
+                        <td>Lead Database</td>
+                        <td>+$97</td>
+                        <td>Included</td>
+                        <td>✓ Included</td>
+                    </tr>
+                    <tr>
+                        <td>Campaign Strategy</td>
+                        <td>DIY or hire consultant</td>
+                        <td>DIY</td>
+                        <td>✓ Included</td>
+                    </tr>
+                    <tr>
+                        <td>Copywriting</td>
+                        <td>DIY</td>
+                        <td>DIY</td>
+                        <td>✓ Included</td>
+                    </tr>
+                    <tr>
+                        <td>Management</td>
+                        <td>Your time ($$$)</td>
+                        <td>Your time ($$$)</td>
+                        <td>✓ Included</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Real Cost</strong></td>
+                        <td><strong>$134+ your time</strong></td>
+                        <td><strong>$60+ your time</strong></td>
+                        <td><strong>$250 done</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p style="margin-top:16px;color:#666;font-style:italic;">
+                * Instantly's lead database costs $97/mo extra. Your time managing campaigns is worth at least $50/hour (10h/mo = $500).
+            </p>
+        </div>
+        
+        <div class="cta-section">
+            <h3>Ready to Stop Managing Tools and Start Booking Meetings?</h3>
+            <p>Join the Early Legion. Limited to 10 clients for personalized service. $250/mo, cancel anytime.</p>
+            <a href="/signup.html" class="cta-button">Join the Early Legion →</a>
+            <p style="margin-top:24px;font-size:0.9em;color:#666;">
+                Or <a href="https://x.com/messages/compose?recipient_id=XXXXX" style="color:#1e3c72;">DM us on X</a> with questions
+            </p>
+        </div>
+    </div>
+</body>
+</html>

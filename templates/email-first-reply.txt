@@ -1,0 +1,25 @@
+Subject: 🎉 First Reply from {{company_name}}!
+
+Hi {{client_name}},
+
+You got your first reply from {{lead_name}} at {{company_name}}:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{{reply_preview}}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+➡️ Sentiment: {{sentiment}}
+📊 Recommended action: {{recommended_action}}
+
+View full reply and respond in your dashboard:
+{{dashboard_url}}/replies/{{reply_id}}
+
+{{encouragement_note}}
+
+More replies coming 📈
+
+—Solon
+Caesar's Legions
+
+---
+⚡ Pro tip: Respond within 2 hours for best conversion rates. Interested leads go cold fast.

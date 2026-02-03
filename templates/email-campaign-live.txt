@@ -1,0 +1,29 @@
+Subject: Campaign Live ✅ - First {{initial_count}} emails sent
+
+Hi {{client_name}},
+
+Your campaign "{{campaign_name}}" just went live!
+
+📊 Stats (first {{hours_elapsed}} hours):
+- {{emails_sent}} emails sent
+- {{opens}} opens ({{open_rate}}% open rate {{open_emoji}})
+- {{replies}} replies {{replies_note}}
+- {{bounces}} bounces/spam complaints
+
+🎯 What's next:
+- Monitoring every hour
+- Follow-up #1 sends in 3 days ({{followup_date}})
+- You'll get an alert immediately when replies come in
+
+Track everything in your dashboard:
+{{dashboard_url}}
+
+{{performance_note}}
+
+Questions? Just reply to this email.
+
+—Solon
+Caesar's Legions
+
+---
+P.S. Typical timelines: Opens happen within hours, replies take 24-48h. Be patient - the best replies often come on Day 2-3.

@@ -6,6 +6,7 @@ const webhookHandler = require('../lib/webhook-handler');
 const unsubscribeHandler = require('../lib/unsubscribe');
 const stripeIntegration = require('../lib/stripe-integration');
 const signupHandler = require('../lib/signup-handler');
+const dashboardApi = require('../lib/dashboard-api');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -76,6 +77,21 @@ app.post('/api/signup', async (req, res) => {
     res.status(400).json({ 
       success: false,
       error: error.message 
+    });
+  }
+});
+
+// Dashboard API - New modern dashboard data endpoint
+app.get('/api/dashboard/:clientId', async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const data = await dashboardApi.getDashboardData(clientId);
+    res.json(data);
+  } catch (error) {
+    console.error('❌ Dashboard API error:', error.message);
+    res.status(error.message.includes('not found') ? 404 : 500).json({
+      success: false,
+      error: error.message
     });
   }
 });

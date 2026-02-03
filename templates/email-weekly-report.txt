@@ -1,0 +1,50 @@
+Subject: Week {{week_number}} Report - {{campaign_name}}
+
+Hi {{client_name}},
+
+Here's your weekly performance summary:
+
+📧 SENDING STATS:
+- Emails sent: {{emails_sent}} ({{daily_average}}/day avg)
+- Delivered: {{delivered}} ({{delivery_rate}}%)
+- Bounced: {{bounced}}
+- Spam complaints: {{spam_complaints}}
+
+📊 ENGAGEMENT:
+- Opens: {{opens}} ({{open_rate}}% - {{open_benchmark}})
+- Clicks: {{clicks}} ({{click_rate}}%)
+- Replies: {{replies}} ({{reply_rate}}% - {{reply_benchmark}})
+
+💬 REPLY BREAKDOWN:
+- Interested: {{interested_replies}} 🔥
+- Questions: {{question_replies}} 🤔
+- Not interested: {{not_interested_replies}}
+- Out of office: {{ooo_replies}}
+
+🎯 CONVERSION:
+- Meetings booked: {{meetings_booked}}
+- Qualified leads: {{qualified_leads}}
+- {{conversion_metric}}: {{conversion_value}}
+
+📈 TRENDS:
+{{trend_analysis}}
+
+✅ WINS THIS WEEK:
+{{wins}}
+
+⚠️ AREAS TO IMPROVE:
+{{improvements}}
+
+🔄 NEXT WEEK PLAN:
+{{next_week_plan}}
+
+Full details in your dashboard:
+{{dashboard_url}}
+
+Questions about anything above? Let's chat.
+
+—Solon
+Caesar's Legions
+
+---
+Benchmark: SaaS cold email averages 40% open, 2-5% reply. You're {{performance_comparison}}.
