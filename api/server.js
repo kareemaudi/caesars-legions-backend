@@ -6,7 +6,12 @@
 // ============================================================================
 
 const express = require('express');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
 const { setupWebhookRoutes } = require('./webhooks');
+const { setupStripeRoutes } = require('./stripe');
+const { setupOnboardingRoutes } = require('./onboarding');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,19 +37,33 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.json({
     service: "Caesar's Legions API",
-    version: '1.0.0',
+    version: '1.1.0',
     status: 'operational',
-    endpoints: [
-      'POST /api/webhooks/instantly - Instantly.ai webhook receiver',
-      'GET  /api/webhooks/health - Webhook health check',
-      'GET  /api/webhooks/events - Recent webhook events',
-      'GET  /api/webhooks/metrics - Webhook metrics'
-    ]
+    endpoints: {
+      signup: [
+        'POST /api/signup - Create Stripe checkout session',
+        'GET  /api/stripe/health - Stripe configuration status'
+      ],
+      webhooks: [
+        'POST /api/webhooks/instantly - Instantly.ai webhook receiver',
+        'POST /api/stripe/webhook - Stripe payment webhook',
+        'GET  /api/webhooks/health - Webhook health check',
+        'GET  /api/webhooks/events - Recent webhook events',
+        'GET  /api/webhooks/metrics - Webhook metrics'
+      ],
+      clients: [
+        'GET  /api/clients - List all clients (admin)',
+        'GET  /api/onboarding/:clientId - Onboarding status',
+        'GET  /api/subscription/:customerId - Subscription status'
+      ]
+    }
   });
 });
 
-// Setup webhook routes
+// Setup routes
 setupWebhookRoutes(app);
+setupStripeRoutes(app);
+setupOnboardingRoutes(app);
 
 // 404 handler
 app.use((req, res) => {
