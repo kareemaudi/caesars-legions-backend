@@ -1,0 +1,66 @@
+{
+  "id": "camp_1770152871091",
+  "client_id": "client_test_456",
+  "name": "Initial Outreach - Campaign Test Co",
+  "status": "draft",
+  "icp": {
+    "company_info": {
+      "name": "Campaign Test Co"
+    },
+    "target": {
+      "description": "Marketing directors",
+      "parsed": {
+        "raw": "Marketing directors",
+        "keywords": []
+      }
+    },
+    "pain_points": [
+      null
+    ],
+    "suggested_verticals": [
+      "MarTech"
+    ],
+    "lead_criteria": {
+      "company_size": {
+        "min": 10,
+        "max": 500
+      },
+      "titles": [
+        "Head of Marketing",
+        "VP Marketing",
+        "CMO"
+      ],
+      "industries": [
+        "MarTech"
+      ]
+    }
+  },
+  "created_at": "2026-02-03T21:07:51.091Z",
+  "email_sequence": [
+    {
+      "step": 1,
+      "type": "initial",
+      "delay_days": 0,
+      "template": "initial_outreach"
+    },
+    {
+      "step": 2,
+      "type": "follow_up",
+      "delay_days": 3,
+      "template": "follow_up_1"
+    },
+    {
+      "step": 3,
+      "type": "follow_up",
+      "delay_days": 7,
+      "template": "follow_up_2"
+    }
+  ],
+  "metrics": {
+    "emails_sent": 0,
+    "opens": 0,
+    "clicks": 0,
+    "replies": 0,
+    "positive_replies": 0
+  }
+}

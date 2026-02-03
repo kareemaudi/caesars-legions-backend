@@ -1,0 +1,67 @@
+{
+  "id": "camp_1770152871092",
+  "client_id": "client_1770152871092_vr20xe",
+  "name": "Initial Outreach - Full Test Inc",
+  "status": "draft",
+  "icp": {
+    "company_info": {
+      "name": "Full Test Inc",
+      "website": "https://fulltest.io"
+    },
+    "target": {
+      "description": "CEOs of mid-market SaaS companies",
+      "parsed": {
+        "raw": "CEOs of mid-market SaaS companies",
+        "keywords": []
+      }
+    },
+    "pain_points": [
+      "Need more meetings booked"
+    ],
+    "suggested_verticals": [
+      "SaaS"
+    ],
+    "lead_criteria": {
+      "company_size": {
+        "min": 100,
+        "max": 500
+      },
+      "titles": [
+        "Founder",
+        "CEO",
+        "Co-Founder"
+      ],
+      "industries": [
+        "SaaS"
+      ]
+    }
+  },
+  "created_at": "2026-02-03T21:07:51.092Z",
+  "email_sequence": [
+    {
+      "step": 1,
+      "type": "initial",
+      "delay_days": 0,
+      "template": "initial_outreach"
+    },
+    {
+      "step": 2,
+      "type": "follow_up",
+      "delay_days": 3,
+      "template": "follow_up_1"
+    },
+    {
+      "step": 3,
+      "type": "follow_up",
+      "delay_days": 7,
+      "template": "follow_up_2"
+    }
+  ],
+  "metrics": {
+    "emails_sent": 0,
+    "opens": 0,
+    "clicks": 0,
+    "replies": 0,
+    "positive_replies": 0
+  }
+}

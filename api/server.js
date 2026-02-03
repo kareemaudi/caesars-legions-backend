@@ -12,6 +12,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { setupWebhookRoutes } = require('./webhooks');
 const { setupStripeRoutes } = require('./stripe');
 const { setupOnboardingRoutes } = require('./onboarding');
+const { setupPublicAPIRoutes } = require('./public-api');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -64,6 +65,7 @@ app.get('/', (req, res) => {
 setupWebhookRoutes(app);
 setupStripeRoutes(app);
 setupOnboardingRoutes(app);
+setupPublicAPIRoutes(app);
 
 // 404 handler
 app.use((req, res) => {

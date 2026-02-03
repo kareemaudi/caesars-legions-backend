@@ -1,0 +1,8 @@
+{
+  "to": "fulltest@example.com",
+  "subject": "Welcome to Caesar's Legions, Full! 🏛️",
+  "body": "Hey Full!\n\nWelcome to the Legion! You made a great call. Here's what happens next:\n\n**1. Schedule Your Onboarding Call (Required)**\nBook a 30-minute slot here: https://calendly.com/caesars-legions/onboarding\n\nWe'll review your ICP, approve your first email templates, and launch your first campaign together.\n\n**2. What I Need From You (Before the Call)**\nReply to this email with:\n- 2-3 examples of your ideal customers (LinkedIn profiles or company names)\n- Any specific messaging angles you want to test\n- Days/times when you DON'T want emails sent\n\n**3. Your Dashboard**\nYour client portal is being set up. I'll send credentials after our call.\n\n**Quick Timeline:**\n- Today: You're in the system ✅\n- Within 48h: Onboarding call\n- Within 72h: First campaign live\n\nIf anything's urgent, just reply to this email.\n\nWelcome aboard!\n\n— The Caesar's Legions Team\n\nP.S. Follow the build journey: https://x.com/agenticCaesar",
+  "from": "team@caesars-legions.com",
+  "client_id": "client_1770152871092_vr20xe",
+  "type": "onboarding"
+}
