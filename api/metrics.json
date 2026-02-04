@@ -5,13 +5,23 @@
     "clients": 0,
     "clientsChange": 0
   },
+  "outreach": {
+    "emails_sent_today": 12,
+    "emails_sent_total": 33,
+    "prospects_researched": 32,
+    "dms_drafted": 10,
+    "dms_sent": 0,
+    "responses": 0,
+    "demos_scheduled": 0
+  },
   "product": {
-    "features_shipped_week": 3,
-    "tests_passing": "16/16"
+    "features_shipped_week": 4,
+    "tests_passing": "16/16",
+    "infrastructure_status": "operational"
   },
   "history": {
-    "labels": ["Week 1", "Week 2", "Week 3", "Week 4"],
+    "labels": ["Day 1", "Day 2", "Day 3", "Day 4"],
     "values": [0, 0, 0, 0]
   },
-  "timestamp": "2026-02-03T13:24:00Z"
+  "timestamp": "2026-02-04T17:00:00Z"
 }
