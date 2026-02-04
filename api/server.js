@@ -9,7 +9,10 @@ const express = require('express');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const { setupWebhookRoutes } = require('./webhooks');
+// Use v2 webhooks with metrics integration (set WEBHOOKS_V1=true for legacy)
+const { setupWebhookRoutes } = process.env.WEBHOOKS_V1 
+  ? require('./webhooks')
+  : require('./webhooks-v2');
 const { setupStripeRoutes } = require('./stripe');
 const { setupOnboardingRoutes } = require('./onboarding');
 const { setupPublicAPIRoutes } = require('./public-api');

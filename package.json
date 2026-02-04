@@ -1,0 +1,42 @@
+{
+  "name": "caesars-legions-backend",
+  "version": "1.0.0",
+  "description": "AI-powered cold email service - Backend API",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "node --watch api/server.js",
+    "test": "node tests/run-all-tests.js",
+    "test:metrics": "node tests/test-metrics-tracker.js",
+    "test:webhooks": "node tests/test-instantly-webhooks.js",
+    "test:emails": "node tests/test-email-generator.js",
+    "generate": "node scripts/generate-emails.js",
+    "health": "curl http://localhost:3001/api/webhooks/health"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.7",
+    "openai": "^4.24.0",
+    "stripe": "^14.10.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "cold-email",
+    "ai",
+    "outbound",
+    "lead-generation",
+    "gpt-4"
+  ],
+  "author": "Caesar's Legions",
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caesars-legions/backend"
+  }
+}
