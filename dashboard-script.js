@@ -1,14 +1,22 @@
-// Configuration - UPDATE THIS after Railway deployment
-const API_ENDPOINT = 'http://localhost:3000/api/metrics'; // Will update to Railway URL
+// Configuration
+const API_ENDPOINT = '/api/metrics'; // Will try Railway API first
+const STATIC_FALLBACK = '/api/metrics.json'; // Static fallback for GitHub Pages
 const REFRESH_INTERVAL = 30000; // 30 seconds
 
 // Chart instance
 let revenueChart = null;
 
-// Load metrics from API
+// Load metrics from API with static fallback
 async function loadMetrics() {
   try {
-    const response = await fetch(API_ENDPOINT);
+    // Try API first
+    let response = await fetch(API_ENDPOINT).catch(() => null);
+    
+    // If API fails, try static fallback
+    if (!response || !response.ok) {
+      console.log('API unavailable, trying static fallback...');
+      response = await fetch(STATIC_FALLBACK);
+    }
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
