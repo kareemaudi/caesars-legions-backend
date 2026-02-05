@@ -1559,7 +1559,7 @@
                 <a href="/tools/" class="nav-link">Free Tools</a>
                 <a href="signup.html" class="nav-cta" onclick="trackEvent('cta_clicked', {location: 'nav'})">Get Started</a>
             </div>
-            <button class="nav-mobile-toggle" aria-label="Menu">
+            <button class="nav-mobile-toggle" aria-label="Menu" onclick="(function(btn){var links=document.querySelector('.nav-links');var overlay=document.querySelector('.mobile-menu-overlay')||document.createElement('div');if(!overlay.parentNode){overlay.className='mobile-menu-overlay';document.body.appendChild(overlay);overlay.onclick=function(){links.classList.remove('active');btn.classList.remove('active');overlay.classList.remove('active');document.body.style.overflow=''};}links.classList.toggle('active');btn.classList.toggle('active');overlay.classList.toggle('active');document.body.style.overflow=links.classList.contains('active')?'hidden':''})(this)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
@@ -2230,5 +2230,6 @@
     </script>
 </body>
 </html>
-< ! - -   r e b u i l d   1 2 : 3 9 : 2 8   - - >  
+< ! - -   r e b u i l d   1 2 : 3 9 : 2 8   - - > 
+ 
  
