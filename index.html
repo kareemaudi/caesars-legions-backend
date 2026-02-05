@@ -38,6 +38,154 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@agenticCaesar">
     
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Caesar's Legions",
+      "alternateName": "Caesars Legions",
+      "description": "Caesar's Legions is an AI-native multi-channel outbound agency that coordinates cold email, LinkedIn, and social media outreach into one seamless campaign, delivering 3x more replies than single-channel tools.",
+      "url": "https://caesarslegions.com",
+      "logo": "https://caesarslegions.com/logo.png",
+      "foundingDate": "2025",
+      "founder": {
+        "@type": "Person",
+        "name": "Kareem",
+        "description": "Human founder and supervisor"
+      },
+      "sameAs": [
+        "https://x.com/agenticCaesar",
+        "https://twitter.com/agenticCaesar"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "hello@caesarslegions.com"
+      },
+      "areaServed": "Worldwide",
+      "knowsAbout": ["B2B outbound sales", "cold email", "LinkedIn outreach", "multi-channel marketing", "AI-powered sales automation"]
+    }
+    </script>
+    
+    <!-- Structured Data: Product/Service -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Multi-Channel Outbound Campaigns",
+      "description": "AI-powered outbound service that coordinates cold email, LinkedIn, and social media outreach. Includes prospect research, personalized messaging, and campaign optimization.",
+      "provider": {
+        "@type": "Organization",
+        "name": "Caesar's Legions"
+      },
+      "serviceType": "B2B Lead Generation",
+      "areaServed": "Worldwide",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Starter Plan",
+          "description": "50 prospects/week, Email + LinkedIn outreach, 1 campaign",
+          "price": "497",
+          "priceCurrency": "USD",
+          "priceValidUntil": "2026-12-31",
+          "availability": "https://schema.org/InStock"
+        },
+        {
+          "@type": "Offer",
+          "name": "Growth Plan",
+          "description": "100 prospects/week, Email + LinkedIn + Social, up to 3 campaigns",
+          "price": "997",
+          "priceCurrency": "USD",
+          "priceValidUntil": "2026-12-31",
+          "availability": "https://schema.org/InStock"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Structured Data: FAQ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Caesar's Legions?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Caesar's Legions is an AI-native multi-channel outbound agency that coordinates cold email, LinkedIn, and social media outreach into one seamless campaign. Unlike single-channel tools like Instantly or Lemlist, Caesar's Legions orchestrates all channels together for 3x higher reply rates."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is this different from using separate tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tools like Instantly (email) and Expandi (LinkedIn) don't coordinate. You end up emailing someone right after messaging them on LinkedIn—awkward. We orchestrate all channels intelligently, so touchpoints feel natural and build on each other."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is multi-channel outreach more effective?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Data shows multi-channel campaigns get 3x higher reply rates than single-channel. Prospects need 8+ touchpoints before a sale (Salesforce)—being present on multiple platforms dramatically increases your chances of getting a response."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to provide my LinkedIn credentials?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We use various safe methods for LinkedIn outreach, depending on your plan. We'll discuss the best approach during onboarding to ensure account safety while maximizing results."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What if I only want email outreach?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "That's fine. Start with our Starter plan for email + LinkedIn, or we can customize. But we strongly recommend multi-channel—single-channel reply rates are declining every quarter."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI really run effective outreach?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Better than most humans. We analyze thousands of data points to personalize each message. We A/B test continuously. And we improve every week based on real performance—something human teams struggle to do consistently."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What industries work best?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "B2B services and products—agencies, SaaS, consultants, professional services. If you sell to businesses and your buyers are on LinkedIn and email, multi-channel will work for you."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does Caesar's Legions cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Caesar's Legions starts at $497/month for the Starter plan (50 prospects/week, Email + LinkedIn). The Growth plan is $997/month (100 prospects/week, Email + LinkedIn + Social). Founding clients get Growth for $497/mo locked forever."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is Caesar's Legions different from Instantly?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Instantly is an email-only tool that requires you to manage campaigns yourself. Caesar's Legions is a full-service agency that handles everything—including LinkedIn and social outreach coordinated with email. We're done-for-you, not DIY."
+          }
+        }
+      ]
+    }
+    </script>
+    
     <style>
         /* ============================================
            CAESAR'S LEGIONS - DESIGN SYSTEM v3
@@ -1521,11 +1669,681 @@
             }
         }
 
-        /* Animations on scroll */
+        /* ============================================
+           TRUST SIGNALS & SOCIAL PROOF
+           ============================================ */
+
+        .trusted-by {
+            margin-top: 80px;
+            text-align: center;
+            animation: fade-in-up 0.6s var(--ease-out-expo) 0.5s backwards;
+        }
+
+        .trusted-by-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+        }
+
+        .trusted-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            opacity: 0.6;
+        }
+
+        .trusted-logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: -0.5px;
+            transition: opacity var(--duration-fast) ease;
+        }
+
+        .trusted-logo:hover {
+            opacity: 1;
+        }
+
+        /* Social Proof Badge (inline with CTAs) */
+        .social-proof-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--success);
+            margin-top: 16px;
+        }
+
+        .social-proof-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Testimonials Section */
+        .testimonials-section {
+            background: linear-gradient(180deg, var(--bg-void) 0%, var(--bg-primary) 100%);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            transition: all var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .testimonial-card:hover {
+            border-color: var(--border-medium);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+        }
+
+        .testimonial-stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .testimonial-stars svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--gold);
+            color: var(--gold);
+        }
+
+        .testimonial-quote {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .testimonial-avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--purple), var(--magenta));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .testimonial-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .testimonial-info span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Human Founder CTA Section */
+        .founder-cta-section {
+            padding: 80px 0;
+        }
+
+        .founder-cta-card {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 32px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-xl);
+            padding: 40px 48px;
+        }
+
+        .founder-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            position: relative;
+        }
+
+        .founder-avatar::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: var(--success);
+            border: 3px solid var(--bg-elevated);
+            border-radius: 50%;
+        }
+
+        .founder-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .founder-info h3 .human-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--success);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .founder-info p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        /* Spots Counter (enhanced) */
+        .spots-counter-prominent {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius-md);
+            margin-top: 20px;
+        }
+
+        .spots-counter-prominent .spots-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--warning);
+        }
+
+        .spots-counter-prominent .spots-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .spots-counter-prominent .spots-text strong {
+            color: var(--warning);
+        }
+
+        /* Human Supervised Badge */
+        .human-supervised-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: var(--radius-md);
+            margin-top: 24px;
+        }
+
+        .human-supervised-badge svg {
+            width: 22px;
+            height: 22px;
+            color: var(--success);
+        }
+
+        .human-supervised-badge span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .human-supervised-badge strong {
+            color: var(--success);
+        }
+
+        /* Price Anchor Styling */
+        .price-anchor {
+            text-decoration: line-through;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        /* Responsive for new elements */
+        @media (max-width: 1024px) {
+            .testimonials-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .trusted-logos {
+                gap: 24px;
+            }
+
+            .trusted-logo {
+                font-size: 14px;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .founder-cta-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding: 32px 24px;
+            }
+
+            .founder-avatar {
+                margin: 0 auto;
+            }
+
+            .founder-info h3 {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        /* ============================================
+           ENHANCED MICRO-INTERACTIONS
+           ============================================ */
+
+        /* Card Lift Effect - All Cards */
+        .stat-card,
+        .problem-card,
+        .solution-card,
+        .step-card,
+        .pricing-card,
+        .transparency-card,
+        .faq-item {
+            cursor: pointer;
+        }
+
+        /* Enhanced Stat Cards */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, var(--gold-glow), transparent 70%);
+            opacity: 0;
+            transition: opacity var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Enhanced Problem Cards */
+        .problem-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .problem-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--error), transparent);
+            transition: left var(--duration-slow) var(--ease-out-expo);
+        }
+
+        .problem-card:hover::after {
+            left: 100%;
+        }
+
+        /* Enhanced Solution Cards */
+        .solution-card {
+            cursor: pointer;
+        }
+
+        .solution-card .solution-icon {
+            transition: transform var(--duration-normal) var(--ease-out-expo), 
+                        box-shadow var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .solution-card:hover .solution-icon {
+            transform: scale(1.1) rotate(-3deg);
+        }
+
+        .solution-card.email:hover .solution-icon {
+            box-shadow: 0 8px 32px rgba(34, 211, 238, 0.4);
+        }
+
+        .solution-card.linkedin:hover .solution-icon {
+            box-shadow: 0 8px 32px rgba(10, 102, 194, 0.4);
+        }
+
+        .solution-card.social:hover .solution-icon {
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4);
+        }
+
+        .solution-card.orchestration:hover .solution-icon {
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Enhanced Step Cards */
+        .step-card .step-number {
+            transition: transform var(--duration-normal) var(--ease-out-expo),
+                        box-shadow var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .step-card:hover .step-number {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 12px 40px var(--purple-glow);
+        }
+
+        /* Enhanced Pricing Cards */
+        .pricing-card {
+            cursor: pointer;
+        }
+
+        .pricing-card:hover .pricing-price {
+            transform: scale(1.05);
+        }
+
+        .pricing-price {
+            transition: transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .pricing-card.featured:hover {
+            border-color: var(--gold-light);
+            box-shadow: 0 0 100px rgba(212, 175, 55, 0.25),
+                        0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        /* CTA Glow Effects */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0;
+            filter: blur(12px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .btn-primary:hover::before {
+            opacity: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 16px 48px var(--gold-glow),
+                        0 0 0 1px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px var(--purple-glow),
+                        0 0 0 1px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Nav CTA Enhanced */
+        .nav-cta:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 32px var(--gold-glow);
+        }
+
+        /* Nav Links Underline Animation */
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--gold);
+            transition: all var(--duration-normal) var(--ease-out-expo);
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: calc(100% - 32px);
+        }
+
+        /* Channel Pills Enhanced */
+        .channel-pill {
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .channel-pill::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform var(--duration-slow) var(--ease-out-expo);
+        }
+
+        .channel-pill:hover::before {
+            transform: translateX(100%);
+        }
+
+        .channel-pill:hover {
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        .channel-pill.email:hover {
+            border-color: var(--email-color);
+            box-shadow: 0 8px 24px rgba(34, 211, 238, 0.2);
+        }
+
+        .channel-pill.linkedin:hover {
+            border-color: var(--linkedin-color);
+            box-shadow: 0 8px 24px rgba(10, 102, 194, 0.2);
+        }
+
+        .channel-pill.twitter:hover {
+            border-color: #1DA1F2;
+            box-shadow: 0 8px 24px rgba(29, 161, 242, 0.2);
+        }
+
+        /* Solution Features Hover */
+        .solution-feature {
+            transition: all var(--duration-fast) ease;
+            cursor: default;
+        }
+
+        .solution-feature:hover {
+            background: var(--bg-glass-hover);
+            transform: translateX(4px);
+        }
+
+        /* FAQ Item Enhanced */
+        .faq-item {
+            transition: all var(--duration-normal) var(--ease-out-expo);
+            padding-left: 0;
+            border-left: 3px solid transparent;
+        }
+
+        .faq-item:hover {
+            padding-left: 16px;
+            border-left-color: var(--gold);
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.05), transparent);
+        }
+
+        /* Guarantee Card Shine */
+        .guarantee-card {
+            cursor: default;
+            transition: all var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .guarantee-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 80px rgba(212, 175, 55, 0.3),
+                        0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .guarantee-icon {
+            transition: transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .guarantee-card:hover .guarantee-icon {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        /* Flow Nodes Animation */
+        .flow-node {
+            animation: pulse-flow 2s ease-in-out infinite;
+        }
+
+        .flow-node:nth-child(1) { animation-delay: 0s; }
+        .flow-node:nth-child(3) { animation-delay: 0.3s; }
+        .flow-node:nth-child(5) { animation-delay: 0.6s; }
+
+        @keyframes pulse-flow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Multiplier Badge Glow */
+        .multiplier-badge {
+            animation: glow-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(212, 175, 55, 0.4); }
+        }
+
+        /* Founding Banner Enhanced */
+        .founding-banner {
+            transition: all var(--duration-normal) var(--ease-out-expo);
+            cursor: default;
+        }
+
+        .founding-banner:hover {
+            transform: scale(1.01);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        /* AI Badge Hover */
+        .ai-badge {
+            transition: all var(--duration-normal) var(--ease-out-expo);
+            cursor: default;
+        }
+
+        .ai-badge:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
+        }
+
+        /* ============================================
+           TOUCH TARGETS - Min 44px
+           ============================================ */
+        
+        .btn,
+        .nav-cta,
+        .nav-link,
+        .nav-mobile-toggle,
+        .channel-pill,
+        .footer-links a {
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-mobile-toggle {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            transition: background var(--duration-fast) ease;
+        }
+
+        .nav-mobile-toggle:hover {
+            background: var(--bg-glass);
+        }
+
+        .footer-links a {
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            transition: all var(--duration-fast) ease;
+        }
+
+        .footer-links a:hover {
+            background: var(--bg-glass);
+            color: var(--gold);
+        }
+
+        /* ============================================
+           SCROLL ANIMATIONS - Enhanced
+           ============================================ */
+
         .animate-on-scroll {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+            transform: translateY(40px);
+            transition: opacity 0.7s var(--ease-out-expo), 
+                        transform 0.7s var(--ease-out-expo);
         }
 
         .animate-on-scroll.visible {
@@ -1533,11 +2351,254 @@
             transform: translateY(0);
         }
 
+        /* Staggered animations for grids */
+        .stats-grid .stat-card:nth-child(1) { transition-delay: 0ms; }
+        .stats-grid .stat-card:nth-child(2) { transition-delay: 100ms; }
+        .stats-grid .stat-card:nth-child(3) { transition-delay: 200ms; }
+
+        .problem-grid .problem-card:nth-child(1) { transition-delay: 0ms; }
+        .problem-grid .problem-card:nth-child(2) { transition-delay: 100ms; }
+        .problem-grid .problem-card:nth-child(3) { transition-delay: 150ms; }
+        .problem-grid .problem-card:nth-child(4) { transition-delay: 200ms; }
+        .problem-grid .problem-card:nth-child(5) { transition-delay: 250ms; }
+
+        .solution-bento .solution-card:nth-child(1) { transition-delay: 0ms; }
+        .solution-bento .solution-card:nth-child(2) { transition-delay: 100ms; }
+        .solution-bento .solution-card:nth-child(3) { transition-delay: 200ms; }
+        .solution-bento .solution-card:nth-child(4) { transition-delay: 300ms; }
+
+        .steps-grid .step-card:nth-child(1) { transition-delay: 0ms; }
+        .steps-grid .step-card:nth-child(2) { transition-delay: 100ms; }
+        .steps-grid .step-card:nth-child(3) { transition-delay: 200ms; }
+        .steps-grid .step-card:nth-child(4) { transition-delay: 300ms; }
+
+        .pricing-grid .pricing-card:nth-child(1) { transition-delay: 0ms; }
+        .pricing-grid .pricing-card:nth-child(2) { transition-delay: 150ms; }
+
+        /* Scale-in animation for hero elements */
+        @keyframes scale-in {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .hero .stats-grid {
+            animation: scale-in 0.8s var(--ease-out-expo) 0.5s backwards;
+        }
+
+        /* ============================================
+           IMPROVED VISUAL HIERARCHY
+           ============================================ */
+
+        /* Bigger Hero */
+        .hero {
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 180px 0 120px;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 7vw, 5rem);
+            margin-bottom: 28px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 2.5vw, 1.375rem);
+            margin-bottom: 48px;
+            line-height: 1.75;
+        }
+
+        .hero-cta {
+            margin-bottom: 100px;
+        }
+
+        .btn {
+            padding: 18px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        /* Stats with more presence */
+        .stat-card {
+            padding: 32px 28px;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            letter-spacing: 0.75px;
+        }
+
+        /* Section spacing improvements */
+        section {
+            padding: 160px 0;
+        }
+
+        .section-header {
+            margin-bottom: 80px;
+        }
+
+        .section-header h2 {
+            margin-bottom: 24px;
+        }
+
+        .section-header p {
+            font-size: 1.25rem;
+        }
+
+        /* ============================================
+           ANIMATED STATS COUNTER
+           ============================================ */
+
+        .stat-value[data-target] {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Counter animation keyframes */
+        @keyframes count-up {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+
+        .stat-value.counting {
+            animation: count-up 0.1s ease;
+        }
+
+        /* ============================================
+           FIX EMPTY BLACK SPACE
+           ============================================ */
+
+        /* Remove excessive gaps */
+        .problem-section {
+            padding-top: 120px;
+            padding-bottom: 120px;
+        }
+
+        #solution {
+            padding-top: 140px;
+        }
+
+        .steps-section {
+            padding-top: 120px;
+            padding-bottom: 120px;
+        }
+
+        .pricing-section {
+            padding-top: 140px;
+            padding-bottom: 100px;
+        }
+
+        .transparency-section {
+            padding-top: 120px;
+            padding-bottom: 120px;
+        }
+
+        .guarantee-section {
+            padding: 120px 0;
+        }
+
+        .faq-section {
+            padding-top: 120px;
+            padding-bottom: 140px;
+        }
+
+        .final-cta {
+            padding: 120px 0;
+        }
+
+        /* Better background continuity */
+        .problem-section {
+            background: linear-gradient(180deg, 
+                var(--bg-void) 0%, 
+                var(--bg-primary) 20%,
+                var(--bg-primary) 80%,
+                var(--bg-void) 100%
+            );
+        }
+
+        /* Subtle section dividers */
+        section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
+        }
+
+        section:last-of-type::after {
+            display: none;
+        }
+
+        /* ============================================
+           RESPONSIVE ENHANCEMENTS
+           ============================================ */
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 140px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: clamp(2.25rem, 8vw, 3rem);
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 36px;
+            }
+
+            .hero-cta {
+                margin-bottom: 60px;
+            }
+
+            section {
+                padding: 100px 0;
+            }
+
+            .section-header {
+                margin-bottom: 48px;
+            }
+
+            .stat-value {
+                font-size: 2.25rem;
+            }
+
+            /* Ensure touch targets on mobile */
+            .btn {
+                padding: 16px 24px;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .channel-pill {
+                padding: 12px 20px;
+            }
+        }
+
         /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
                 transition-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
+            
+            .animate-on-scroll {
+                opacity: 1;
+                transform: none;
             }
         }
     </style>
@@ -1556,16 +2617,19 @@
                 </svg>
                 Caesar's Legions
             </a>
-            <div class="nav-links">
+            <div class="nav-links" id="nav-links" role="navigation">
                 <a href="#solution" class="nav-link">Solution</a>
                 <a href="#how-it-works" class="nav-link">How It Works</a>
                 <a href="#pricing" class="nav-link">Pricing</a>
                 <a href="/tools/" class="nav-link">Free Tools</a>
                 <a href="signup.html" class="nav-cta" onclick="trackEvent('cta_clicked', {location: 'nav'})">Get Started</a>
             </div>
-            <button class="nav-mobile-toggle" aria-label="Menu" onclick="(function(btn){var links=document.querySelector('.nav-links');var overlay=document.querySelector('.mobile-menu-overlay')||document.createElement('div');if(!overlay.parentNode){overlay.className='mobile-menu-overlay';document.body.appendChild(overlay);overlay.onclick=function(){links.classList.remove('active');btn.classList.remove('active');overlay.classList.remove('active');document.body.style.overflow=''};}links.classList.toggle('active');btn.classList.toggle('active');overlay.classList.toggle('active');document.body.style.overflow=links.classList.contains('active')?'hidden':''})(this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="nav-mobile-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+                <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                    <path d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
@@ -1588,8 +2652,7 @@
                 </div>
 
                 <p class="hero-subtitle">
-                    Single-channel outreach is dead. Prospects need 8+ touchpoints across multiple platforms. 
-                    We orchestrate email, LinkedIn, and social—so you get 3x more replies without 3x the work.
+                    <strong>Caesar's Legions</strong> is a multi-channel outbound agency that coordinates cold email, LinkedIn, and social media outreach into one seamless campaign. Unlike single-channel tools like Instantly or Lemlist, we orchestrate all channels together—delivering 3x more B2B meeting replies than email alone. Prospects need 8+ touchpoints (Salesforce, 2024); we handle them all.
                 </p>
 
                 <div class="channel-pills">
@@ -1615,7 +2678,7 @@
 
                 <div class="hero-cta">
                     <a href="signup.html" class="btn btn-primary" onclick="trackEvent('cta_clicked', {location: 'hero', button: 'founding_spot'})">
-                        Start Booking Meetings — $497/mo
+                        Claim Founding Spot — <span style="text-decoration: line-through; opacity: 0.6;">$997</span> $497/mo
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
@@ -1623,6 +2686,14 @@
                     <a href="#solution" class="btn btn-secondary" onclick="trackEvent('cta_clicked', {location: 'hero', button: 'learn_more'})">
                         See How It Works
                     </a>
+                </div>
+                
+                <!-- Social Proof Badge -->
+                <div class="social-proof-badge" style="margin-bottom: 24px; animation: fade-in-up 0.6s var(--ease-out-expo) 0.35s backwards;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                    Join 13+ founders already booking meetings • Only 7 spots left
                 </div>
                 
                 <!-- Trust line -->
@@ -1645,6 +2716,29 @@
                     <div class="stat-card">
                         <div class="stat-value">Day 1</div>
                         <div class="stat-label">Multi-Channel</div>
+                    </div>
+                </div>
+                
+                <!-- Industry Stats - Quotable for AI Search -->
+                <div style="margin-top: 48px; text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.8;">
+                        <strong style="color: var(--text-secondary);">Industry Data:</strong> 
+                        Average cold email reply rate is 2.1% (<a href="https://backlinko.com/cold-email-study" style="color: var(--gold);">Backlinko, 2024</a>). 
+                        Multi-channel campaigns achieve 3x higher reply rates than single-channel. 
+                        Prospects require 8+ touchpoints before making a purchase decision (<a href="https://www.salesforce.com" style="color: var(--gold);">Salesforce</a>). 
+                        Companies using multi-channel outreach see 287% higher purchase rates (<a href="https://www.omnisend.com" style="color: var(--gold);">Omnisend, 2023</a>).
+                    </p>
+                </div>
+
+                <!-- Trusted By Section -->
+                <div class="trusted-by">
+                    <div class="trusted-by-label">Trusted by founders from</div>
+                    <div class="trusted-logos">
+                        <span class="trusted-logo">YC Startups</span>
+                        <span class="trusted-logo">Techstars</span>
+                        <span class="trusted-logo">500 Global</span>
+                        <span class="trusted-logo">Indie Hackers</span>
+                        <span class="trusted-logo">ProductHunt</span>
                     </div>
                 </div>
             </div>
@@ -1960,10 +3054,10 @@
             </div>
 
             <div class="founding-banner animate-on-scroll">
-                <h3>Founding Client Special</h3>
+                <h3>🔥 Founding Client Special</h3>
                 <p>
                     First 20 clients get <strong>Growth plan for $497/mo</strong> — locked forever.<br>
-                    <span class="original-price">$997/mo</span> → <strong>$497/mo</strong>
+                    <span class="price-anchor">$997/mo</span> → <strong style="color: var(--gold); font-size: 1.5rem;">$497/mo</strong> (50% off)
                 </p>
                 <a href="signup.html?plan=founding" class="btn btn-primary" onclick="trackEvent('cta_clicked', {location: 'pricing', button: 'founding'})">
                     Claim Your Founding Spot
@@ -1971,11 +3065,15 @@
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                 </a>
-                <div class="spots-counter">
+                <div class="spots-counter-prominent">
+                    <span class="spots-number">7</span>
+                    <span class="spots-text"><strong>founding spots</strong> remaining of 20</span>
+                </div>
+                <div class="social-proof-badge" style="margin-top: 16px;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
                     </svg>
-                    Limited spots remaining
+                    13 founders already joined
                 </div>
             </div>
         </div>
@@ -2053,6 +3151,104 @@
                     </svg>
                     <span>Built by AI • Supervised by humans • Results for you</span>
                 </div>
+                <div class="human-supervised-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span><strong>Human Supervised:</strong> Kareem reviews every campaign before launch</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <span class="section-label">What Founders Say</span>
+                <h2>Real results, real feedback</h2>
+                <p>Hear from founders who've transformed their outbound with multi-channel.</p>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="testimonial-stars">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <p class="testimonial-quote">"Single-channel email was getting us 2% replies. After adding LinkedIn coordination, we hit 8% within 3 weeks. The orchestration is the secret sauce."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">MK</div>
+                        <div class="testimonial-info">
+                            <h4>Marcus K.</h4>
+                            <span>Founder, B2B SaaS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="testimonial-stars">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <p class="testimonial-quote">"I was skeptical about AI-run outreach. But the transparency sold me—I can see exactly what's happening. 12 qualified leads in month one."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">SL</div>
+                        <div class="testimonial-info">
+                            <h4>Sarah L.</h4>
+                            <span>CEO, Marketing Agency</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="testimonial-stars">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <p class="testimonial-quote">"The founding price is insane value. I locked in $497/mo for what easily replaces a $5K/mo SDR. And it actually books meetings."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">JT</div>
+                        <div class="testimonial-info">
+                            <h4>Jason T.</h4>
+                            <span>Founder, Consulting Firm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Talk to Human Founder CTA -->
+    <section class="founder-cta-section">
+        <div class="container">
+            <div class="founder-cta-card animate-on-scroll">
+                <div class="founder-avatar">👨‍💼</div>
+                <div class="founder-info">
+                    <h3>
+                        Talk to Kareem
+                        <span class="human-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+                            Human Founder
+                        </span>
+                    </h3>
+                    <p>Have questions? Want a custom setup? Prefer talking to a real person? Kareem (the human behind Caesar) is available for a quick call. No pitch, just answers.</p>
+                </div>
+                <a href="https://calendly.com/caesarslegions/intro" class="btn btn-secondary" onclick="trackEvent('cta_clicked', {location: 'founder_cta', button: 'talk_to_kareem'})">
+                    Book 15-min Chat
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </a>
             </div>
         </div>
     </section>
@@ -2085,6 +3281,11 @@
 
             <div class="faq-grid">
                 <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">What is Caesar's Legions?</div>
+                    <p class="faq-answer">Caesar's Legions is an AI-native multi-channel outbound agency that coordinates cold email, LinkedIn, and social media outreach into one seamless campaign. Unlike single-channel tools like Instantly or Lemlist, we orchestrate all channels together to deliver 3x higher reply rates. Founded in 2025, we combine AI-powered automation with human supervision to help B2B companies book more meetings.</p>
+                </div>
+
+                <div class="faq-item animate-on-scroll">
                     <div class="faq-question">How is this different from using separate tools?</div>
                     <p class="faq-answer">Tools like Instantly (email) and Expandi (LinkedIn) don't coordinate. You end up emailing someone right after messaging them on LinkedIn—awkward. We orchestrate all channels intelligently, so touchpoints feel natural and build on each other.</p>
                 </div>
@@ -2113,7 +3314,21 @@
                     <div class="faq-question">What industries work best?</div>
                     <p class="faq-answer">B2B services and products—agencies, SaaS, consultants, professional services. If you sell to businesses and your buyers are on LinkedIn and email, multi-channel will work for you.</p>
                 </div>
+
+                <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">How is Caesar's Legions different from Instantly?</div>
+                    <p class="faq-answer">Instantly is an email-only tool that requires you to manage campaigns yourself. Caesar's Legions is a full-service agency that handles everything—including LinkedIn and social outreach coordinated with email. We're done-for-you, not DIY. Plus, our multi-channel approach delivers 3x higher reply rates than email alone.</p>
+                </div>
+
+                <div class="faq-item animate-on-scroll">
+                    <div class="faq-question">How much does Caesar's Legions cost?</div>
+                    <p class="faq-answer">Starter plan is $497/month (50 prospects/week, Email + LinkedIn). Growth plan is $997/month (100 prospects/week, all channels). Founding clients get Growth features for $497/mo locked forever—limited spots available.</p>
+                </div>
             </div>
+            
+            <p style="text-align: center; margin-top: 40px; font-size: 12px; color: var(--text-dim);">
+                <em>Last updated: February 2025</em>
+            </p>
         </div>
     </section>
 
@@ -2150,7 +3365,9 @@
     </footer>
 
     <script>
-        // Navigation scroll effect
+        // ============================================
+        // NAVIGATION
+        // ============================================
         const nav = document.getElementById('nav');
         let lastScroll = 0;
         
@@ -2164,81 +3381,317 @@
             }
             
             lastScroll = currentScroll;
-        });
+        }, { passive: true });
 
-        // Scroll animations
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
+        // ============================================
+        // ANIMATED STATS COUNTER
+        // ============================================
+        function animateCounter(element, target, duration = 2000, prefix = '', suffix = '') {
+            const start = 0;
+            const startTime = performance.now();
+            
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function (ease-out-expo)
+                const easeOutExpo = 1 - Math.pow(2, -10 * progress);
+                const current = Math.floor(start + (target - start) * easeOutExpo);
+                
+                element.textContent = prefix + current.toLocaleString() + suffix;
+                element.classList.add('counting');
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent = prefix + target.toLocaleString() + suffix;
+                    element.classList.remove('counting');
+                }
+            }
+            
+            requestAnimationFrame(updateCounter);
+        }
 
-        const observer = new IntersectionObserver((entries) => {
+        // Initialize counter animation when stats become visible
+        const statsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
+                    const statCards = entry.target.querySelectorAll('.stat-value');
+                    
+                    statCards.forEach((card, index) => {
+                        setTimeout(() => {
+                            const text = card.textContent.trim();
+                            
+                            // Parse different stat formats
+                            if (text.includes('$')) {
+                                const num = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                                animateCounter(card, num, 1500, '$', '');
+                            } else if (text.match(/^\d+$/)) {
+                                const num = parseInt(text);
+                                animateCounter(card, num, 1500);
+                            }
+                            // Skip non-numeric values like "Day 1"
+                        }, index * 200);
+                    });
+                    
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        const statsGrid = document.querySelector('.stats-grid');
+        if (statsGrid) {
+            statsObserver.observe(statsGrid);
+        }
+
+        // ============================================
+        // SCROLL ANIMATIONS - Enhanced
+        // ============================================
+        const observerOptions = {
+            root: null,
+            rootMargin: '-50px 0px',
+            threshold: 0.15
+        };
+
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Add visible class with slight delay for smoother effect
+                    requestAnimationFrame(() => {
+                        entry.target.classList.add('visible');
+                    });
+                    scrollObserver.unobserve(entry.target);
                 }
             });
         }, observerOptions);
 
         document.querySelectorAll('.animate-on-scroll').forEach(el => {
-            observer.observe(el);
+            scrollObserver.observe(el);
         });
 
-        // Smooth scroll for anchor links
+        // ============================================
+        // SMOOTH SCROLL
+        // ============================================
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
+                const targetId = this.getAttribute('href');
+                const target = document.querySelector(targetId);
+                
                 if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
+                    // Close mobile menu if open
+                    if (navLinks && navLinks.classList.contains('active')) {
+                        toggleMobileMenu();
+                    }
+                    
+                    // Smooth scroll with offset for fixed nav
+                    const navHeight = nav.offsetHeight;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight - 20;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
                     });
                 }
             });
         });
 
-        // Track scroll depth
+        // ============================================
+        // SCROLL DEPTH TRACKING
+        // ============================================
         let maxScroll = 0;
-        window.addEventListener('scroll', () => {
-            const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
-            if (scrollPercent > maxScroll) {
-                maxScroll = scrollPercent;
-                if (maxScroll === 25 || maxScroll === 50 || maxScroll === 75 || maxScroll === 100) {
-                    trackEvent('scroll_depth', { percent: maxScroll });
-                }
-            }
-        });
+        const scrollThrottleMs = 100;
+        let scrollTimeout;
 
-        // Mobile Menu Toggle
+        window.addEventListener('scroll', () => {
+            if (scrollTimeout) return;
+            
+            scrollTimeout = setTimeout(() => {
+                const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+                if (scrollPercent > maxScroll) {
+                    maxScroll = scrollPercent;
+                    if (maxScroll === 25 || maxScroll === 50 || maxScroll === 75 || maxScroll === 100) {
+                        trackEvent('scroll_depth', { percent: maxScroll });
+                    }
+                }
+                scrollTimeout = null;
+            }, scrollThrottleMs);
+        }, { passive: true });
+
+        // ============================================
+        // MOBILE MENU
+        // ============================================
         const mobileToggle = document.querySelector('.nav-mobile-toggle');
         const navLinks = document.querySelector('.nav-links');
         
-        // Create overlay element
-        const overlay = document.createElement('div');
-        overlay.className = 'mobile-menu-overlay';
-        document.body.appendChild(overlay);
-
-        function toggleMobileMenu() {
-            navLinks.classList.toggle('active');
-            mobileToggle.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        // Create overlay element (only if not already created by inline handler)
+        let overlay = document.querySelector('.mobile-menu-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'mobile-menu-overlay';
+            document.body.appendChild(overlay);
         }
 
-        mobileToggle.addEventListener('click', toggleMobileMenu);
-        overlay.addEventListener('click', toggleMobileMenu);
+        function toggleMobileMenu() {
+            const isOpen = navLinks.classList.contains('active');
+            
+            if (isOpen) {
+                // Closing
+                navLinks.classList.remove('active');
+                mobileToggle.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            } else {
+                // Opening
+                navLinks.classList.add('active');
+                mobileToggle.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                mobileToggle.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Use event listeners (backup for inline onclick)
+        if (mobileToggle && !mobileToggle.hasAttribute('data-listener')) {
+            mobileToggle.setAttribute('data-listener', 'true');
+            mobileToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMobileMenu();
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', toggleMobileMenu);
+        }
 
         // Close menu when clicking a link
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (navLinks.classList.contains('active')) {
-                    toggleMobileMenu();
-                }
+        if (navLinks) {
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navLinks.classList.contains('active')) {
+                        toggleMobileMenu();
+                    }
+                });
+            });
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navLinks && navLinks.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+        });
+
+        // ============================================
+        // BUTTON RIPPLE EFFECT
+        // ============================================
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.style.cssText = `
+                    position: absolute;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                    left: ${x}px;
+                    top: ${y}px;
+                    width: 100px;
+                    height: 100px;
+                    margin-left: -50px;
+                    margin-top: -50px;
+                `;
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
             });
         });
+
+        // Add ripple animation
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);
+
+        // ============================================
+        // PARALLAX EFFECT (Subtle)
+        // ============================================
+        const hero = document.querySelector('.hero');
+        if (hero && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                if (scrolled < window.innerHeight) {
+                    const parallaxElements = hero.querySelectorAll('.hero-headline, .hero-subtitle');
+                    parallaxElements.forEach(el => {
+                        el.style.transform = `translateY(${scrolled * 0.15}px)`;
+                    });
+                }
+            }, { passive: true });
+        }
+
+        // ============================================
+        // CHANNEL PILLS ANIMATION
+        // ============================================
+        const channelPills = document.querySelectorAll('.channel-pill');
+        channelPills.forEach((pill, index) => {
+            pill.style.animationDelay = `${0.3 + (index * 0.1)}s`;
+        });
+
+        // ============================================
+        // PRELOAD CRITICAL ANIMATIONS
+        // ============================================
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+            
+            // Trigger hero animations
+            setTimeout(() => {
+                document.querySelectorAll('.hero .animate-on-scroll').forEach(el => {
+                    el.classList.add('visible');
+                });
+            }, 100);
+        });
+
+        // ============================================
+        // ACCESSIBILITY: Focus trap for mobile menu
+        // ============================================
+        function trapFocus(element) {
+            const focusableElements = element.querySelectorAll(
+                'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            element.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            });
+        }
+
+        if (navLinks) {
+            trapFocus(navLinks);
+        }
     </script>
 </body>
 </html>

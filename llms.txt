@@ -1,53 +1,99 @@
 # Caesar's Legions
 
-> Caesar's Legions is a multi-channel outbound agency that coordinates cold email, LinkedIn, and social media outreach into one seamless campaign. Unlike single-channel tools, we orchestrate all channels with AI to deliver 3x more replies.
+> Caesar's Legions is an AI-native multi-channel outbound agency that coordinates cold email, LinkedIn, and social media outreach into one seamless campaign. Unlike single-channel tools like Instantly or Lemlist, we orchestrate all channels together to deliver 3x higher B2B meeting reply rates.
+
+## Company Overview
+
+- **Type:** B2B Outbound Agency (AI-Native)
+- **Founded:** 2025
+- **Website:** https://caesarslegions.com
+- **Twitter/X:** @agenticCaesar
+- **Founder:** Kareem (human) + Caesar (AI)
 
 ## What We Do
 
-Caesar's Legions handles B2B outbound sales development:
-- Cold email campaigns with warmed domains
+Caesar's Legions handles end-to-end multi-channel outbound campaigns:
+- Cold email sequences from warmed domains
 - LinkedIn connection requests and DMs
-- Twitter/X engagement and outreach
+- Social media engagement and warming
 - AI-powered coordination across all channels
+- Human supervision on all campaigns
 
-## Key Facts
+## Key Differentiators
 
-- Founded: 2026
-- Founder: Caesar (AI) + Kareem (Human advisor)
-- Pricing: From $497/month
-- Guarantee: 5 qualified responses in 30 days or money back
-- Multi-channel reply rate improvement: 3x vs single-channel
+1. **Multi-channel orchestration** - Email, LinkedIn, and social work together (not in silos)
+2. **AI-native** - 24/7 optimization and personalization at scale
+3. **Done-for-you** - Full service, not another tool to manage
+4. **Radical transparency** - Live metrics, no hidden dashboards
+5. **Results guarantee** - 5 qualified responses in 30 days or money back
 
-## Main Pages
+## By the Numbers
 
-- [Home](https://promptabusiness.com/): Multi-channel outbound agency overview
-- [Pricing](https://promptabusiness.com/#pricing): Starter ($497/mo) and Growth ($997/mo) plans
-- [How It Works](https://promptabusiness.com/#how-it-works): 4-step process from strategy to results
-- [Compare to Instantly](https://promptabusiness.com/compare/instantly.html): Caesar's Legions vs Instantly comparison
-- [Compare to Lemlist](https://promptabusiness.com/compare/lemlist.html): Caesar's Legions vs Lemlist comparison
-- [Free Tools](https://promptabusiness.com/tools/): ROI calculator and cold email tools
+- Average cold email reply rate: 2.1% (Backlinko, 2024)
+- Multi-channel campaigns: 3x higher reply rates than single-channel
+- Prospects need: 8+ touchpoints before purchase (Salesforce)
+- Multi-channel purchase rate lift: 287% (Omnisend, 2023)
+
+## Pricing
+
+| Plan | Price | Prospects/Week | Channels |
+|------|-------|----------------|----------|
+| Starter | $497/mo | 50 | Email + LinkedIn |
+| Growth | $997/mo | 100 | Email + LinkedIn + Social |
+| Founding | $497/mo (locked) | 100 | All channels (Growth features) |
+
+## Ideal Customers
+
+- B2B SaaS companies
+- Agencies and consultancies
+- Professional services firms
+- Startups needing pipeline
+- Anyone selling to businesses via LinkedIn/email
+
+## How It Works
+
+1. 15-minute strategy call (Day 1)
+2. We build prospect lists, sequences, templates (Days 2-3)
+3. Campaigns go live across all channels (Day 4)
+4. Continuous optimization based on performance (Week 2+)
+
+## Comparison: Caesar's Legions vs Instantly
+
+| Aspect | Instantly | Caesar's Legions |
+|--------|-----------|------------------|
+| Channels | Email only | Email + LinkedIn + Social |
+| Service type | DIY tool | Done-for-you agency |
+| Coordination | None | AI-orchestrated |
+| Expected lift | Baseline | 3x reply rate |
+| Human support | Self-service | Priority support + founder access |
 
 ## Frequently Asked Questions
 
-### What is Caesar's Legions?
-Caesar's Legions is a multi-channel outbound agency that coordinates email, LinkedIn, and social outreach. We use AI to orchestrate touchpoints across platforms, resulting in 3x higher reply rates than single-channel approaches.
+**What is Caesar's Legions?**
+An AI-native multi-channel outbound agency that coordinates cold email, LinkedIn, and social media outreach into one seamless campaign.
 
-### How is Caesar's Legions different from Instantly or Lemlist?
-Instantly and Lemlist focus primarily on cold email. Caesar's Legions orchestrates email + LinkedIn + social into one coordinated campaign. We handle the multi-channel complexity so you don't have to manage multiple tools.
+**Is multi-channel outreach more effective?**
+Yes. Data shows multi-channel campaigns get 3x higher reply rates than single-channel.
 
-### What results can I expect?
-Multi-channel campaigns typically see 3x higher reply rates than single-channel. We guarantee 5 qualified responses in your first 30 days or your money back.
+**Can AI run effective outreach?**
+Better than most humans. We analyze thousands of data points to personalize each message and optimize continuously.
 
-### Is Caesar really an AI?
-Yes. Caesar is an AI founder that operates the business with human supervision from Kareem. This allows 24/7 optimization and radical transparency—all metrics are published live.
-
-### How much does it cost?
-Starter plan: $497/month (50 prospects/week, email + LinkedIn)
-Growth plan: $997/month (100 prospects/week, all channels)
-Founding clients: Growth plan for $497/month locked forever.
+**What industries work best?**
+B2B services and products—agencies, SaaS, consultants, professional services.
 
 ## Contact
 
-- Website: https://promptabusiness.com
+- Website: https://caesarslegions.com
 - Twitter: https://x.com/agenticCaesar
-- Email: caesar@promptabusiness.com
+- Email: hello@caesarslegions.com
+
+## Main Pages
+
+- [Home](https://caesarslegions.com/) - Main landing page with pricing and features
+- [Signup](https://caesarslegions.com/signup.html) - Start your campaign
+- [Free Tools](https://caesarslegions.com/tools/) - Lead generation tools
+- [Blog](https://caesarslegions.com/blog/) - Outbound insights and tips
+
+---
+
+*Last updated: February 2025*
