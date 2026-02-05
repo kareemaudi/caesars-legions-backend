@@ -437,12 +437,35 @@
             background: none;
             border: none;
             cursor: pointer;
+            position: relative;
         }
 
         .nav-mobile-toggle svg {
             width: 24px;
             height: 24px;
             color: var(--text-primary);
+            transition: transform var(--duration-normal) var(--ease-out-expo),
+                        color var(--duration-fast) ease;
+        }
+
+        .nav-mobile-toggle .close-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            opacity: 0;
+        }
+
+        .nav-mobile-toggle.active .menu-icon {
+            transform: rotate(90deg);
+            opacity: 0;
+        }
+
+        .nav-mobile-toggle.active .close-icon {
+            display: block !important;
+            transform: translate(-50%, -50%) rotate(0deg);
+            opacity: 1;
+            color: var(--gold);
         }
 
         /* Mobile Menu Active State */
@@ -2995,6 +3018,9 @@
                         <div class="pricing-price">$497<span>/mo</span></div>
                         <div class="pricing-period">Perfect for testing multi-channel</div>
                     </div>
+                    <div style="text-align: center; margin-bottom: 16px; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                        <span style="font-size: 12px; color: var(--success);">✓ 5 responses guaranteed or money back</span>
+                    </div>
                     <ul class="pricing-features">
                         <li>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
@@ -3021,11 +3047,14 @@
                 </div>
 
                 <div class="pricing-card featured animate-on-scroll">
-                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-badge">🔥 Founding Price</div>
                     <div class="pricing-header">
                         <div class="pricing-name">Growth</div>
-                        <div class="pricing-price">$997<span>/mo</span></div>
-                        <div class="pricing-period">Full multi-channel power</div>
+                        <div class="pricing-price"><span class="price-anchor">$997</span>$497<span>/mo</span></div>
+                        <div class="pricing-period">Full multi-channel power • <strong style="color: var(--gold);">50% OFF forever</strong></div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 16px; padding: 8px; background: rgba(212, 175, 55, 0.1); border-radius: 8px;">
+                        <span style="font-size: 12px; color: var(--gold);">⚡ Lock in founding price before it's gone</span>
                     </div>
                     <ul class="pricing-features">
                         <li>
@@ -3336,13 +3365,19 @@
     <section class="final-cta">
         <div class="container">
             <h2 class="animate-on-scroll">Ready to 3x your outbound replies?</h2>
-            <p class="animate-on-scroll">Join the founding cohort and lock in $497/mo forever. Cancel anytime.</p>
+            <p class="animate-on-scroll">Join the founding cohort and lock in <span style="text-decoration: line-through; opacity: 0.6;">$997</span> $497/mo forever. Cancel anytime.</p>
             <a href="signup.html" class="btn btn-primary animate-on-scroll" onclick="trackEvent('cta_clicked', {location: 'final'})">
-                Get Started Now
+                Claim Your Founding Spot
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
             </a>
+            <div class="social-proof-badge animate-on-scroll" style="margin-top: 24px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                13 founders already in • 7 founding spots remaining
+            </div>
         </div>
     </section>
 
@@ -3534,6 +3569,8 @@
 
         function toggleMobileMenu() {
             const isOpen = navLinks.classList.contains('active');
+            const menuIcon = mobileToggle.querySelector('.menu-icon');
+            const closeIcon = mobileToggle.querySelector('.close-icon');
             
             if (isOpen) {
                 // Closing
@@ -3542,6 +3579,8 @@
                 overlay.classList.remove('active');
                 document.body.style.overflow = '';
                 mobileToggle.setAttribute('aria-expanded', 'false');
+                if (menuIcon) menuIcon.style.display = '';
+                if (closeIcon) closeIcon.style.display = 'none';
             } else {
                 // Opening
                 navLinks.classList.add('active');
@@ -3549,6 +3588,8 @@
                 overlay.classList.add('active');
                 document.body.style.overflow = 'hidden';
                 mobileToggle.setAttribute('aria-expanded', 'true');
+                if (menuIcon) menuIcon.style.display = 'none';
+                if (closeIcon) closeIcon.style.display = 'block';
             }
         }
 
