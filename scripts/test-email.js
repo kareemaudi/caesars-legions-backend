@@ -7,13 +7,14 @@ require('dotenv').config();
 const EmailSender = require('../lib/email-sender');
 
 async function testSend() {
-  // Override with Railway env vars for local testing
-  process.env.SMTP_HOST = process.env.SMTP_HOST || 'smtp.zoho.com';
-  process.env.SMTP_PORT = process.env.SMTP_PORT || '587';
-  process.env.SMTP_USER = process.env.SMTP_USER || 'Caesar@cmonkeytribe.com';
-  process.env.SMTP_PASS = process.env.SMTP_PASS || 'T&-8VrU33t%AXvw';
-  process.env.CAESAR_EMAIL = process.env.CAESAR_EMAIL || 'Caesar@cmonkeytribe.com';
-  process.env.FROM_NAME = process.env.FROM_NAME || 'Caesar - Caesars Legions';
+  // Validate required env vars
+  const required = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'];
+  const missing = required.filter(k => !process.env[k]);
+  if (missing.length) {
+    console.error('❌ Missing required env vars:', missing.join(', '));
+    console.error('Set these in your .env file or Railway environment.');
+    process.exit(1);
+  }
   
   const sender = new EmailSender();
   
