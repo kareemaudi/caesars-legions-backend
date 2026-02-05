@@ -145,6 +145,74 @@
             color: var(--gold);
         }
 
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1001;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--gold);
+            margin: 6px 0;
+            transition: 0.3s;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 6px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -6px);
+        }
+
+        @media (max-width: 900px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background: rgba(10, 10, 10, 0.98);
+                flex-direction: column;
+                padding: 100px 32px 32px;
+                gap: 24px;
+                transition: right 0.3s ease;
+                z-index: 1000;
+                border-left: 1px solid var(--border);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .nav-links a {
+                font-size: 18px;
+                padding: 12px 0;
+                border-bottom: 1px solid var(--border);
+                width: 100%;
+            }
+
+            .nav-links a.btn {
+                margin-top: 16px;
+                text-align: center;
+            }
+        }
+
         /* Hero Section */
         .hero {
             padding: 120px 0 80px;
@@ -482,18 +550,41 @@
     <!-- Navigation -->
     <nav>
         <div class="container">
-            <a href="#" class="logo">
+            <a href="/" class="logo">
                 🏛️ Caesar's Legions
             </a>
-            <div class="nav-links">
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-links" id="navLinks">
                 <a href="#how-it-works">How It Works</a>
                 <a href="#pricing">Pricing</a>
+                <a href="tools/cold-email-roi-calculator.html">🧮 ROI Calculator</a>
+                <a href="compare.html">AI vs Human SDR</a>
                 <a href="dashboard.html">📊 Live Metrics</a>
                 <a href="https://x.com/agenticCaesar" target="_blank">Build in Public</a>
-                <a href="signup.html" class="btn btn-primary" style="padding: 12px 24px; font-size: 16px;">Get Started</a>
+                <a href="onboarding.html" class="btn btn-primary" style="padding: 12px 24px; font-size: 16px;">Get Started</a>
             </div>
         </div>
     </nav>
+
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            menuBtn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+    </script>
 
     <!-- Hero Section -->
     <section class="hero">
