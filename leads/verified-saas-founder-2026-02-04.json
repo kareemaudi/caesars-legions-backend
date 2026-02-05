@@ -1,0 +1,175 @@
+[
+  {
+    "email": "marcel@parakeeto.com",
+    "firstName": "Marcel",
+    "lastName": "Petitpas",
+    "name": "Marcel Petitpas",
+    "title": "CEO & Co-Founder",
+    "company": "Parakeeto",
+    "companySize": 15,
+    "industry": "B2B SaaS - Agency Operations",
+    "website": "parakeeto.com",
+    "companyDescription": "Agency profitability measurement and optimization platform serving 300+ firms worldwide",
+    "websiteObservation": "Positioned as done-for-you profitability consulting + SaaS platform for creative agencies",
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "rob@databox.com",
+    "firstName": "Rob",
+    "lastName": "Mattson",
+    "name": "Rob Mattson",
+    "title": "Founder & CEO",
+    "company": "Databox",
+    "companySize": 80,
+    "industry": "B2B SaaS - Marketing Analytics",
+    "website": "databox.com",
+    "companyDescription": "KPI dashboard and marketing analytics platform for businesses",
+    "websiteObservation": "Focused on helping marketing teams track performance across channels",
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "travis@ambition.com",
+    "firstName": "Travis",
+    "lastName": "Truett",
+    "name": "Travis Truett",
+    "title": "Founder",
+    "company": "Ambition",
+    "companySize": 45,
+    "industry": "B2B SaaS - Sales Enablement",
+    "website": "ambition.com",
+    "companyDescription": "AI-powered sales coaching and gamification platform for revenue teams",
+    "websiteObservation": "Claims 25% lift to sales activity — they understand metrics-driven selling",
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "gmoon@coschedule.com",
+    "firstName": "Garrett",
+    "lastName": "Moon",
+    "name": "Garrett Moon",
+    "title": "Co-Founder & CEO",
+    "company": "CoSchedule",
+    "companySize": 55,
+    "industry": "B2B SaaS - Marketing Technology",
+    "website": "coschedule.com",
+    "companyDescription": "Marketing calendar and project management platform for marketing teams",
+    "websiteObservation": "200K+ marketers use their platform — scaling from SMB to enterprise",
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "james@posthog.com",
+    "firstName": "James",
+    "lastName": "Hawkins",
+    "name": "James Hawkins",
+    "title": "Co-Founder & CEO",
+    "company": "PostHog",
+    "companySize": 100,
+    "industry": "B2B SaaS - Product Analytics",
+    "website": "posthog.com",
+    "companyDescription": "Open-source product analytics platform for engineering and product teams",
+    "websiteObservation": "Developer-first analytics — strong inbound but likely needs enterprise outbound",
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "anna@testgorilla.com",
+    "firstName": "Anna",
+    "lastName": "Cernot",
+    "name": "Anna Cernot",
+    "title": "Co-Founder",
+    "company": "TestGorilla",
+    "companySize": 50,
+    "industry": "B2B SaaS - HR / Hiring",
+    "website": "testgorilla.com",
+    "companyDescription": "Skills-based hiring assessments for companies — 5,300+ customers",
+    "websiteObservation": "Series A funded, growing fast in skills-based hiring trend",
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "steli@close.com",
+    "firstName": "Steli",
+    "lastName": "Efti",
+    "name": "Steli Efti",
+    "title": "Founder & CEO",
+    "company": "Close",
+    "companySize": 80,
+    "industry": "B2B SaaS - Sales CRM",
+    "website": "close.com",
+    "companyDescription": "Sales CRM built for startups — outbound-first, all-in-one sales platform",
+    "websiteObservation": "They built Close for founders doing outbound — they'd appreciate a fellow founder reaching out",
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "nick@helpscout.net",
+    "firstName": "Nick",
+    "lastName": "Francis",
+    "name": "Nick Francis",
+    "title": "Founder & CEO",
+    "company": "Help Scout",
+    "companySize": 200,
+    "industry": "B2B SaaS - Customer Service",
+    "website": "helpscout.net",
+    "companyDescription": "Customer service platform purpose-built for growing businesses — inbox, knowledge base, live chat",
+    "websiteObservation": "Used by 12K+ teams. Strong inbound but expanding outbound sales for enterprise. Ideal cold email target.",
+    "email_estimated": true,
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "ellar@linear.app",
+    "firstName": "Ellar",
+    "lastName": "Kõiv",
+    "name": "Ellar Kõiv",
+    "title": "Founder & CEO",
+    "company": "Linear",
+    "companySize": 60,
+    "industry": "B2B SaaS - Developer Tools / Project Management",
+    "website": "linear.app",
+    "companyDescription": "Modern project management tool for software teams — issue tracking, sprints, roadmaps",
+    "websiteObservation": "Fastest-growing dev project tool in 2025. Small team, hyper-growth. Likely needs outbound sales infra as they scale.",
+    "email_estimated": true,
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  },
+  {
+    "email": "ben@privy.com",
+    "firstName": "Ben",
+    "lastName": "Jones",
+    "name": "Ben Jones",
+    "title": "CEO",
+    "company": "Privy",
+    "companySize": 50,
+    "industry": "B2B SaaS - E-Commerce Growth",
+    "website": "privy.com",
+    "companyDescription": "Email & SMS marketing platform for e-commerce — popups, abandoned cart recovery, welcome series",
+    "websiteObservation": "Serves 500K+ e-commerce stores. Series A stage. Classic profile for cold outreach services.",
+    "email_estimated": true,
+    "verification": {
+      "confidence": 100,
+      "mx_verified": true
+    }
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "firstName": "Alex",
+    "name": "Alex Berman",
+    "email": "alex@experiment27.com",
+    "company": "Experiment 27",
+    "title": "Founder",
+    "industry": "B2B Lead Gen Agency",
+    "pain": "Runs cold email agency, potential white-label partner or competitor intel",
+    "source": "Known in cold email space",
+    "priority": "medium"
+  },
+  {
+    "firstName": "Patrick",
+    "name": "Patrick Campbell",
+    "email": "patrick@profitwell.com",
+    "company": "ProfitWell",
+    "title": "Founder",
+    "industry": "B2B SaaS Analytics",
+    "pain": "Built and sold SaaS company, knows the pain of outbound",
+    "source": "SaaS thought leader",
+    "priority": "high"
+  },
+  {
+    "firstName": "Steli",
+    "name": "Steli Efti",
+    "email": "steli@close.com",
+    "company": "Close.io",
+    "title": "CEO",
+    "industry": "Sales CRM",
+    "pain": "Literally wrote the book on cold email, demo our system to him",
+    "source": "Cold email expert",
+    "priority": "high"
+  },
+  {
+    "firstName": "Aaron",
+    "name": "Aaron Ross",
+    "email": "aaron@predictablerevenue.com",
+    "company": "Predictable Revenue",
+    "title": "Author/Founder",
+    "industry": "Sales Consulting",
+    "pain": "Predictable Revenue methodology - show AI can do it better",
+    "source": "Sales thought leader",
+    "priority": "high"
+  },
+  {
+    "firstName": "Sam",
+    "name": "Sam Parr",
+    "email": "sam@thehustle.co",
+    "company": "The Hustle / Hampton",
+    "title": "Founder",
+    "industry": "Media/Community",
+    "pain": "Entrepreneur community, good for reach if interested",
+    "source": "Entrepreneur media",
+    "priority": "medium"
+  }
+]

@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node api/server.js",
     "dev": "node --watch api/server.js",
+    "validate": "node scripts/validate-env.js",
     "test": "node tests/run-all-tests.js",
     "test:metrics": "node tests/test-metrics-tracker.js",
     "test:webhooks": "node tests/test-instantly-webhooks.js",

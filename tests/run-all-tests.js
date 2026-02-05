@@ -22,6 +22,7 @@ const TEST_FILES = [
   'test-instantly-webhooks.js',
   'test-ab-testing.js',
   'test-webhooks.js',
+  'test-email-verifier.js',
   // 'test-signup-flow.js',  // Requires Stripe keys
   // 'follow-ups.test.js',    // May need setup
   // 'x-lead-scraper.test.js' // Requires network
