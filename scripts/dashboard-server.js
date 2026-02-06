@@ -81,6 +81,45 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
+// Lead tracking endpoint (for signup form before payment)
+app.post('/api/leads', async (req, res) => {
+  try {
+    const { name, email, company, website, pain_point, target_audience } = req.body;
+    
+    // Log the lead
+    console.log(`📥 New lead: ${email} (${company})`);
+    
+    // Store in leads.json (simple file-based storage)
+    const fs = require('fs');
+    const leadsFile = './data/leads.json';
+    let leads = [];
+    try {
+      leads = JSON.parse(fs.readFileSync(leadsFile, 'utf8'));
+    } catch (e) {
+      // File doesn't exist yet
+    }
+    
+    leads.push({
+      name,
+      email,
+      company,
+      website,
+      pain_point,
+      target_audience,
+      source: 'signup_form',
+      timestamp: new Date().toISOString()
+    });
+    
+    fs.mkdirSync('./data', { recursive: true });
+    fs.writeFileSync(leadsFile, JSON.stringify(leads, null, 2));
+    
+    res.json({ success: true, message: 'Lead captured' });
+  } catch (error) {
+    console.error('Lead capture error:', error.message);
+    res.json({ success: true }); // Don't block user flow
+  }
+});
+
 // Dashboard API - New modern dashboard data endpoint
 app.get('/api/dashboard/:clientId', async (req, res) => {
   try {
