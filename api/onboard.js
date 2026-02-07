@@ -9,7 +9,12 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 // Encryption for storing credentials
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+// SECURITY: Require encryption key from environment - never generate random fallback
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 64) {
+  console.error('❌ ENCRYPTION_KEY must be set in .env (64 hex characters)');
+  console.error('   Generate with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+}
 const IV_LENGTH = 16;
 
 function encrypt(text) {
@@ -183,10 +188,15 @@ async function verifyEmailCredentials(emailConfig) {
 
 // Main handler
 async function handleOnboarding(req, res) {
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // CORS - restricted to allowed origins
+    const allowedOrigins = ['https://caesarslegions.ai', 'https://promptabusiness.com', process.env.BASE_URL];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     if (req.method === 'OPTIONS') {
         res.status(200).end();

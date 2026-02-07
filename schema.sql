@@ -8,8 +8,15 @@ CREATE TABLE IF NOT EXISTS clients (
   target_audience TEXT, -- Who they want to reach
   value_prop TEXT, -- Their unique value proposition
   website TEXT,
-  status TEXT DEFAULT 'active', -- active, paused, churned
+  status TEXT DEFAULT 'active', -- active, paused, churned, pending
   monthly_quota INTEGER DEFAULT 100, -- emails per week * 4
+  plan TEXT DEFAULT 'early_bird',
+  price INTEGER DEFAULT 250,
+  onboarding_data TEXT, -- JSON with pain_point, target_audience, etc.
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
+  activated_at INTEGER,
+  next_billing_date INTEGER,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 

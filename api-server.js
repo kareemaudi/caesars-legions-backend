@@ -5,9 +5,24 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS - allow public access
+// CORS - restrict to allowed domains
+const ALLOWED_ORIGINS = [
+  'https://caesarslegions.ai',
+  'https://promptabusiness.com',
+  'https://www.promptabusiness.com',
+  process.env.BASE_URL || 'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-  origin: '*'
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS not allowed'), false);
+  },
+  credentials: true
 }));
 
 app.use(express.json());

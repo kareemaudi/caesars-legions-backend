@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const express = require('express');
+const crypto = require('crypto');
 const db = require('../lib/db');
 const webhookHandler = require('../lib/webhook-handler');
 const unsubscribeHandler = require('../lib/unsubscribe');
@@ -8,14 +9,151 @@ const stripeIntegration = require('../lib/stripe-integration');
 const signupHandler = require('../lib/signup-handler');
 const dashboardApi = require('../lib/dashboard-api');
 
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(express.json());
+// =============================================================================
+// SECURITY MIDDLEWARE
+// =============================================================================
+
+// Rate limiting (simple in-memory, use Redis in production)
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX = 100; // 100 requests per minute
+
+function rateLimit(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW;
+  
+  if (!rateLimitStore.has(ip)) {
+    rateLimitStore.set(ip, []);
+  }
+  
+  const requests = rateLimitStore.get(ip).filter(time => time > windowStart);
+  requests.push(now);
+  rateLimitStore.set(ip, requests);
+  
+  if (requests.length > RATE_LIMIT_MAX) {
+    return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+  }
+  
+  next();
+}
+
+// Security headers
+function securityHeaders(req, res, next) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+}
+
+// Simple token-based auth for dashboard
+// Tokens are generated per client and stored in db
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const tokenParam = req.query.token;
+  const token = authHeader?.replace('Bearer ', '') || tokenParam;
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  // Validate token format (should be clientId:hash)
+  const [clientId, hash] = (token || '').split(':');
+  if (!clientId || !hash) {
+    return res.status(401).json({ error: 'Invalid token format' });
+  }
+  
+  const client = db.getClient(parseInt(clientId));
+  if (!client) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  
+  // Verify hash (simple HMAC of clientId + email)
+  const secret = process.env.DASHBOARD_SECRET || 'change-this-in-production';
+  const expectedHash = crypto.createHmac('sha256', secret)
+    .update(`${clientId}:${client.email}`)
+    .digest('hex')
+    .slice(0, 32);
+  
+  if (hash !== expectedHash) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  
+  req.client = client;
+  req.clientId = parseInt(clientId);
+  next();
+}
+
+// Generate dashboard token for a client
+function generateDashboardToken(clientId, email) {
+  const secret = process.env.DASHBOARD_SECRET || 'change-this-in-production';
+  const hash = crypto.createHmac('sha256', secret)
+    .update(`${clientId}:${email}`)
+    .digest('hex')
+    .slice(0, 32);
+  return `${clientId}:${hash}`;
+}
+
+// Input validation helper
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// =============================================================================
+// CORS CONFIGURATION
+// =============================================================================
+const ALLOWED_ORIGINS = [
+  'https://caesarslegions.ai',
+  'https://promptabusiness.com',
+  'https://www.promptabusiness.com',
+  process.env.BASE_URL
+].filter(Boolean);
+
+function corsMiddleware(req, res, next) {
+  const origin = req.headers.origin;
+  if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+}
+
+// Apply global middleware
+app.use(rateLimit);
+app.use(securityHeaders);
+app.use(corsMiddleware);
+app.use(express.json({ limit: '10kb' })); // Limit body size
 
 // Serve static files (signup page)
 app.use(express.static('public'));
+
+// Export for use in other modules
+module.exports.generateDashboardToken = generateDashboardToken;
+module.exports.escapeHtml = escapeHtml;
 
 // Health check endpoint (for Railway)
 app.get('/health', (req, res) => {
@@ -28,48 +166,61 @@ app.use('/webhooks', webhookHandler);
 // Unsubscribe routes
 app.use('/unsubscribe', unsubscribeHandler.router);
 
-// Stripe webhook endpoint (before express.json middleware for raw body)
-app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  
+// MontyPay webhook endpoint (payment confirmations)
+app.post('/webhooks/payment', express.json(), async (req, res) => {
   try {
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    const event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-    
-    console.log(`[Stripe Webhook] ${event.type}`);
-    
-    switch (event.type) {
-      case 'checkout.session.completed':
-        // Use new signup handler for payment success
-        await signupHandler.handlePaymentSuccess(event.data.object);
-        break;
-      
-      case 'invoice.payment_failed':
-        await stripeIntegration.handlePaymentFailed(event.data.object);
-        break;
-      
-      case 'customer.subscription.deleted':
-        // Handle subscription cancellation
-        const subscription = event.data.object;
-        console.log(`Subscription cancelled: ${subscription.id}`);
-        break;
-    }
-    
-    res.json({ received: true });
+    const { handleMontyPayWebhook } = require('../lib/payment-handler');
+    await handleMontyPayWebhook(req, res);
   } catch (error) {
-    console.error('Stripe webhook error:', error.message);
+    console.error('Payment webhook error:', error.message);
     res.status(400).send(`Webhook Error: ${error.message}`);
   }
 });
 
-// Signup API - Handles new client signups
+// Manual payment confirmation endpoint (for Bitcoin or manual verification)
+app.post('/api/confirm-payment', authMiddleware, async (req, res) => {
+  try {
+    const { clientId, paymentMethod, transactionId, amount } = req.body;
+    const { confirmPayment } = require('../lib/payment-handler');
+    
+    const result = await confirmPayment({ clientId, paymentMethod, transactionId, amount });
+    res.json(result);
+  } catch (error) {
+    console.error('Payment confirmation error:', error.message);
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Signup API - Handles new client signups (with input validation)
 app.post('/api/signup', async (req, res) => {
   try {
-    const result = await signupHandler.handleSignup(req.body);
+    const { name, email, company, website, pain_point, target_audience } = req.body;
+    
+    // Input validation
+    if (!name || typeof name !== 'string' || name.length < 2 || name.length > 100) {
+      return res.status(400).json({ success: false, error: 'Invalid name' });
+    }
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ success: false, error: 'Invalid email' });
+    }
+    if (!company || typeof company !== 'string' || company.length < 2 || company.length > 100) {
+      return res.status(400).json({ success: false, error: 'Invalid company name' });
+    }
+    if (!website || typeof website !== 'string' || !website.match(/^https?:\/\/.+/)) {
+      return res.status(400).json({ success: false, error: 'Invalid website URL' });
+    }
+    
+    // Sanitize inputs
+    const sanitized = {
+      name: escapeHtml(name.trim()),
+      email: email.toLowerCase().trim(),
+      company: escapeHtml(company.trim()),
+      website: website.trim(),
+      pain_point: escapeHtml((pain_point || '').slice(0, 500)),
+      target_audience: escapeHtml((target_audience || '').slice(0, 500))
+    };
+    
+    const result = await signupHandler.handleSignup(sanitized);
     
     res.json(result);
   } catch (error) {
@@ -81,13 +232,20 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-// Lead tracking endpoint (for signup form before payment)
+// Lead tracking endpoint (for signup form before payment) - with validation
 app.post('/api/leads', async (req, res) => {
   try {
     const { name, email, company, website, pain_point, target_audience } = req.body;
     
-    // Log the lead
-    console.log(`📥 New lead: ${email} (${company})`);
+    // Validate email at minimum
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ success: false, error: 'Invalid email' });
+    }
+    
+    // Log the lead (sanitized)
+    const safeEmail = email.toLowerCase().trim();
+    const safeCompany = escapeHtml((company || '').slice(0, 100));
+    console.log(`📥 New lead: ${safeEmail} (${safeCompany})`);
     
     // Store in leads.json (simple file-based storage)
     const fs = require('fs');
@@ -100,12 +258,12 @@ app.post('/api/leads', async (req, res) => {
     }
     
     leads.push({
-      name,
-      email,
-      company,
-      website,
-      pain_point,
-      target_audience,
+      name: escapeHtml((name || '').slice(0, 100)),
+      email: safeEmail,
+      company: safeCompany,
+      website: (website || '').slice(0, 200),
+      pain_point: escapeHtml((pain_point || '').slice(0, 500)),
+      target_audience: escapeHtml((target_audience || '').slice(0, 500)),
       source: 'signup_form',
       timestamp: new Date().toISOString()
     });
@@ -120,10 +278,16 @@ app.post('/api/leads', async (req, res) => {
   }
 });
 
-// Dashboard API - New modern dashboard data endpoint
-app.get('/api/dashboard/:clientId', async (req, res) => {
+// Dashboard API - New modern dashboard data endpoint (REQUIRES AUTH)
+app.get('/api/dashboard/:clientId', authMiddleware, async (req, res) => {
   try {
     const { clientId } = req.params;
+    
+    // Verify client can only access their own dashboard
+    if (parseInt(clientId) !== req.clientId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
     const data = await dashboardApi.getDashboardData(clientId);
     res.json(data);
   } catch (error) {
@@ -135,15 +299,17 @@ app.get('/api/dashboard/:clientId', async (req, res) => {
   }
 });
 
-// Serve dashboard for a client
-app.get('/dashboard/:clientId', (req, res) => {
+// Serve dashboard for a client (REQUIRES AUTH via token query param)
+app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
   const clientId = parseInt(req.params.clientId);
   
-  // Get client
-  const client = db.getClient(clientId);
-  if (!client) {
-    return res.status(404).send('Client not found');
+  // Verify client can only access their own dashboard
+  if (clientId !== req.clientId) {
+    return res.status(403).send('Access denied');
   }
+  
+  // Get client (already verified in authMiddleware)
+  const client = req.client;
   
   // Get stats
   const stats = db.getEmailStats(clientId);
@@ -162,12 +328,15 @@ app.get('/dashboard/:clientId', (req, res) => {
     ? ((stats.replied / stats.total_sent) * 100).toFixed(1)
     : 0;
   
-  // Render HTML dashboard
+  // Render HTML dashboard (with XSS protection)
+  const safeCompany = escapeHtml(client.company);
+  const safeName = escapeHtml(client.name);
+  
   res.send(`
     <!DOCTYPE html>
     <html>
     <head>
-      <title>${client.company} - Caesar's Legions Dashboard</title>
+      <title>${safeCompany} - Caesar's Legions Dashboard</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -271,7 +440,7 @@ app.get('/dashboard/:clientId', (req, res) => {
     <body>
       <div class="container">
         <h1>🏛️ Caesar's Legions</h1>
-        <div class="subtitle">${client.company} Campaign Dashboard</div>
+        <div class="subtitle">${safeCompany} Campaign Dashboard</div>
         
         <div class="stats">
           <div class="stat-card">
