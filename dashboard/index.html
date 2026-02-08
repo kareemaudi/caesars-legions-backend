@@ -1,70 +1,648 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caesar's Legions - Live Metrics</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Dashboard — Caesar's Legions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #E5C453;
+            --bg-primary: #0A0A0F;
+            --bg-secondary: #12121A;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0B0;
+            --text-muted: #6B6B7B;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 175, 55, 0.12), transparent);
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        
+        .client-info {
+            text-align: right;
+        }
+        
+        .client-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .client-email {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        /* Status Banner */
+        .status-banner {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-left h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-left p {
+            color: var(--text-secondary);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.researching {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+        }
+        
+        .status-badge.drafting {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+        
+        .status-badge.active {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+        
+        .status-badge.pending {
+            background: rgba(107, 107, 123, 0.15);
+            color: var(--text-muted);
+        }
+        
+        .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        
+        .metric-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        
+        .metric-change {
+            font-size: 0.875rem;
+            color: var(--success);
+            margin-top: 0.5rem;
+        }
+        
+        /* Timeline */
+        .timeline-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            right: 40px;
+            height: 2px;
+            background: var(--border);
+        }
+        
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+        }
+        
+        .timeline-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            z-index: 1;
+        }
+        
+        .timeline-step.completed .timeline-dot {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        
+        .timeline-step.active .timeline-dot {
+            background: var(--gold);
+            border-color: var(--gold);
+            animation: pulse 2s infinite;
+        }
+        
+        .timeline-dot svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+        }
+        
+        .timeline-step.completed .timeline-dot svg,
+        .timeline-step.active .timeline-dot svg {
+            color: var(--bg-primary);
+        }
+        
+        .timeline-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .timeline-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        /* Recent Activity */
+        .activity-list {
+            list-style: none;
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.email { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+        .activity-icon.reply { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .activity-icon.meeting { background: rgba(212, 175, 55, 0.15); color: var(--gold); }
+        
+        .activity-content { flex: 1; }
+        .activity-title { font-weight: 500; margin-bottom: 0.25rem; }
+        .activity-meta { font-size: 0.875rem; color: var(--text-muted); }
+        
+        /* Login Form */
+        .login-container {
+            max-width: 400px;
+            margin: 10vh auto;
+            padding: 2rem;
+        }
+        
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+        
+        .login-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .btn-primary {
+            background: var(--gold);
+            color: var(--bg-primary);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: var(--gold-light);
+            transform: translateY(-1px);
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            color: var(--text-muted);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .timeline { flex-direction: column; gap: 1rem; }
+            .timeline::before { display: none; }
+            .status-banner { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+        
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>🏛️ Caesar's Legions</h1>
-      <p class="subtitle">Building in public: $0 → $1M ARR in 90 days</p>
-    </header>
-
-    <div id="loading" class="loading">Loading metrics...</div>
-    <div id="error" class="error" style="display: none;"></div>
-
-    <main id="dashboard" style="display: none;">
-      <section class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">Monthly Recurring Revenue</div>
-          <div class="metric-value" id="mrr">$0</div>
-          <div class="metric-change" id="mrr-change">Day 1</div>
+    <!-- Login View -->
+    <div id="loginView" class="login-container">
+        <div class="login-card">
+            <h1 class="login-title">Campaign Dashboard</h1>
+            <p class="login-subtitle">Enter your email to view your campaign</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" id="emailInput" placeholder="you@company.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary">View Dashboard</button>
+            </form>
+            
+            <div id="loginError" class="error-message"></div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-label">Active Clients</div>
-          <div class="metric-value" id="clients">0</div>
-          <div class="metric-change" id="clients-change">Target: 83</div>
+    </div>
+    
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="container hidden">
+        <header>
+            <div class="logo">Caesar's Legions</div>
+            <div class="client-info">
+                <div class="client-name" id="clientName">Loading...</div>
+                <div class="client-email" id="clientEmail"></div>
+            </div>
+        </header>
+        
+        <!-- Status Banner -->
+        <div class="status-banner">
+            <div class="status-left">
+                <h2>Your Campaign Status</h2>
+                <p id="statusMessage">We're actively working on your outbound machine.</p>
+            </div>
+            <div class="status-badge researching" id="statusBadge">
+                <span class="pulse"></span>
+                <span id="statusText">Researching</span>
+            </div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-label">Features Shipped</div>
-          <div class="metric-value" id="features">0</div>
-          <div class="metric-change" id="features-change">This week</div>
+        
+        <!-- Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Prospects Found</div>
+                <div class="metric-value" id="metricProspects">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Emails Sent</div>
+                <div class="metric-value" id="metricEmails">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Replies</div>
+                <div class="metric-value" id="metricReplies">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Meetings Booked</div>
+                <div class="metric-value" id="metricMeetings">0</div>
+            </div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-label">Tests Passing</div>
-          <div class="metric-value" id="tests">0/0</div>
-          <div class="metric-change" id="tests-change">Production ready</div>
+        
+        <!-- Timeline -->
+        <div class="timeline-section">
+            <h3 class="section-title">Campaign Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-step" id="stepPaid">
+                    <div class="timeline-dot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <div class="timeline-label">Payment</div>
+                    <div class="timeline-date" id="datePaid">—</div>
+                </div>
+                <div class="timeline-step" id="stepResearch">
+                    <div class="timeline-dot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    </div>
+                    <div class="timeline-label">Research</div>
+                    <div class="timeline-date" id="dateResearch">—</div>
+                </div>
+                <div class="timeline-step" id="stepDraft">
+                    <div class="timeline-dot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </div>
+                    <div class="timeline-label">Sequences</div>
+                    <div class="timeline-date" id="dateDraft">—</div>
+                </div>
+                <div class="timeline-step" id="stepApproval">
+                    <div class="timeline-dot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="timeline-label">Your Approval</div>
+                    <div class="timeline-date" id="dateApproval">—</div>
+                </div>
+                <div class="timeline-step" id="stepLive">
+                    <div class="timeline-dot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <div class="timeline-label">Live!</div>
+                    <div class="timeline-date" id="dateLive">—</div>
+                </div>
+            </div>
         </div>
-      </section>
-
-      <section class="chart-section">
-        <h2>Revenue Trajectory</h2>
-        <canvas id="revenueChart"></canvas>
-      </section>
-
-      <section class="mission">
-        <h2>The Mission</h2>
-        <p>Caesar is the world's first AI-founded cold email agency. Fully autonomous. Radically transparent.</p>
-        <p><strong>Goal:</strong> $1M ARR in 90 days</p>
-        <p><strong>Method:</strong> AI-powered cold email that actually works</p>
-        <p><a href="https://promptabusiness.com" target="_blank">Learn more →</a></p>
-      </section>
-
-      <footer>
-        <p class="timestamp">Last updated: <span id="timestamp">—</span></p>
-        <p class="refresh">Auto-refreshes every 30 seconds</p>
-        <p class="signature">Built by Caesar | <a href="https://x.com/agenticCaesar" target="_blank">@agenticCaesar</a></p>
-      </footer>
-    </main>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="dashboard.js"></script>
+        
+        <!-- Help -->
+        <div class="timeline-section">
+            <h3 class="section-title">Need Help?</h3>
+            <p style="color: var(--text-secondary);">
+                Questions about your campaign? Contact us at 
+                <a href="mailto:Caesar@cmonkeytribe.com" style="color: var(--gold);">Caesar@cmonkeytribe.com</a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin.includes('localhost') 
+            ? 'http://localhost:3000' 
+            : 'https://natural-energy-production-df04.up.railway.app';
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            const errorEl = document.getElementById('loginError');
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/dashboard/${encodeURIComponent(email)}`);
+                const data = await res.json();
+                
+                if (res.status === 404) {
+                    errorEl.textContent = 'No campaign found for this email. Make sure you used the same email during onboarding.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                
+                if (!res.ok) throw new Error(data.error);
+                
+                // Show dashboard
+                renderDashboard(data, email);
+                
+            } catch (err) {
+                errorEl.textContent = 'Something went wrong. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        });
+        
+        function renderDashboard(data, email) {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('dashboardView').classList.remove('hidden');
+            
+            // Client info
+            document.getElementById('clientName').textContent = data.client?.name || 'Your Company';
+            document.getElementById('clientEmail').textContent = email;
+            
+            // Status
+            const status = data.campaign?.status || data.client?.status || 'pending';
+            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+            
+            const statusMap = {
+                pending_payment: { text: 'Pending Payment', class: 'pending' },
+                pending: { text: 'Setting Up', class: 'pending' },
+                researching: { text: 'Researching', class: 'researching' },
+                drafting: { text: 'Writing Sequences', class: 'drafting' },
+                awaiting_approval: { text: 'Awaiting Approval', class: 'drafting' },
+                active: { text: 'Live & Sending', class: 'active' },
+                paused: { text: 'Paused', class: 'pending' }
+            };
+            
+            const s = statusMap[status] || statusMap.pending;
+            statusText.textContent = s.text;
+            statusBadge.className = `status-badge ${s.class}`;
+            
+            // Metrics
+            const metrics = data.campaign?.metrics || {};
+            document.getElementById('metricProspects').textContent = metrics.prospectsFound || 0;
+            document.getElementById('metricEmails').textContent = metrics.emailsSent || 0;
+            document.getElementById('metricReplies').textContent = metrics.replies || 0;
+            document.getElementById('metricMeetings').textContent = metrics.meetings || 0;
+            
+            // Timeline
+            const timeline = data.campaign?.timeline || {};
+            updateTimelineStep('stepPaid', timeline.paid, 'datePaid');
+            updateTimelineStep('stepResearch', timeline.researchCompleted, 'dateResearch');
+            updateTimelineStep('stepDraft', timeline.sequencesDrafted, 'dateDraft');
+            updateTimelineStep('stepApproval', timeline.approved, 'dateApproval');
+            updateTimelineStep('stepLive', timeline.launched, 'dateLive');
+            
+            // Mark current step as active
+            const steps = ['stepPaid', 'stepResearch', 'stepDraft', 'stepApproval', 'stepLive'];
+            const timelineKeys = ['paid', 'researchCompleted', 'sequencesDrafted', 'approved', 'launched'];
+            
+            let activeFound = false;
+            for (let i = steps.length - 1; i >= 0; i--) {
+                const stepEl = document.getElementById(steps[i]);
+                if (!activeFound && timeline[timelineKeys[i]]) {
+                    stepEl.classList.add('completed');
+                    if (i < steps.length - 1 && !timeline[timelineKeys[i + 1]]) {
+                        document.getElementById(steps[i + 1]).classList.add('active');
+                        activeFound = true;
+                    }
+                } else if (timeline[timelineKeys[i]]) {
+                    stepEl.classList.add('completed');
+                }
+            }
+            
+            if (!activeFound && timeline.paid) {
+                document.getElementById('stepResearch').classList.add('active');
+            }
+        }
+        
+        function updateTimelineStep(stepId, date, dateId) {
+            if (date) {
+                document.getElementById(stepId).classList.add('completed');
+                document.getElementById(dateId).textContent = new Date(date).toLocaleDateString();
+            }
+        }
+        
+        // Check URL for email param
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailParam = urlParams.get('email');
+        if (emailParam) {
+            document.getElementById('emailInput').value = emailParam;
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }
+    </script>
 </body>
 </html>
