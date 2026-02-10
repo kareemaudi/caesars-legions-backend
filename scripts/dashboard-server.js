@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// v2.0.0 — JSON-based signup flow (no SQLite dependency)
 
 const express = require('express');
 const crypto = require('crypto');
@@ -174,7 +175,16 @@ app.get('/api/health', (req, res) => {
 
 // Webhook routes (conditional — may not be available on Railway)
 if (webhookHandler) {
-  app.use('/webhooks', webhookHandler);
+  // webhookHandler is an object with named functions, not a Router
+  if (typeof webhookHandler === 'function') {
+    app.use('/webhooks', webhookHandler);
+  } else if (webhookHandler.webhookMiddleware) {
+    app.use('/webhooks', webhookHandler.webhookMiddleware);
+  } else if (webhookHandler.router) {
+    app.use('/webhooks', webhookHandler.router);
+  } else {
+    console.warn('⚠️ webhookHandler loaded but not a middleware — skipping mount');
+  }
 }
 
 // Unsubscribe routes (conditional)
