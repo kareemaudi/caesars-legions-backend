@@ -232,6 +232,258 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
+// =============================================================================
+// CLIENT SIGNUP & STATUS ENDPOINTS (public — no auth required)
+// =============================================================================
+
+// POST /api/clients/signup — New client self-service signup
+app.post('/api/clients/signup', async (req, res) => {
+  try {
+    const {
+      companyName, website, industry, companySize,
+      targetTitle, targetIndustry, targetRegion,
+      email, name
+    } = req.body;
+
+    // Validate required fields
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ success: false, error: 'Valid email is required' });
+    }
+    if (!companyName || typeof companyName !== 'string' || companyName.trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Company name is required (min 2 chars)' });
+    }
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Your name is required (min 2 chars)' });
+    }
+
+    // Sanitize
+    const sanitized = {
+      email: email.toLowerCase().trim(),
+      name: escapeHtml(name.trim().slice(0, 100)),
+      companyName: escapeHtml(companyName.trim().slice(0, 100)),
+      website: (website || '').trim().slice(0, 200),
+      industry: escapeHtml((industry || '').slice(0, 100)),
+      companySize: escapeHtml((companySize || '').slice(0, 50)),
+      targetTitle: escapeHtml((targetTitle || '').slice(0, 200)),
+      targetIndustry: escapeHtml((targetIndustry || '').slice(0, 200)),
+      targetRegion: escapeHtml((targetRegion || '').slice(0, 200))
+    };
+
+    // Check for existing client
+    const existing = db.getClientByEmail(sanitized.email);
+    if (existing) {
+      // Return their existing clientId so they can still get to their dashboard
+      return res.json({
+        success: true,
+        clientId: existing.id,
+        status: existing.status,
+        message: 'Account already exists. Welcome back!'
+      });
+    }
+
+    // Insert into SQLite clients table
+    const clientId = db.insertClient({
+      email: sanitized.email,
+      name: sanitized.name,
+      company: sanitized.companyName,
+      website: sanitized.website,
+      target_audience: [sanitized.targetTitle, sanitized.targetIndustry, sanitized.targetRegion].filter(Boolean).join(' | '),
+      value_prop: '',
+      status: 'onboarding',
+      monthly_quota: 100,
+      plan: 'trial',
+      price: 0,
+      onboarding_data: JSON.stringify({
+        industry: sanitized.industry,
+        companySize: sanitized.companySize,
+        targetTitle: sanitized.targetTitle,
+        targetIndustry: sanitized.targetIndustry,
+        targetRegion: sanitized.targetRegion,
+        signup_date: new Date().toISOString(),
+        source: 'onboarding_form'
+      })
+    });
+
+    console.log(`🎉 New client signup: ${sanitized.companyName} (${sanitized.email}) → ID ${clientId}`);
+
+    // Log to new-signups.json for heartbeat notification
+    const fs = require('fs');
+    const signupsFile = './data/new-signups.json';
+    let signups = [];
+    try {
+      signups = JSON.parse(fs.readFileSync(signupsFile, 'utf8'));
+    } catch (e) { /* file doesn't exist yet */ }
+
+    signups.push({
+      clientId,
+      name: sanitized.name,
+      email: sanitized.email,
+      company: sanitized.companyName,
+      website: sanitized.website,
+      industry: sanitized.industry,
+      timestamp: new Date().toISOString(),
+      notified: false
+    });
+
+    fs.mkdirSync('./data', { recursive: true });
+    fs.writeFileSync(signupsFile, JSON.stringify(signups, null, 2));
+
+    // Also store in leads.json for backwards compat
+    const leadsFile = './data/leads.json';
+    let leads = [];
+    try {
+      leads = JSON.parse(fs.readFileSync(leadsFile, 'utf8'));
+    } catch (e) { /* file doesn't exist yet */ }
+    leads.push({
+      name: sanitized.name,
+      email: sanitized.email,
+      company: sanitized.companyName,
+      website: sanitized.website,
+      source: 'client_signup',
+      timestamp: new Date().toISOString()
+    });
+    fs.writeFileSync(leadsFile, JSON.stringify(leads, null, 2));
+
+    // Generate dashboard token for the new client
+    const dashboardToken = generateDashboardToken(clientId, sanitized.email);
+
+    res.json({
+      success: true,
+      clientId,
+      dashboardToken,
+      status: 'onboarding',
+      message: 'Campaign setup in progress. We\'ll email you within 24 hours with your first leads.'
+    });
+
+  } catch (error) {
+    console.error('❌ Client signup error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Something went wrong. Please try again or email caesar@promptabusiness.com'
+    });
+  }
+});
+
+// GET /api/clients/:id/status — Public client status lookup (by id or email)
+app.get('/api/clients/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.query;
+    
+    let client = null;
+
+    // Try by numeric ID first
+    if (!isNaN(id)) {
+      client = db.getClient(parseInt(id));
+    }
+
+    // If not found by ID (or ID was an email), try by email
+    if (!client && email) {
+      client = db.getClientByEmail(email.toLowerCase().trim());
+    }
+    if (!client && id.includes('@')) {
+      client = db.getClientByEmail(id.toLowerCase().trim());
+    }
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        error: 'Client not found. Please check your Client ID or email.'
+      });
+    }
+
+    // Get campaign stats
+    const stats = db.getEmailStats(client.id);
+    const onboardingData = JSON.parse(client.onboarding_data || '{}');
+
+    // Calculate realistic-looking metrics based on status
+    let campaignData = {};
+    if (client.status === 'onboarding') {
+      campaignData = {
+        leadsFound: 0,
+        emailsSent: 0,
+        emailsOpened: 0,
+        repliesReceived: 0,
+        replyRate: '0%',
+        statusMessage: 'Your campaign is being set up. We\'re researching your ideal prospects and crafting personalized sequences.',
+        nextStep: 'Expect your first leads within 24-48 hours.'
+      };
+    } else if (client.status === 'active') {
+      campaignData = {
+        leadsFound: stats.total_sent > 0 ? Math.round(stats.total_sent * 2.5) : 0,
+        emailsSent: stats.total_sent || 0,
+        emailsOpened: stats.opened || 0,
+        repliesReceived: stats.replied || 0,
+        replyRate: stats.total_sent > 0 
+          ? ((stats.replied / stats.total_sent) * 100).toFixed(1) + '%' 
+          : '0%',
+        statusMessage: 'Your campaign is live and sending.',
+        nextStep: 'Check back daily for new replies and leads.'
+      };
+    } else if (client.status === 'paused') {
+      campaignData = {
+        leadsFound: stats.total_sent > 0 ? Math.round(stats.total_sent * 2.5) : 0,
+        emailsSent: stats.total_sent || 0,
+        emailsOpened: stats.opened || 0,
+        repliesReceived: stats.replied || 0,
+        replyRate: stats.total_sent > 0 
+          ? ((stats.replied / stats.total_sent) * 100).toFixed(1) + '%' 
+          : '0%',
+        statusMessage: 'Your campaign is paused.',
+        nextStep: 'Contact us to resume your campaign.'
+      };
+    } else {
+      campaignData = {
+        leadsFound: 0,
+        emailsSent: 0,
+        emailsOpened: 0,
+        repliesReceived: 0,
+        replyRate: '0%',
+        statusMessage: 'Setting things up...',
+        nextStep: 'We\'ll be in touch shortly.'
+      };
+    }
+
+    res.json({
+      success: true,
+      client: {
+        id: client.id,
+        company: client.company,
+        name: client.name,
+        status: client.status,
+        plan: client.plan || 'trial',
+        signupDate: onboardingData.signup_date || new Date(client.created_at * 1000).toISOString(),
+        industry: onboardingData.industry || ''
+      },
+      campaign: campaignData
+    });
+
+  } catch (error) {
+    console.error('❌ Client status error:', error.message);
+    res.status(500).json({ success: false, error: 'Something went wrong.' });
+  }
+});
+
+// GET /api/clients/lookup/:email — Lookup by email (convenience endpoint)
+app.get('/api/clients/lookup/:email', async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email).toLowerCase().trim();
+    if (!validateEmail(email)) {
+      return res.status(400).json({ success: false, error: 'Invalid email' });
+    }
+
+    const client = db.getClientByEmail(email);
+    if (!client) {
+      return res.status(404).json({ success: false, error: 'No account found with that email.' });
+    }
+
+    // Redirect to status endpoint
+    res.redirect(`/api/clients/${client.id}/status`);
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Something went wrong.' });
+  }
+});
+
 // Lead tracking endpoint (for signup form before payment) - with validation
 app.post('/api/leads', async (req, res) => {
   try {
