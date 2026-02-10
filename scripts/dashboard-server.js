@@ -155,8 +155,11 @@ app.use(express.static('public'));
 module.exports.generateDashboardToken = generateDashboardToken;
 module.exports.escapeHtml = escapeHtml;
 
-// Health check endpoint (for Railway)
+// Health check endpoints (for Railway)
 app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'caesars-legions', timestamp: new Date().toISOString() });
+});
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'caesars-legions', timestamp: new Date().toISOString() });
 });
 
