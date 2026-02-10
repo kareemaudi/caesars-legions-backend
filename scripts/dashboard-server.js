@@ -134,8 +134,10 @@ const ALLOWED_ORIGINS = [
   'https://caesarslegions.ai',
   'https://promptabusiness.com',
   'https://www.promptabusiness.com',
+  'https://makhlab.promptabusiness.com',
   'https://kareemaudi.github.io',
-  process.env.BASE_URL
+  process.env.BASE_URL,
+  process.env.FRONTEND_URL
 ].filter(Boolean);
 
 function corsMiddleware(req, res, next) {
@@ -869,6 +871,177 @@ app.get('/', (req, res) => {
     </html>
   `);
 });
+
+// =============================================================================
+// MAKHLAB SIGNUP ENDPOINTS
+// =============================================================================
+
+const MAKHLAB_DATA_DIR = path.join(__dirname, '..', 'data');
+const MAKHLAB_SIGNUPS_FILE = path.join(MAKHLAB_DATA_DIR, 'makhlab-signups.json');
+const MAKHLAB_NEW_SIGNUPS_FILE = path.join(MAKHLAB_DATA_DIR, 'makhlab-new-signups.json');
+
+function loadMakhlabSignups() {
+  try { return JSON.parse(fs.readFileSync(MAKHLAB_SIGNUPS_FILE, 'utf8')); } catch(e) { return []; }
+}
+
+function saveMakhlabSignups(signups) {
+  fs.mkdirSync(MAKHLAB_DATA_DIR, { recursive: true });
+  fs.writeFileSync(MAKHLAB_SIGNUPS_FILE, JSON.stringify(signups, null, 2));
+}
+
+function loadMakhlabNewSignups() {
+  try { return JSON.parse(fs.readFileSync(MAKHLAB_NEW_SIGNUPS_FILE, 'utf8')); } catch(e) { return []; }
+}
+
+function saveMakhlabNewSignups(signups) {
+  fs.mkdirSync(MAKHLAB_DATA_DIR, { recursive: true });
+  fs.writeFileSync(MAKHLAB_NEW_SIGNUPS_FILE, JSON.stringify(signups, null, 2));
+}
+
+function generateMakhlabId() {
+  return 'makhlab_' + crypto.randomBytes(6).toString('hex');
+}
+
+// POST /api/makhlab/signup — New Makhlab customer signup
+app.post('/api/makhlab/signup', async (req, res) => {
+  try {
+    const {
+      plan, billing, name, email, businessName, businessType,
+      language, personality, assistantName, tasks, paymentMethod
+    } = req.body;
+
+    // Validate required fields
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Name is required (min 2 chars)', errorAr: 'الاسم مطلوب (حرفين على الأقل)' });
+    }
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ success: false, error: 'Valid email is required', errorAr: 'البريد الإلكتروني غير صالح' });
+    }
+    if (!businessName || typeof businessName !== 'string' || businessName.trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Business name is required (min 2 chars)', errorAr: 'اسم النشاط التجاري مطلوب' });
+    }
+    if (!businessType || !['restaurant', 'ecommerce', 'realestate', 'services', 'other'].includes(businessType)) {
+      return res.status(400).json({ success: false, error: 'Valid business type is required', errorAr: 'نوع النشاط التجاري مطلوب' });
+    }
+    if (!plan || !['starter', 'pro', 'max'].includes(plan)) {
+      return res.status(400).json({ success: false, error: 'Valid plan is required (starter, pro, max)', errorAr: 'يرجى اختيار خطة صالحة' });
+    }
+
+    // Sanitize all inputs
+    const sanitized = {
+      plan: plan,
+      billing: ['monthly', 'yearly'].includes(billing) ? billing : 'monthly',
+      name: escapeHtml(name.trim().slice(0, 100)),
+      email: email.toLowerCase().trim(),
+      businessName: escapeHtml(businessName.trim().slice(0, 150)),
+      businessType: businessType,
+      language: ['ar', 'en', 'fr', 'bilingual'].includes(language) ? language : 'ar',
+      personality: ['friendly', 'professional', 'casual'].includes(personality) ? personality : 'friendly',
+      assistantName: escapeHtml((assistantName || '').trim().slice(0, 50)),
+      tasks: Array.isArray(tasks) ? tasks.filter(t => ['questions', 'orders', 'appointments', 'support'].includes(t)) : [],
+      paymentMethod: ['montypay', 'bitcoin', 'whish'].includes(paymentMethod) ? paymentMethod : 'montypay'
+    };
+
+    // Load existing signups
+    const signups = loadMakhlabSignups();
+
+    // Check for duplicate email
+    const existing = signups.find(s => s.email === sanitized.email);
+    if (existing) {
+      return res.json({
+        success: true,
+        signupId: existing.signupId,
+        message: 'لديك طلب مسجل بالفعل! سنتواصل معك قريباً.',
+        messageEn: 'You already have a signup on file! We\'ll be in touch soon.',
+        existing: true
+      });
+    }
+
+    // Generate unique ID
+    const signupId = generateMakhlabId();
+
+    const record = {
+      signupId,
+      ...sanitized,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      provisioned: false
+    };
+
+    // Save to main signups file
+    signups.push(record);
+    saveMakhlabSignups(signups);
+
+    // Log to new-signups file for Caesar's heartbeat pickup
+    const newSignups = loadMakhlabNewSignups();
+    newSignups.push({
+      signupId,
+      name: sanitized.name,
+      email: sanitized.email,
+      businessName: sanitized.businessName,
+      businessType: sanitized.businessType,
+      plan: sanitized.plan,
+      paymentMethod: sanitized.paymentMethod,
+      timestamp: new Date().toISOString(),
+      notified: false,
+      provisioned: false
+    });
+    saveMakhlabNewSignups(newSignups);
+
+    console.log(`🧪 Makhlab signup: ${sanitized.businessName} (${sanitized.email}) → ${signupId} [${sanitized.plan}]`);
+
+    res.json({
+      success: true,
+      signupId,
+      message: 'تم استلام طلبك! سنرسل لك رابط المساعد خلال دقائق.',
+      messageEn: 'Request received! We\'ll send you your assistant link within minutes.'
+    });
+
+  } catch (error) {
+    console.error('❌ Makhlab signup error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Something went wrong. Please try again.',
+      errorAr: 'حدث خطأ. يرجى المحاولة مرة أخرى.'
+    });
+  }
+});
+
+// GET /api/makhlab/signups — List all Makhlab signups (for Caesar to check)
+app.get('/api/makhlab/signups', (req, res) => {
+  try {
+    const signups = loadMakhlabSignups();
+    res.json({
+      success: true,
+      count: signups.length,
+      signups: signups.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    });
+  } catch (error) {
+    console.error('❌ Makhlab signups list error:', error.message);
+    res.status(500).json({ success: false, error: 'Failed to load signups' });
+  }
+});
+
+// GET /api/makhlab/signup/:id — Get a specific Makhlab signup by ID
+app.get('/api/makhlab/signup/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const signups = loadMakhlabSignups();
+    const signup = signups.find(s => s.signupId === id);
+
+    if (!signup) {
+      return res.status(404).json({ success: false, error: 'Signup not found', errorAr: 'لم يتم العثور على الطلب' });
+    }
+
+    res.json({ success: true, signup });
+  } catch (error) {
+    console.error('❌ Makhlab signup lookup error:', error.message);
+    res.status(500).json({ success: false, error: 'Failed to load signup' });
+  }
+});
+
+// =============================================================================
 
 app.listen(PORT, () => {
   console.log(`\n🏛️  Caesar's Legions Dashboard running on http://localhost:${PORT}\n`);
