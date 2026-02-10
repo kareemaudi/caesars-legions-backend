@@ -586,6 +586,126 @@ app.get('/api/metrics', async (req, res) => {
 });
 
 // ============================================
+// MAKHLAB SIGNUP (AI Employee for Arabic businesses)
+// ============================================
+app.post('/api/makhlab/signup', async (req, res) => {
+  try {
+    const { businessName, ownerName, phone, email, businessType, language, plan } = req.body;
+
+    // Validate
+    if (!businessName || !ownerName || (!phone && !email)) {
+      return res.status(400).json({ success: false, error: 'Business name, owner name, and contact (phone or email) are required.' });
+    }
+
+    const signupId = `makhlab_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const selectedPlan = plan || 'free_trial';
+
+    const signup = {
+      signupId,
+      businessName: String(businessName).trim().slice(0, 200),
+      ownerName: String(ownerName).trim().slice(0, 100),
+      phone: phone ? String(phone).trim().slice(0, 20) : null,
+      email: email ? String(email).toLowerCase().trim().slice(0, 200) : null,
+      businessType: (businessType || 'general').slice(0, 100),
+      language: language || 'ar',
+      plan: selectedPlan,
+      status: 'pending_provisioning',
+      createdAt: new Date().toISOString(),
+      provisionedAt: null,
+      botUsername: null,
+      trialExpiry: selectedPlan === 'free_trial' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null
+    };
+
+    // Save to makhlab-signups.json
+    const signupsFile = path.join(__dirname, 'data/makhlab-signups.json');
+    let signups = [];
+    try {
+      signups = JSON.parse(await fs.readFile(signupsFile, 'utf8'));
+    } catch (e) { /* first signup */ }
+    signups.push(signup);
+    await fs.mkdir(path.join(__dirname, 'data'), { recursive: true });
+    await fs.writeFile(signupsFile, JSON.stringify(signups, null, 2));
+
+    console.log(`🎉 MAKHLAB SIGNUP: ${signup.businessName} (${signup.ownerName}) — ${signup.plan}`);
+
+    // 🔔 INSTANT Telegram notification to Kareem + Caesar
+    const notifyBot = process.env.MAKHLAB_NOTIFY_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+    const notifyChatId = process.env.TELEGRAM_CHAT_ID || '7189807915';
+
+    if (notifyBot) {
+      const msg = `🚨🚨🚨 NEW MAKHLAB SIGNUP! 🚨🚨🚨
+
+🏪 Business: ${signup.businessName}
+👤 Owner: ${signup.ownerName}
+📱 Phone: ${signup.phone || 'N/A'}
+📧 Email: ${signup.email || 'N/A'}
+🏷️ Type: ${signup.businessType}
+💰 Plan: ${signup.plan}
+🆔 ID: ${signup.signupId}
+
+⏳ Status: Pending provisioning
+🤖 Run: node /opt/makhlab/scripts/provision.js --signup-id ${signup.signupId}`;
+
+      try {
+        await fetch(`https://api.telegram.org/bot${notifyBot}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: notifyChatId,
+            text: msg,
+            parse_mode: 'HTML'
+          })
+        });
+      } catch (e) {
+        console.error('Telegram notify failed:', e.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      signupId,
+      plan: selectedPlan,
+      message: selectedPlan === 'free_trial'
+        ? 'تم التسجيل بنجاح! سيتم تفعيل موظفك الذكي خلال دقيقة واحدة. (Signup successful! Your AI Employee will be live within 1 minute.)'
+        : 'تم التسجيل! سنتواصل معك قريباً لتفعيل الخدمة. (Signed up! We will contact you shortly to activate the service.)',
+      trialExpiry: signup.trialExpiry
+    });
+
+  } catch (error) {
+    console.error('❌ Makhlab signup error:', error);
+    res.status(500).json({ success: false, error: 'حدث خطأ. يرجى المحاولة مرة أخرى. (Something went wrong. Please try again.)' });
+  }
+});
+
+// Makhlab signup status check
+app.get('/api/makhlab/status/:signupId', async (req, res) => {
+  try {
+    const { signupId } = req.params;
+    const signupsFile = path.join(__dirname, 'data/makhlab-signups.json');
+    let signups = [];
+    try {
+      signups = JSON.parse(await fs.readFile(signupsFile, 'utf8'));
+    } catch (e) {}
+
+    const signup = signups.find(s => s.signupId === signupId);
+    if (!signup) {
+      return res.status(404).json({ success: false, error: 'Signup not found' });
+    }
+
+    res.json({
+      success: true,
+      status: signup.status,
+      botUsername: signup.botUsername,
+      plan: signup.plan,
+      trialExpiry: signup.trialExpiry,
+      businessName: signup.businessName
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to check status' });
+  }
+});
+
+// ============================================
 // SERVE DASHBOARD STATIC FILES
 // ============================================
 app.use('/dashboard', express.static(path.join(__dirname, 'dashboard')));
