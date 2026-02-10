@@ -133,6 +133,7 @@ const ALLOWED_ORIGINS = [
   'https://caesarslegions.ai',
   'https://promptabusiness.com',
   'https://www.promptabusiness.com',
+  'https://kareemaudi.github.io',
   process.env.BASE_URL
 ].filter(Boolean);
 
