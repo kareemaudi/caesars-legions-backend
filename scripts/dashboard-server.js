@@ -2,14 +2,19 @@
 
 const express = require('express');
 const crypto = require('crypto');
-const db = require('../lib/db');
-const webhookHandler = require('../lib/webhook-handler');
-const unsubscribeHandler = require('../lib/unsubscribe');
-const stripeIntegration = require('../lib/stripe-integration');
-const signupHandler = require('../lib/signup-handler');
-const dashboardApi = require('../lib/dashboard-api');
+const fs = require('fs');
+const path = require('path');
 
 require('dotenv').config();
+
+// Graceful imports — some may fail on Railway if native modules aren't available
+let db, webhookHandler, unsubscribeHandler, stripeIntegration, signupHandler, dashboardApi;
+try { db = require('../lib/db'); } catch(e) { console.warn('⚠️ db module unavailable:', e.message); }
+try { webhookHandler = require('../lib/webhook-handler'); } catch(e) { console.warn('⚠️ webhook-handler unavailable:', e.message); }
+try { unsubscribeHandler = require('../lib/unsubscribe'); } catch(e) { console.warn('⚠️ unsubscribe unavailable:', e.message); }
+try { stripeIntegration = require('../lib/stripe-integration'); } catch(e) { console.warn('⚠️ stripe-integration unavailable:', e.message); }
+try { signupHandler = require('../lib/signup-handler'); } catch(e) { console.warn('⚠️ signup-handler unavailable:', e.message); }
+try { dashboardApi = require('../lib/dashboard-api'); } catch(e) { console.warn('⚠️ dashboard-api unavailable:', e.message); }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -72,6 +77,9 @@ function authMiddleware(req, res, next) {
     return res.status(401).json({ error: 'Invalid token format' });
   }
   
+  if (!db) {
+    return res.status(503).json({ error: 'Database not available' });
+  }
   const client = db.getClient(parseInt(clientId));
   if (!client) {
     return res.status(401).json({ error: 'Invalid token' });
@@ -163,11 +171,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'caesars-legions', timestamp: new Date().toISOString() });
 });
 
-// Webhook routes
-app.use('/webhooks', webhookHandler);
+// Webhook routes (conditional — may not be available on Railway)
+if (webhookHandler) {
+  app.use('/webhooks', webhookHandler);
+}
 
-// Unsubscribe routes
-app.use('/unsubscribe', unsubscribeHandler.router);
+// Unsubscribe routes (conditional)
+if (unsubscribeHandler && unsubscribeHandler.router) {
+  app.use('/unsubscribe', unsubscribeHandler.router);
+}
 
 // MontyPay webhook endpoint (payment confirmations)
 app.post('/webhooks/payment', express.json(), async (req, res) => {
@@ -223,6 +235,9 @@ app.post('/api/signup', async (req, res) => {
       target_audience: escapeHtml((target_audience || '').slice(0, 500))
     };
     
+    if (!signupHandler) {
+      return res.status(503).json({ success: false, error: 'Signup module not available. Use /api/clients/signup instead.' });
+    }
     const result = await signupHandler.handleSignup(sanitized);
     
     res.json(result);
@@ -272,46 +287,79 @@ app.post('/api/clients/signup', async (req, res) => {
       targetRegion: escapeHtml((targetRegion || '').slice(0, 200))
     };
 
+    // Use JSON file as primary storage (works everywhere, no native deps)
+    const clientsFile = path.join(__dirname, '..', 'data', 'clients.json');
+    let clients = [];
+    try { clients = JSON.parse(fs.readFileSync(clientsFile, 'utf8')); } catch(e) { /* new file */ }
+
     // Check for existing client
-    const existing = db.getClientByEmail(sanitized.email);
+    const existing = clients.find(c => c.email === sanitized.email);
     if (existing) {
-      // Return their existing clientId so they can still get to their dashboard
       return res.json({
         success: true,
-        clientId: existing.id,
+        clientId: existing.clientId || existing.id,
         status: existing.status,
         message: 'Account already exists. Welcome back!'
       });
     }
 
-    // Insert into SQLite clients table
-    const clientId = db.insertClient({
+    // Generate unique client ID
+    const clientId = clients.length > 0
+      ? Math.max(...clients.map(c => c.clientId || c.id || 0)) + 1
+      : 1;
+
+    const clientRecord = {
+      clientId,
       email: sanitized.email,
       name: sanitized.name,
       company: sanitized.companyName,
       website: sanitized.website,
-      target_audience: [sanitized.targetTitle, sanitized.targetIndustry, sanitized.targetRegion].filter(Boolean).join(' | '),
-      value_prop: '',
+      industry: sanitized.industry,
+      companySize: sanitized.companySize,
+      targetTitle: sanitized.targetTitle,
+      targetIndustry: sanitized.targetIndustry,
+      targetRegion: sanitized.targetRegion,
       status: 'onboarding',
-      monthly_quota: 100,
       plan: 'trial',
-      price: 0,
-      onboarding_data: JSON.stringify({
-        industry: sanitized.industry,
-        companySize: sanitized.companySize,
-        targetTitle: sanitized.targetTitle,
-        targetIndustry: sanitized.targetIndustry,
-        targetRegion: sanitized.targetRegion,
-        signup_date: new Date().toISOString(),
-        source: 'onboarding_form'
-      })
-    });
+      signupDate: new Date().toISOString(),
+      source: 'onboarding_form'
+    };
+
+    clients.push(clientRecord);
+    fs.mkdirSync(path.join(__dirname, '..', 'data'), { recursive: true });
+    fs.writeFileSync(clientsFile, JSON.stringify(clients, null, 2));
+
+    // Also insert into db module if available (for legacy dashboard compat)
+    if (db) {
+      try {
+        db.insertClient({
+          email: sanitized.email,
+          name: sanitized.name,
+          company: sanitized.companyName,
+          website: sanitized.website,
+          target_audience: [sanitized.targetTitle, sanitized.targetIndustry, sanitized.targetRegion].filter(Boolean).join(' | '),
+          value_prop: '',
+          status: 'onboarding',
+          monthly_quota: 100,
+          plan: 'trial',
+          price: 0,
+          onboarding_data: JSON.stringify({
+            industry: sanitized.industry,
+            companySize: sanitized.companySize,
+            targetTitle: sanitized.targetTitle,
+            targetIndustry: sanitized.targetIndustry,
+            targetRegion: sanitized.targetRegion,
+            signup_date: new Date().toISOString(),
+            source: 'onboarding_form'
+          })
+        });
+      } catch(e) { console.warn('db.insertClient fallback failed:', e.message); }
+    }
 
     console.log(`🎉 New client signup: ${sanitized.companyName} (${sanitized.email}) → ID ${clientId}`);
 
     // Log to new-signups.json for heartbeat notification
-    const fs = require('fs');
-    const signupsFile = './data/new-signups.json';
+    const signupsFile = path.join(__dirname, '..', 'data', 'new-signups.json');
     let signups = [];
     try {
       signups = JSON.parse(fs.readFileSync(signupsFile, 'utf8'));
@@ -328,11 +376,10 @@ app.post('/api/clients/signup', async (req, res) => {
       notified: false
     });
 
-    fs.mkdirSync('./data', { recursive: true });
     fs.writeFileSync(signupsFile, JSON.stringify(signups, null, 2));
 
     // Also store in leads.json for backwards compat
-    const leadsFile = './data/leads.json';
+    const leadsFile = path.join(__dirname, '..', 'data', 'leads.json');
     let leads = [];
     try {
       leads = JSON.parse(fs.readFileSync(leadsFile, 'utf8'));
@@ -371,21 +418,26 @@ app.post('/api/clients/signup', async (req, res) => {
 app.get('/api/clients/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
-    const { email } = req.query;
+    const { email: queryEmail } = req.query;
     
+    // Load clients from JSON file (primary source of truth for this endpoint)
+    const clientsFile = path.join(__dirname, '..', 'data', 'clients.json');
+    let clients = [];
+    try { clients = JSON.parse(fs.readFileSync(clientsFile, 'utf8')); } catch(e) { /* no file */ }
+
     let client = null;
 
     // Try by numeric ID first
     if (!isNaN(id)) {
-      client = db.getClient(parseInt(id));
+      client = clients.find(c => (c.clientId || c.id) === parseInt(id));
     }
 
-    // If not found by ID (or ID was an email), try by email
-    if (!client && email) {
-      client = db.getClientByEmail(email.toLowerCase().trim());
-    }
+    // Try by email
     if (!client && id.includes('@')) {
-      client = db.getClientByEmail(id.toLowerCase().trim());
+      client = clients.find(c => c.email === id.toLowerCase().trim());
+    }
+    if (!client && queryEmail) {
+      client = clients.find(c => c.email === queryEmail.toLowerCase().trim());
     }
 
     if (!client) {
@@ -395,11 +447,7 @@ app.get('/api/clients/:id/status', async (req, res) => {
       });
     }
 
-    // Get campaign stats
-    const stats = db.getEmailStats(client.id);
-    const onboardingData = JSON.parse(client.onboarding_data || '{}');
-
-    // Calculate realistic-looking metrics based on status
+    // Build response based on status
     let campaignData = {};
     if (client.status === 'onboarding') {
       campaignData = {
@@ -413,25 +461,23 @@ app.get('/api/clients/:id/status', async (req, res) => {
       };
     } else if (client.status === 'active') {
       campaignData = {
-        leadsFound: stats.total_sent > 0 ? Math.round(stats.total_sent * 2.5) : 0,
-        emailsSent: stats.total_sent || 0,
-        emailsOpened: stats.opened || 0,
-        repliesReceived: stats.replied || 0,
-        replyRate: stats.total_sent > 0 
-          ? ((stats.replied / stats.total_sent) * 100).toFixed(1) + '%' 
+        leadsFound: client.leadsFound || 0,
+        emailsSent: client.emailsSent || 0,
+        emailsOpened: client.emailsOpened || 0,
+        repliesReceived: client.repliesReceived || 0,
+        replyRate: client.emailsSent > 0 
+          ? (((client.repliesReceived || 0) / client.emailsSent) * 100).toFixed(1) + '%' 
           : '0%',
         statusMessage: 'Your campaign is live and sending.',
         nextStep: 'Check back daily for new replies and leads.'
       };
     } else if (client.status === 'paused') {
       campaignData = {
-        leadsFound: stats.total_sent > 0 ? Math.round(stats.total_sent * 2.5) : 0,
-        emailsSent: stats.total_sent || 0,
-        emailsOpened: stats.opened || 0,
-        repliesReceived: stats.replied || 0,
-        replyRate: stats.total_sent > 0 
-          ? ((stats.replied / stats.total_sent) * 100).toFixed(1) + '%' 
-          : '0%',
+        leadsFound: client.leadsFound || 0,
+        emailsSent: client.emailsSent || 0,
+        emailsOpened: client.emailsOpened || 0,
+        repliesReceived: client.repliesReceived || 0,
+        replyRate: '0%',
         statusMessage: 'Your campaign is paused.',
         nextStep: 'Contact us to resume your campaign.'
       };
@@ -450,13 +496,13 @@ app.get('/api/clients/:id/status', async (req, res) => {
     res.json({
       success: true,
       client: {
-        id: client.id,
+        id: client.clientId || client.id,
         company: client.company,
         name: client.name,
         status: client.status,
         plan: client.plan || 'trial',
-        signupDate: onboardingData.signup_date || new Date(client.created_at * 1000).toISOString(),
-        industry: onboardingData.industry || ''
+        signupDate: client.signupDate || client.signup_date || new Date().toISOString(),
+        industry: client.industry || ''
       },
       campaign: campaignData
     });
@@ -475,13 +521,16 @@ app.get('/api/clients/lookup/:email', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid email' });
     }
 
-    const client = db.getClientByEmail(email);
+    const clientsFile = path.join(__dirname, '..', 'data', 'clients.json');
+    let clients = [];
+    try { clients = JSON.parse(fs.readFileSync(clientsFile, 'utf8')); } catch(e) {}
+
+    const client = clients.find(c => c.email === email);
     if (!client) {
       return res.status(404).json({ success: false, error: 'No account found with that email.' });
     }
 
-    // Redirect to status endpoint
-    res.redirect(`/api/clients/${client.id}/status`);
+    res.redirect(`/api/clients/${client.clientId || client.id}/status`);
   } catch (error) {
     res.status(500).json({ success: false, error: 'Something went wrong.' });
   }
@@ -503,8 +552,8 @@ app.post('/api/leads', async (req, res) => {
     console.log(`📥 New lead: ${safeEmail} (${safeCompany})`);
     
     // Store in leads.json (simple file-based storage)
-    const fs = require('fs');
-    const leadsFile = './data/leads.json';
+    const leadsDir = path.join(__dirname, '..', 'data');
+    const leadsFile = path.join(leadsDir, 'leads.json');
     let leads = [];
     try {
       leads = JSON.parse(fs.readFileSync(leadsFile, 'utf8'));
@@ -523,7 +572,7 @@ app.post('/api/leads', async (req, res) => {
       timestamp: new Date().toISOString()
     });
     
-    fs.mkdirSync('./data', { recursive: true });
+    fs.mkdirSync(leadsDir, { recursive: true });
     fs.writeFileSync(leadsFile, JSON.stringify(leads, null, 2));
     
     res.json({ success: true, message: 'Lead captured' });
@@ -769,7 +818,7 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
 
 // List all clients
 app.get('/', (req, res) => {
-  const clients = db.getAllClients().sort((a, b) => b.created_at - a.created_at);
+  const clients = db ? db.getAllClients().sort((a, b) => b.created_at - a.created_at) : [];
   
   res.send(`
     <!DOCTYPE html>
