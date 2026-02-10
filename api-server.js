@@ -18,6 +18,8 @@ const ALLOWED_ORIGINS = [
   'https://caesarslegions.ai',
   'https://promptabusiness.com',
   'https://www.promptabusiness.com',
+  'https://makhlab.promptabusiness.com',
+  'https://luna.promptabusiness.com',
   process.env.BASE_URL || 'http://localhost:3000'
 ].filter(Boolean);
 
