@@ -923,14 +923,14 @@ app.post('/api/makhlab/signup', async (req, res) => {
     if (!businessType || !['restaurant', 'ecommerce', 'realestate', 'services', 'other'].includes(businessType)) {
       return res.status(400).json({ success: false, error: 'Valid business type is required', errorAr: 'نوع النشاط التجاري مطلوب' });
     }
-    if (!plan || !['starter', 'pro', 'max'].includes(plan)) {
-      return res.status(400).json({ success: false, error: 'Valid plan is required (starter, pro, max)', errorAr: 'يرجى اختيار خطة صالحة' });
+    if (!plan || !['free', 'starter', 'professional', 'enterprise', 'pro', 'max'].includes(plan)) {
+      return res.status(400).json({ success: false, error: 'Valid plan is required', errorAr: 'يرجى اختيار خطة صالحة' });
     }
 
     // Sanitize all inputs
     const sanitized = {
       plan: plan,
-      billing: ['monthly', 'yearly'].includes(billing) ? billing : 'monthly',
+      billing: ['monthly', 'yearly', 'free_trial'].includes(billing) ? billing : 'monthly',
       name: escapeHtml(name.trim().slice(0, 100)),
       email: email.toLowerCase().trim(),
       businessName: escapeHtml(businessName.trim().slice(0, 150)),
@@ -939,7 +939,7 @@ app.post('/api/makhlab/signup', async (req, res) => {
       personality: ['friendly', 'professional', 'casual'].includes(personality) ? personality : 'friendly',
       assistantName: escapeHtml((assistantName || '').trim().slice(0, 50)),
       tasks: Array.isArray(tasks) ? tasks.filter(t => ['questions', 'orders', 'appointments', 'support'].includes(t)) : [],
-      paymentMethod: ['montypay', 'bitcoin', 'whish'].includes(paymentMethod) ? paymentMethod : 'montypay'
+      paymentMethod: ['free', 'montypay', 'bitcoin', 'whish'].includes(paymentMethod) ? paymentMethod : 'montypay'
     };
 
     // Load existing signups
@@ -960,13 +960,20 @@ app.post('/api/makhlab/signup', async (req, res) => {
     // Generate unique ID
     const signupId = generateMakhlabId();
 
+    // Calculate trial expiry for free plan
+    const isTrial = sanitized.plan === 'free';
+    const trialExpiry = isTrial ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null;
+
     const record = {
       signupId,
       ...sanitized,
-      status: 'pending',
+      status: isTrial ? 'trial' : 'pending_payment',
+      trialExpiry,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      provisioned: false
+      provisioned: false,
+      botToken: null,
+      botUsername: null
     };
 
     // Save to main signups file
