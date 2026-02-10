@@ -210,7 +210,246 @@ Campaign kickoff initiated! 🚀`;
 }
 
 // ============================================
-// CLIENT DASHBOARD API
+// CLIENT SIGNUP (self-service, no payment gate)
+// ============================================
+app.post('/api/clients/signup', async (req, res) => {
+  try {
+    const {
+      companyName, website, industry, companySize,
+      targetTitle, targetIndustry, targetRegion,
+      email, name
+    } = req.body;
+
+    // Validate required fields
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, error: 'Valid email is required' });
+    }
+    if (!companyName || String(companyName).trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Company name is required (min 2 chars)' });
+    }
+    if (!name || String(name).trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Your name is required (min 2 chars)' });
+    }
+
+    const safeEmail = email.toLowerCase().trim();
+    const safeName = String(name).trim().slice(0, 100);
+    const safeCompany = String(companyName).trim().slice(0, 100);
+
+    // Check for existing client in clients.json
+    const clientsFile = path.join(__dirname, 'data/clients.json');
+    let clients = [];
+    try {
+      clients = JSON.parse(await fs.readFile(clientsFile, 'utf8'));
+    } catch (e) { /* file doesn't exist yet */ }
+
+    const existing = clients.find(c => c.email === safeEmail);
+    if (existing) {
+      return res.json({
+        success: true,
+        clientId: existing.clientId,
+        status: existing.status,
+        message: 'Account already exists. Welcome back!'
+      });
+    }
+
+    // Generate unique client ID
+    const clientId = clients.length > 0
+      ? Math.max(...clients.map(c => c.clientId || 0)) + 1
+      : 1;
+
+    const clientRecord = {
+      clientId,
+      email: safeEmail,
+      name: safeName,
+      company: safeCompany,
+      website: (website || '').trim().slice(0, 200),
+      industry: (industry || '').slice(0, 100),
+      companySize: (companySize || '').slice(0, 50),
+      targetTitle: (targetTitle || '').slice(0, 200),
+      targetIndustry: (targetIndustry || '').slice(0, 200),
+      targetRegion: (targetRegion || '').slice(0, 200),
+      status: 'onboarding',
+      plan: 'trial',
+      signupDate: new Date().toISOString(),
+      source: 'onboarding_form'
+    };
+
+    clients.push(clientRecord);
+    await fs.mkdir(path.join(__dirname, 'data'), { recursive: true });
+    await fs.writeFile(clientsFile, JSON.stringify(clients, null, 2));
+
+    console.log(`🎉 New client signup: ${safeCompany} (${safeEmail}) → ID ${clientId}`);
+
+    // Log to new-signups.json for heartbeat notification
+    const signupsFile = path.join(__dirname, 'data/new-signups.json');
+    let signups = [];
+    try {
+      signups = JSON.parse(await fs.readFile(signupsFile, 'utf8'));
+    } catch (e) { /* file doesn't exist yet */ }
+
+    signups.push({
+      clientId,
+      name: safeName,
+      email: safeEmail,
+      company: safeCompany,
+      website: clientRecord.website,
+      industry: clientRecord.industry,
+      timestamp: new Date().toISOString(),
+      notified: false
+    });
+    await fs.writeFile(signupsFile, JSON.stringify(signups, null, 2));
+
+    // Also save as a lead file (backwards compat)
+    const leadsDir = path.join(__dirname, 'data/leads');
+    await fs.mkdir(leadsDir, { recursive: true });
+    await fs.writeFile(
+      path.join(leadsDir, `signup-${clientId}.json`),
+      JSON.stringify({ ...clientRecord, id: `signup-${clientId}`, createdAt: new Date().toISOString() }, null, 2)
+    );
+
+    // Generate a simple dashboard token
+    const dashboardToken = `${clientId}:${crypto.createHash('sha256').update(`${clientId}:${safeEmail}:prompta-secret`).digest('hex').slice(0, 16)}`;
+
+    res.json({
+      success: true,
+      clientId,
+      dashboardToken,
+      status: 'onboarding',
+      message: "Campaign setup in progress. We'll email you within 24 hours with your first leads."
+    });
+
+  } catch (error) {
+    console.error('❌ Client signup error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Something went wrong. Please try again or email caesar@promptabusiness.com'
+    });
+  }
+});
+
+// ============================================
+// CLIENT STATUS (public, no auth needed)
+// ============================================
+app.get('/api/clients/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email: queryEmail } = req.query;
+
+    // Load clients
+    const clientsFile = path.join(__dirname, 'data/clients.json');
+    let clients = [];
+    try {
+      clients = JSON.parse(await fs.readFile(clientsFile, 'utf8'));
+    } catch (e) { /* file doesn't exist */ }
+
+    let client = null;
+
+    // Try by numeric ID
+    if (!isNaN(id)) {
+      client = clients.find(c => c.clientId === parseInt(id));
+    }
+
+    // Try by email
+    if (!client && id.includes('@')) {
+      client = clients.find(c => c.email === id.toLowerCase().trim());
+    }
+    if (!client && queryEmail) {
+      client = clients.find(c => c.email === queryEmail.toLowerCase().trim());
+    }
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        error: 'Client not found. Please check your Client ID or email.'
+      });
+    }
+
+    // Try to find campaign data
+    let campaignMetrics = { emailsSent: 0, opens: 0, replies: 0, meetings: 0, prospectsFound: 0 };
+    try {
+      const campaignsDir = path.join(__dirname, 'data/campaigns');
+      const files = await fs.readdir(campaignsDir);
+      for (const file of files) {
+        if (file.endsWith('.json')) {
+          const data = JSON.parse(await fs.readFile(path.join(campaignsDir, file), 'utf8'));
+          if (data.clientEmail === client.email || data.leadId === `signup-${client.clientId}`) {
+            campaignMetrics = data.metrics || campaignMetrics;
+            break;
+          }
+        }
+      }
+    } catch (e) { /* no campaigns dir yet */ }
+
+    // Build response based on status
+    let campaignData = {};
+    if (client.status === 'onboarding') {
+      campaignData = {
+        leadsFound: 0,
+        emailsSent: 0,
+        emailsOpened: 0,
+        repliesReceived: 0,
+        replyRate: '0%',
+        statusMessage: "Your campaign is being set up. We're researching your ideal prospects and crafting personalized sequences.",
+        nextStep: 'Expect your first leads within 24-48 hours.'
+      };
+    } else if (client.status === 'active') {
+      campaignData = {
+        leadsFound: campaignMetrics.prospectsFound || 0,
+        emailsSent: campaignMetrics.emailsSent || 0,
+        emailsOpened: campaignMetrics.opens || 0,
+        repliesReceived: campaignMetrics.replies || 0,
+        replyRate: campaignMetrics.emailsSent > 0
+          ? ((campaignMetrics.replies / campaignMetrics.emailsSent) * 100).toFixed(1) + '%'
+          : '0%',
+        statusMessage: 'Your campaign is live and sending.',
+        nextStep: 'Check back daily for new replies and leads.'
+      };
+    } else if (client.status === 'paused') {
+      campaignData = {
+        leadsFound: campaignMetrics.prospectsFound || 0,
+        emailsSent: campaignMetrics.emailsSent || 0,
+        emailsOpened: campaignMetrics.opens || 0,
+        repliesReceived: campaignMetrics.replies || 0,
+        replyRate: campaignMetrics.emailsSent > 0
+          ? ((campaignMetrics.replies / campaignMetrics.emailsSent) * 100).toFixed(1) + '%'
+          : '0%',
+        statusMessage: 'Your campaign is paused.',
+        nextStep: 'Contact us to resume your campaign.'
+      };
+    } else {
+      campaignData = {
+        leadsFound: 0,
+        emailsSent: 0,
+        emailsOpened: 0,
+        repliesReceived: 0,
+        replyRate: '0%',
+        statusMessage: 'Setting things up...',
+        nextStep: "We'll be in touch shortly."
+      };
+    }
+
+    res.json({
+      success: true,
+      client: {
+        id: client.clientId,
+        company: client.company,
+        name: client.name,
+        status: client.status,
+        plan: client.plan || 'trial',
+        signupDate: client.signupDate || client.createdAt,
+        industry: client.industry || ''
+      },
+      campaign: campaignData
+    });
+
+  } catch (error) {
+    console.error('❌ Client status error:', error);
+    res.status(500).json({ success: false, error: 'Something went wrong.' });
+  }
+});
+
+// ============================================
+// CLIENT DASHBOARD API (legacy)
 // ============================================
 app.get('/api/dashboard/:clientId', async (req, res) => {
   try {
