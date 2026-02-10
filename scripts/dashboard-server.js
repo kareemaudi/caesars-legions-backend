@@ -998,6 +998,18 @@ app.post('/api/makhlab/signup', async (req, res) => {
 
     console.log(`🧪 Makhlab signup: ${sanitized.businessName} (${sanitized.email}) → ${signupId} [${sanitized.plan}]`);
 
+    // 🔔 INSTANT Telegram notification to Kareem
+    const notifyBot = process.env.MAKHLAB_NOTIFY_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+    const notifyChatId = process.env.TELEGRAM_CHAT_ID || '7189807915';
+    if (notifyBot) {
+      const alertMsg = `🚨🚨🚨 NEW MAKHLAB SIGNUP! 🚨🚨🚨\n\n🏪 Business: ${sanitized.businessName}\n👤 Owner: ${sanitized.name}\n📧 Email: ${sanitized.email}\n🏷️ Type: ${sanitized.businessType}\n💰 Plan: ${sanitized.plan}\n🆔 ID: ${signupId}\n\n⏳ Status: Pending provisioning`;
+      fetch(`https://api.telegram.org/bot${notifyBot}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: notifyChatId, text: alertMsg })
+      }).catch(e => console.error('Telegram notify failed:', e.message));
+    }
+
     res.json({
       success: true,
       signupId,
