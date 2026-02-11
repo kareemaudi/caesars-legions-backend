@@ -1060,7 +1060,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 // 2. CAESAR CHAT ENDPOINT
 // ============================================
 
-// POST /api/chat
+// POST /api/chat — Context-aware Caesar
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, userId } = req.body;
@@ -1069,7 +1069,54 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
     
-    const systemPrompt = `You are Caesar (قيصر), an AI CEO running the client's business via Mubyn OS. You can find leads, create content, manage customer service, and provide financial insights. Be professional but personable. Respond in the same language the user writes in (Arabic or English). Keep responses concise and actionable.`;
+    // Build context-aware system prompt
+    let userContext = '';
+    if (userId) {
+      try {
+        const [userData, leads, content, cfo, csaSettings, kb] = await Promise.all([
+          loadJSON(path.join(__dirname, `data/user-${userId}.json`), null),
+          loadJSON(path.join(__dirname, `data/leads-${userId}.json`), []),
+          loadJSON(path.join(__dirname, `data/content-${userId}.json`), []),
+          loadJSON(path.join(__dirname, `data/cfo-${userId}.json`), null),
+          loadJSON(path.join(__dirname, `data/csa-settings-${userId}.json`), null),
+          loadJSON(path.join(__dirname, `data/csa-knowledge-${userId}.json`), []),
+        ]);
+        const parts = [];
+        if (userData) {
+          if (userData.business_name) parts.push(`Business: ${userData.business_name}`);
+          if (userData.industry) parts.push(`Industry: ${userData.industry}`);
+          if (userData.country) parts.push(`Location: ${userData.country}`);
+          if (userData.website) parts.push(`Website: ${userData.website}`);
+        }
+        const active = [], inactive = [];
+        if (leads.length > 0) active.push(`Leads (${leads.length} found)`); else inactive.push('Lead Generation (go to Leads tab)');
+        if (content.length > 0) active.push(`Content Calendar (${content.length} posts)`); else inactive.push('Content Calendar (go to CMO tab)');
+        if (cfo) active.push('Financial Analysis'); else inactive.push('Financial Analysis (go to CFO tab)');
+        if (csaSettings || kb.length > 0) active.push(`Customer Support (${kb.length} KB entries)`); else inactive.push('Customer Support Agent (go to CS tab)');
+        inactive.push('Website Builder (coming soon)');
+        if (parts.length) userContext += `\n\nCLIENT INFO: ${parts.join(' | ')}`;
+        if (active.length) userContext += `\nACTIVE MODULES: ${active.join(', ')}`;
+        if (inactive.length) userContext += `\nNOT SET UP YET: ${inactive.join(', ')}`;
+      } catch (_) { /* still respond even if context fails */ }
+    }
+    
+    const systemPrompt = `You are Caesar, the AI CEO powering Mubyn OS — an AI business operating system for SMEs in MENA.
+
+You manage 5 departments for each client:
+1. **Lead Generation** (Leads tab) — AI discovers businesses, scores leads, drafts personalized emails, sends via SMTP
+2. **Content Marketing** (CMO tab) — Generates full month content calendars across Twitter, LinkedIn, Instagram with AI images
+3. **Financial Intelligence** (CFO tab) — Revenue tracking, expense management, projections, AI insights
+4. **Customer Support** (CS tab) — AI chat agent with knowledge base, tone settings, embeddable website widget
+5. **Website Builder** (Website tab) — Coming soon: AI builds complete websites in 60 seconds
+
+YOUR BEHAVIOR:
+- If user just signed up: Welcome them warmly, summarize what Mubyn can do, suggest starting with Lead Gen or CMO
+- If modules are not set up: Proactively suggest them
+- If user asks about a feature: Explain it clearly and tell them which tab to go to
+- Be concise (2-4 paragraphs max), actionable, and warm
+- Match the user's language (Arabic or English)
+- Never say "I'm just an AI" — you ARE their AI CEO
+- Use markdown formatting${userContext}`;
     
     const reply = await openaiChat(systemPrompt, message, 1024);
     
@@ -1822,6 +1869,18 @@ app.get('/api/cfo/:userId', async (req, res) => {
 });
 
 // ============================================
+// ============================================
+// MOUNT MUBYN ROUTES (additional endpoints from mubyn-routes.js)
+// These provide: Settings, Smart Caesar, User SMTP, CSA Email channel
+// ============================================
+try {
+  const mubynRoutes = require('./lib/mubyn-routes.js');
+  app.use('/api', mubynRoutes);
+  console.log('✅ Mubyn extended routes mounted at /api');
+} catch (e) {
+  console.error('⚠️ Could not load mubyn-routes.js:', e.message);
+}
+
 // SERVE DASHBOARD STATIC FILES
 // ============================================
 app.use('/dashboard', express.static(path.join(__dirname, 'dashboard')));
