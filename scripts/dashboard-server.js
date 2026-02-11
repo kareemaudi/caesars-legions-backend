@@ -1101,8 +1101,52 @@ app.get('/site/:subdomain', async (req, res) => {
   } catch (error) { res.status(500).send('<html><body><h1>Error loading site</h1></body></html>'); }
 });
 
-app.listen(PORT, () => {
+// =============================================================================
+// SEED DATA — Auto-create essential accounts on startup (Railway ephemeral FS)
+// =============================================================================
+async function seedAccounts() {
+  const bcrypt = require('bcryptjs');
+  const DATA_DIR = path.join(__dirname, '..', 'data');
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  
+  const usersFile = path.join(DATA_DIR, 'users.json');
+  let users = [];
+  try { users = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch { users = []; }
+  
+  const seedUsers = [
+    { email: 'kareem@cmonkeytribe.com', password: 'cmt2026', name: 'Kareem', business_name: 'CMonkey Tribe', industry: 'Technology / SaaS', country: 'Lebanon', website: 'cmonkeytribe.com' },
+    { email: 'demo@mubyn.com', password: 'demo2026', name: 'Demo User', business_name: 'Mubyn Demo', industry: 'Technology', country: 'UAE' },
+  ];
+  
+  let created = 0;
+  for (const su of seedUsers) {
+    if (users.find(u => u.email === su.email)) continue;
+    const hash = await bcrypt.hash(su.password, 10);
+    users.push({
+      id: crypto.randomUUID(),
+      email: su.email,
+      password: hash,
+      name: su.name,
+      business_name: su.business_name,
+      industry: su.industry || '',
+      country: su.country || '',
+      website: su.website || '',
+      primary_need: '',
+      created_at: new Date().toISOString()
+    });
+    created++;
+  }
+  
+  if (created > 0) {
+    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+    console.log(`   🌱 Seeded ${created} account(s)`);
+  }
+}
+
+app.listen(PORT, async () => {
   console.log(`\n🏛️  Caesar's Legions Dashboard running on http://localhost:${PORT}`);
   console.log(`   🚀 Mubyn OS endpoints ready at /api!`);
-  console.log(`   ✅ Build: 2026-02-11-1745\n`);
+  console.log(`   ✅ Build: 2026-02-11-1840`);
+  await seedAccounts();
+  console.log(`   ✅ Ready!\n`);
 });
