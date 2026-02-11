@@ -1281,16 +1281,63 @@ app.get('/api/content/:userId', async (req, res) => {
 // 5. CSA (CUSTOMER SUPPORT) ENDPOINTS
 // ============================================
 
-// POST /api/csa/respond
+// POST /api/content/image — DALL-E 3 image generation
+app.post('/api/content/image', async (req, res) => {
+  try {
+    const { prompt, size } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'Prompt required' });
+    if (!OPENAI_API_KEY) return res.status(500).json({ error: 'OPENAI_API_KEY not configured' });
+    const r = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: size || '1024x1024', quality: 'standard' })
+    });
+    if (!r.ok) { const err = await r.text(); return res.status(r.status).json({ error: `DALL-E error: ${err}` }); }
+    const data = await r.json();
+    const imageUrl = data.data?.[0]?.url || null;
+    const revisedPrompt = data.data?.[0]?.revised_prompt || null;
+    res.json({ success: true, image_url: imageUrl, revised_prompt: revisedPrompt });
+  } catch (e) { console.error('Image generation error:', e); res.status(500).json({ error: 'Image generation failed', details: e.message }); }
+});
+
+// POST /api/csa/respond — with knowledge base + tone support
 app.post('/api/csa/respond', async (req, res) => {
   try {
-    const { customer_message, business_context, userId } = req.body;
+    const { customer_message, business_context, userId, knowledge_base, tone, language } = req.body;
     
     if (!customer_message) {
       return res.status(400).json({ error: 'Customer message is required' });
     }
+
+    // Build context with knowledge base
+    let kbContext = '';
+    if (knowledge_base && Array.isArray(knowledge_base) && knowledge_base.length > 0) {
+      kbContext = '\n\nKnowledge Base (use this to answer accurately):\n' +
+        knowledge_base.map(kb => `Q: ${kb.title}\nA: ${kb.content}`).join('\n\n');
+    } else if (userId) {
+      const kbFile = path.join(__dirname, `data/csa-kb-${userId}.json`);
+      const savedKb = await loadJSON(kbFile, []);
+      const activeKb = savedKb.filter(kb => kb.is_active !== false);
+      if (activeKb.length > 0) {
+        kbContext = '\n\nKnowledge Base (use this to answer accurately):\n' +
+          activeKb.map(kb => `Q: ${kb.title}\nA: ${kb.content}`).join('\n\n');
+      }
+    }
+
+    // Load tone settings
+    let toneInstructions = '';
+    if (userId) {
+      const settingsFile = path.join(__dirname, `data/csa-settings-${userId}.json`);
+      const settings = await loadJSON(settingsFile, {});
+      if (settings.tone) toneInstructions += `\nTone: ${settings.tone}.`;
+      if (settings.language) toneInstructions += `\nLanguage: ${settings.language}.`;
+      if (settings.response_length) toneInstructions += `\nResponse length: ${settings.response_length}.`;
+      if (settings.custom_instructions) toneInstructions += `\nAdditional instructions: ${settings.custom_instructions}`;
+    }
+    if (tone) toneInstructions += `\nTone: ${tone}.`;
+    if (language) toneInstructions += `\nRespond in: ${language}.`;
     
-    const systemPrompt = `You are a professional customer support agent. ${business_context || 'Help the customer with their inquiry.'} Be empathetic, clear, and solution-oriented.`;
+    const systemPrompt = `You are a professional customer support agent. ${business_context || 'Help the customer with their inquiry.'} Be empathetic, clear, and solution-oriented.${toneInstructions}${kbContext}`;
     
     const reply = await openaiChat(systemPrompt, customer_message, 512);
     
@@ -1326,6 +1373,81 @@ app.get('/api/csa/conversations/:userId', async (req, res) => {
     console.error('Get CSA conversations error:', error);
     res.status(500).json({ error: 'Failed to get conversations' });
   }
+});
+
+// CSA Knowledge Base
+app.post('/api/csa/knowledge', async (req, res) => {
+  try {
+    const { userId, title, content, category, tags, is_active } = req.body;
+    if (!userId || !title || !content) return res.status(400).json({ error: 'userId, title, and content required' });
+    const f = path.join(__dirname, `data/csa-kb-${userId}.json`);
+    const entries = await loadJSON(f, []);
+    const entry = { id: crypto.randomUUID(), title, content, category: category || 'faq', tags: tags || [], is_active: is_active !== false, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    entries.push(entry);
+    await saveJSON(f, entries);
+    res.json({ success: true, entry });
+  } catch (e) { console.error('KB save error:', e); res.status(500).json({ error: 'Failed to save knowledge entry' }); }
+});
+
+app.get('/api/csa/knowledge/:userId', async (req, res) => {
+  try { res.json({ entries: await loadJSON(path.join(__dirname, `data/csa-kb-${req.params.userId}.json`), []) }); }
+  catch (e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+app.put('/api/csa/knowledge/:userId/:entryId', async (req, res) => {
+  try {
+    const { userId, entryId } = req.params;
+    const updates = req.body;
+    const f = path.join(__dirname, `data/csa-kb-${userId}.json`);
+    const entries = await loadJSON(f, []);
+    const idx = entries.findIndex(e => e.id === entryId);
+    if (idx === -1) return res.status(404).json({ error: 'Entry not found' });
+    entries[idx] = { ...entries[idx], ...updates, updated_at: new Date().toISOString() };
+    await saveJSON(f, entries);
+    res.json({ success: true, entry: entries[idx] });
+  } catch (e) { res.status(500).json({ error: 'Update failed' }); }
+});
+
+app.delete('/api/csa/knowledge/:userId/:entryId', async (req, res) => {
+  try {
+    const { userId, entryId } = req.params;
+    const f = path.join(__dirname, `data/csa-kb-${userId}.json`);
+    const entries = await loadJSON(f, []);
+    const filtered = entries.filter(e => e.id !== entryId);
+    if (filtered.length === entries.length) return res.status(404).json({ error: 'Entry not found' });
+    await saveJSON(f, filtered);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Delete failed' }); }
+});
+
+// CSA Settings (tone, widget config)
+app.post('/api/csa/settings', async (req, res) => {
+  try {
+    const { userId, ...settings } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    const f = path.join(__dirname, `data/csa-settings-${userId}.json`);
+    const existing = await loadJSON(f, {});
+    const merged = { ...existing, ...settings, updated_at: new Date().toISOString() };
+    await saveJSON(f, merged);
+    res.json({ success: true, settings: merged });
+  } catch (e) { console.error('Settings save error:', e); res.status(500).json({ error: 'Failed to save settings' }); }
+});
+
+app.get('/api/csa/settings/:userId', async (req, res) => {
+  try { res.json({ settings: await loadJSON(path.join(__dirname, `data/csa-settings-${req.params.userId}.json`), {}) }); }
+  catch (e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+// CSA Widget embed code
+app.get('/api/csa/widget/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const settingsFile = path.join(__dirname, `data/csa-settings-${userId}.json`);
+    const settings = await loadJSON(settingsFile, {});
+    const widget = settings.widget || {};
+    const embedCode = `<script src="https://app.mubyn.com/widget/${userId}.js" async></script>`;
+    res.json({ success: true, embed_code: embedCode, widget_id: userId, config: widget });
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
 });
 
 // ============================================
