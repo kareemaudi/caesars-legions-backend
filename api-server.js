@@ -679,11 +679,112 @@ app.post('/api/makhlab/signup', async (req, res) => {
       }
     }
 
+    // 🤖 AUTO-PROVISION: Call droplet API to create the bot
+    const PROVISION_API = process.env.PROVISION_API_URL || 'http://134.209.94.167:19099';
+    const PROVISION_TOKEN = process.env.PROVISION_AUTH_TOKEN || 'makhlab_provision_secret_2026';
+    
+    let botLink = null;
+    let botUsername = null;
+    
+    try {
+      console.log(`[AUTO-PROVISION] Calling provision API for ${signup.signupId}...`);
+      const provisionRes = await fetch(`${PROVISION_API}/provision`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Auth-Token': PROVISION_TOKEN 
+        },
+        body: JSON.stringify({ signup, authToken: PROVISION_TOKEN })
+      });
+      const provisionData = await provisionRes.json();
+      
+      if (provisionData.success) {
+        botLink = provisionData.botLink;
+        botUsername = provisionData.botUsername;
+        console.log(`[AUTO-PROVISION] SUCCESS! Bot: @${botUsername} (${botLink})`);
+        
+        // Update signup record with bot info
+        const idx = signups.findIndex(s => s.signupId === signupId);
+        if (idx >= 0) {
+          signups[idx].botUsername = botUsername;
+          signups[idx].botLink = botLink;
+          signups[idx].status = 'provisioned';
+          signups[idx].provisionedAt = new Date().toISOString();
+          await fs.writeFile(signupsFile, JSON.stringify(signups, null, 2));
+        }
+      } else {
+        console.error(`[AUTO-PROVISION] Failed:`, provisionData.error);
+      }
+    } catch (provErr) {
+      console.error(`[AUTO-PROVISION] Error:`, provErr.message);
+    }
+
+    // 📧 AUTO-EMAIL: Send bot link to customer
+    if (botLink && signup.email) {
+      try {
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST || 'smtp.zoho.com',
+          port: parseInt(process.env.SMTP_PORT || '587'),
+          secure: false,
+          auth: {
+            user: process.env.SMTP_USER || 'caesar@promptabusiness.com',
+            pass: process.env.SMTP_PASS || process.env.ZOHO_SMTP_PASSWORD
+          }
+        });
+
+        const assistantDisplayName = signup.assistantName || `${signup.businessName} Assistant`;
+        
+        await transporter.sendMail({
+          from: `"Makhlab" <caesar@promptabusiness.com>`,
+          to: signup.email,
+          subject: `✨ ${assistantDisplayName} is ready! Your AI employee is live`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: #fff; border-radius: 12px; overflow: hidden;">
+              <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">🎉 ${assistantDisplayName} is Live!</h1>
+                <p style="margin: 10px 0 0; opacity: 0.9;">Your AI employee is ready to serve customers</p>
+              </div>
+              <div style="padding: 30px;">
+                <p>Hi ${signup.ownerName},</p>
+                <p>Great news! Your AI employee <strong>${assistantDisplayName}</strong> for <strong>${signup.businessName}</strong> is now active on Telegram.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${botLink}" style="background: #10b981; color: #fff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-size: 18px; font-weight: bold; display: inline-block;">
+                    💬 Open on Telegram
+                  </a>
+                </div>
+                
+                <p><strong>How to start:</strong></p>
+                <ol>
+                  <li>Click the button above (or go to <a href="${botLink}" style="color: #10b981;">${botLink}</a>)</li>
+                  <li>Press "Start" in Telegram</li>
+                  <li>Send a message — ${assistantDisplayName} will reply!</li>
+                </ol>
+                
+                <p><strong>Share with customers:</strong> Give them the link <code>${botLink}</code> and they can message your business 24/7.</p>
+                
+                <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; font-size: 12px; color: #888;">
+                  Your 7-day free trial started. Need help? Reply to this email.<br>
+                  — The Makhlab Team (powered by Prompta)
+                </p>
+              </div>
+            </div>
+          `
+        });
+        console.log(`[AUTO-EMAIL] Sent bot link to ${signup.email}`);
+      } catch (emailErr) {
+        console.error(`[AUTO-EMAIL] Failed:`, emailErr.message);
+      }
+    }
+
     res.json({
       success: true,
       signupId,
+      botLink: botLink || null,
+      botUsername: botUsername || null,
       plan: selectedPlan,
-      message: selectedPlan === 'free_trial'
+      message: selectedPlan === 'free_trial' || selectedPlan === 'free'
         ? 'تم التسجيل بنجاح! سيتم تفعيل موظفك الذكي خلال دقيقة واحدة. (Signup successful! Your AI Employee will be live within 1 minute.)'
         : 'تم التسجيل! سنتواصل معك قريباً لتفعيل الخدمة. (Signed up! We will contact you shortly to activate the service.)',
       trialExpiry: signup.trialExpiry
