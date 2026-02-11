@@ -1451,6 +1451,155 @@ app.get('/api/csa/widget/:userId', async (req, res) => {
 });
 
 // ============================================
+// 6. CFO — AI Financial Intelligence
+// ============================================
+
+// Helper: parse JSON from AI response (tolerant of markdown fences)
+function parseAIJson(raw) {
+  try { return JSON.parse(raw); } catch {}
+  const arrM = raw.match(/\[[\s\S]*\]/);
+  if (arrM) try { return JSON.parse(arrM[0]); } catch {}
+  const objM = raw.match(/\{[\s\S]*\}/);
+  if (objM) try { return JSON.parse(objM[0]); } catch {}
+  return null;
+}
+
+// POST /api/cfo/generate — Generate financial projections using GPT-4o
+app.post('/api/cfo/generate', async (req, res) => {
+  try {
+    const { userId, industry, location, businessName, monthlyRevenue, monthlyExpenses } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+
+    const now = new Date();
+    const months = [];
+    for (let i = 1; i <= 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      months.push(d.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
+    }
+
+    const systemPrompt = `You are an expert CFO and financial analyst. Generate realistic financial data and projections for a business. 
+Be specific to their industry and location. Use realistic numbers — not too optimistic, not too pessimistic.
+
+Return ONLY valid JSON (no markdown, no code fences, no explanation). The JSON must match this EXACT structure:
+{
+  "monthlyRevenue": number,
+  "monthlyExpenses": number,
+  "netProfit": number,
+  "profitMargin": "string with %",
+  "projections": [
+    { "month": "Mon YYYY", "revenue": number, "expenses": number }
+  ],
+  "insights": [
+    "string — specific, actionable insight about their business"
+  ],
+  "kpis": {
+    "cashRunway": "string",
+    "burnRate": number,
+    "breakEvenPoint": "string",
+    "customerAcquisitionCost": number
+  }
+}
+
+The projections array must have exactly 6 entries for these months: ${months.join(', ')}.
+The insights array must have exactly 4 entries.
+All numbers should be realistic for the given industry and location.`;
+
+    const userPrompt = `Generate financial data for:
+- Business: ${businessName || 'Small business'}
+- Industry: ${industry || 'General services'}
+- Location: ${location || 'UAE'}
+${monthlyRevenue ? `- Current monthly revenue: $${monthlyRevenue}` : ''}
+${monthlyExpenses ? `- Current monthly expenses: $${monthlyExpenses}` : ''}
+
+If no revenue/expenses given, estimate realistic numbers for a ${industry || 'general'} business in ${location || 'the UAE'}.
+Show moderate growth (5-15% over 6 months). Be realistic.`;
+
+    const rawResponse = await openaiChat(systemPrompt, userPrompt, 2000);
+    const financialData = parseAIJson(rawResponse);
+    if (!financialData || !financialData.monthlyRevenue) {
+      return res.status(500).json({ error: 'Failed to parse financial data from AI' });
+    }
+
+    // Store the generated data
+    const cfoFile = path.join(__dirname, 'data', `cfo-${userId}.json`);
+    const stored = {
+      ...financialData,
+      userId,
+      industry: industry || 'General',
+      location: location || 'UAE',
+      businessName: businessName || '',
+      generatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await saveJSON(cfoFile, stored);
+
+    res.json({ success: true, data: stored });
+  } catch (e) {
+    console.error('CFO generate error:', e);
+    res.status(500).json({ error: 'Financial projection generation failed', details: e.message });
+  }
+});
+
+// GET /api/cfo/transactions/:userId — Get transactions (MUST be before /api/cfo/:userId)
+app.get('/api/cfo/transactions/:userId', async (req, res) => {
+  try {
+    const txFile = path.join(__dirname, 'data', `cfo-transactions-${req.params.userId}.json`);
+    const transactions = await loadJSON(txFile, []);
+    res.json({ transactions });
+  } catch (e) { res.status(500).json({ error: 'Failed to fetch transactions' }); }
+});
+
+// POST /api/cfo/transaction — Add a transaction (income/expense)
+app.post('/api/cfo/transaction', async (req, res) => {
+  try {
+    const { userId, type, amount, category, description, date } = req.body;
+    if (!userId || !type || !amount) return res.status(400).json({ error: 'userId, type, and amount required' });
+    if (!['income', 'expense'].includes(type)) return res.status(400).json({ error: 'type must be income or expense' });
+
+    const txFile = path.join(__dirname, 'data', `cfo-transactions-${userId}.json`);
+    const transactions = await loadJSON(txFile, []);
+    const tx = {
+      id: crypto.randomUUID(),
+      type,
+      amount: parseFloat(amount),
+      category: category || (type === 'income' ? 'Revenue' : 'Operating'),
+      description: description || '',
+      date: date || new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+    };
+    transactions.unshift(tx);
+    await saveJSON(txFile, transactions);
+    res.json({ success: true, transaction: tx });
+  } catch (e) {
+    console.error('Transaction error:', e);
+    res.status(500).json({ error: 'Failed to add transaction' });
+  }
+});
+
+// DELETE /api/cfo/transaction/:userId/:txId — Delete a transaction
+app.delete('/api/cfo/transaction/:userId/:txId', async (req, res) => {
+  try {
+    const { userId, txId } = req.params;
+    const txFile = path.join(__dirname, 'data', `cfo-transactions-${userId}.json`);
+    const transactions = await loadJSON(txFile, []);
+    const filtered = transactions.filter(t => t.id !== txId);
+    if (filtered.length === transactions.length) return res.status(404).json({ error: 'Transaction not found' });
+    await saveJSON(txFile, filtered);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Delete failed' }); }
+});
+
+// GET /api/cfo/:userId — Get stored financial data (AFTER specific routes)
+app.get('/api/cfo/:userId', async (req, res) => {
+  try {
+    const cfoFile = path.join(__dirname, 'data', `cfo-${req.params.userId}.json`);
+    const data = await loadJSON(cfoFile, null);
+    if (!data) return res.json({ data: null });
+    res.json({ data });
+  } catch (e) { res.status(500).json({ error: 'Failed to fetch CFO data' }); }
+});
+
+// ============================================
 // SERVE DASHBOARD STATIC FILES
 // ============================================
 app.use('/dashboard', express.static(path.join(__dirname, 'dashboard')));
