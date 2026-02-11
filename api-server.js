@@ -19,7 +19,7 @@ try {
 }
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // CORS - restrict to allowed domains
 const ALLOWED_ORIGINS = [
@@ -28,6 +28,9 @@ const ALLOWED_ORIGINS = [
   'https://www.promptabusiness.com',
   'https://makhlab.promptabusiness.com',
   'https://luna.promptabusiness.com',
+  'https://app.mubyn.com',
+  'http://localhost:3500',
+  'http://localhost:5173',
   process.env.BASE_URL || 'http://localhost:3000'
 ].filter(Boolean);
 
@@ -870,6 +873,410 @@ app.get('/api/makhlab/status/:signupId', async (req, res) => {
 });
 
 // ============================================
+// MUBYN OS ENDPOINTS (for VC demo)
+// ============================================
+
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const Anthropic = require('@anthropic-ai/sdk');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'mubyn-demo-secret-2026';
+const APOLLO_API_KEY = process.env.APOLLO_API_KEY || 'vndGs9TB42TIG7zcdO6zVQ';
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY // fallback
+});
+
+// Helper: Load/save JSON data files
+async function loadJSON(filePath, defaultValue = []) {
+  try {
+    const data = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(data);
+  } catch (e) {
+    return defaultValue;
+  }
+}
+
+async function saveJSON(filePath, data) {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+}
+
+// Auth middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.status(401).json({ error: 'No token provided' });
+  
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+}
+
+// ============================================
+// 1. AUTH ENDPOINTS
+// ============================================
+
+// POST /api/auth/signup
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const { email, password, name, business_name } = req.body;
+    
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'Email, password, and name are required' });
+    }
+    
+    const usersFile = path.join(__dirname, 'data/users.json');
+    const users = await loadJSON(usersFile, []);
+    
+    // Check if user exists
+    if (users.find(u => u.email === email)) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create user
+    const user = {
+      id: crypto.randomUUID(),
+      email,
+      name,
+      business_name: business_name || '',
+      password: hashedPassword,
+      created_at: new Date().toISOString()
+    };
+    
+    users.push(user);
+    await saveJSON(usersFile, users);
+    
+    // Generate JWT
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        business_name: user.business_name
+      }
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Signup failed' });
+  }
+});
+
+// POST /api/auth/login
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    const usersFile = path.join(__dirname, 'data/users.json');
+    const users = await loadJSON(usersFile, []);
+    
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Verify password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Generate JWT
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        business_name: user.business_name
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// GET /api/auth/me
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+  try {
+    const usersFile = path.join(__dirname, 'data/users.json');
+    const users = await loadJSON(usersFile, []);
+    
+    const user = users.find(u => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      business_name: user.business_name
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
+// ============================================
+// 2. CAESAR CHAT ENDPOINT
+// ============================================
+
+// POST /api/chat
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, userId } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    const systemPrompt = `You are Caesar (قيصر), an AI CEO running the client's business via Mubyn OS. You can find leads, create content, manage customer service, and provide financial insights. Be professional but personable. Respond in the same language the user writes in (Arabic or English). Keep responses concise and actionable.`;
+    
+    const response = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: message }
+      ]
+    });
+    
+    const reply = response.content[0].text;
+    
+    // Save conversation history
+    if (userId) {
+      const conversationsFile = path.join(__dirname, `data/conversations-${userId}.json`);
+      const conversations = await loadJSON(conversationsFile, []);
+      conversations.push({
+        id: crypto.randomUUID(),
+        userId,
+        message,
+        response: reply,
+        timestamp: new Date().toISOString()
+      });
+      await saveJSON(conversationsFile, conversations);
+    }
+    
+    res.json({ response: reply });
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({ error: 'Chat failed', details: error.message });
+  }
+});
+
+// ============================================
+// 3. LEADS ENDPOINTS
+// ============================================
+
+// POST /api/leads/search
+app.post('/api/leads/search', async (req, res) => {
+  try {
+    const { query, location, industry, userId } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({ error: 'Query is required' });
+    }
+    
+    // Call Apollo.io API
+    const apolloResponse = await fetch('https://api.apollo.io/api/v1/mixed_people/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': APOLLO_API_KEY
+      },
+      body: JSON.stringify({
+        q_organization_name: query,
+        person_locations: location ? [location] : undefined,
+        per_page: 10
+      })
+    });
+    
+    const apolloData = await apolloResponse.json();
+    
+    // Transform Apollo data
+    const leads = (apolloData.people || []).map(person => ({
+      id: crypto.randomUUID(),
+      name: person.name || '',
+      email: person.email || '',
+      company: person.organization?.name || '',
+      title: person.title || '',
+      location: person.city || person.state || person.country || '',
+      source: 'apollo',
+      created_at: new Date().toISOString()
+    }));
+    
+    // Save leads
+    if (userId) {
+      const leadsFile = path.join(__dirname, `data/leads-${userId}.json`);
+      const existingLeads = await loadJSON(leadsFile, []);
+      existingLeads.push(...leads);
+      await saveJSON(leadsFile, existingLeads);
+    }
+    
+    res.json({ leads });
+  } catch (error) {
+    console.error('Lead search error:', error);
+    res.status(500).json({ error: 'Lead search failed', details: error.message });
+  }
+});
+
+// GET /api/leads/:userId
+app.get('/api/leads/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const leadsFile = path.join(__dirname, `data/leads-${userId}.json`);
+    const leads = await loadJSON(leadsFile, []);
+    res.json({ leads });
+  } catch (error) {
+    console.error('Get leads error:', error);
+    res.status(500).json({ error: 'Failed to get leads' });
+  }
+});
+
+// ============================================
+// 4. CONTENT GENERATION ENDPOINTS
+// ============================================
+
+// POST /api/content/generate
+app.post('/api/content/generate', async (req, res) => {
+  try {
+    const { topic, platform, language, userId } = req.body;
+    
+    if (!topic || !platform) {
+      return res.status(400).json({ error: 'Topic and platform are required' });
+    }
+    
+    const systemPrompt = `You are a social media content expert. Generate engaging posts for the specified platform. If language is 'ar', write in Arabic. Keep posts platform-appropriate in length.`;
+    
+    const userPrompt = `Create a ${platform} post about: ${topic}. Language: ${language || 'en'}`;
+    
+    const response = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 512,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: userPrompt }
+      ]
+    });
+    
+    const content = response.content[0].text;
+    
+    const contentItem = {
+      id: crypto.randomUUID(),
+      content,
+      topic,
+      platform,
+      language: language || 'en',
+      status: 'draft',
+      created_at: new Date().toISOString()
+    };
+    
+    // Save content
+    if (userId) {
+      const contentFile = path.join(__dirname, `data/content-${userId}.json`);
+      const existingContent = await loadJSON(contentFile, []);
+      existingContent.push(contentItem);
+      await saveJSON(contentFile, existingContent);
+    }
+    
+    res.json(contentItem);
+  } catch (error) {
+    console.error('Content generation error:', error);
+    res.status(500).json({ error: 'Content generation failed', details: error.message });
+  }
+});
+
+// GET /api/content/:userId
+app.get('/api/content/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const contentFile = path.join(__dirname, `data/content-${userId}.json`);
+    const content = await loadJSON(contentFile, []);
+    res.json({ content });
+  } catch (error) {
+    console.error('Get content error:', error);
+    res.status(500).json({ error: 'Failed to get content' });
+  }
+});
+
+// ============================================
+// 5. CSA (CUSTOMER SUPPORT) ENDPOINTS
+// ============================================
+
+// POST /api/csa/respond
+app.post('/api/csa/respond', async (req, res) => {
+  try {
+    const { customer_message, business_context, userId } = req.body;
+    
+    if (!customer_message) {
+      return res.status(400).json({ error: 'Customer message is required' });
+    }
+    
+    const systemPrompt = `You are a professional customer support agent. ${business_context || 'Help the customer with their inquiry.'} Be empathetic, clear, and solution-oriented.`;
+    
+    const response = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 512,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: customer_message }
+      ]
+    });
+    
+    const reply = response.content[0].text;
+    
+    // Save conversation
+    if (userId) {
+      const csaFile = path.join(__dirname, `data/csa-${userId}.json`);
+      const conversations = await loadJSON(csaFile, []);
+      conversations.push({
+        id: crypto.randomUUID(),
+        customer_message,
+        ai_response: reply,
+        business_context: business_context || '',
+        timestamp: new Date().toISOString()
+      });
+      await saveJSON(csaFile, conversations);
+    }
+    
+    res.json({ response: reply });
+  } catch (error) {
+    console.error('CSA error:', error);
+    res.status(500).json({ error: 'CSA response failed', details: error.message });
+  }
+});
+
+// GET /api/csa/conversations/:userId
+app.get('/api/csa/conversations/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const csaFile = path.join(__dirname, `data/csa-${userId}.json`);
+    const conversations = await loadJSON(csaFile, []);
+    res.json({ conversations });
+  } catch (error) {
+    console.error('Get CSA conversations error:', error);
+    res.status(500).json({ error: 'Failed to get conversations' });
+  }
+});
+
+// ============================================
 // SERVE DASHBOARD STATIC FILES
 // ============================================
 app.use('/dashboard', express.static(path.join(__dirname, 'dashboard')));
@@ -878,4 +1285,5 @@ app.listen(PORT, () => {
   console.log(`🏛️ Caesar's Legions API running on port ${PORT}`);
   console.log(`   Health: http://localhost:${PORT}/health`);
   console.log(`   Dashboard: http://localhost:${PORT}/dashboard`);
+  console.log(`   🚀 Mubyn OS endpoints ready for VC demo!`);
 });

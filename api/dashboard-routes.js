@@ -153,7 +153,120 @@ router.post('/api/smtp/test', authMiddleware, async (req, res) => {
   }
 });
 
-// === LEADS ===
+// === LEAD FINDER (PRIMARY) ===
+router.post('/api/leads/find', authMiddleware, async (req, res) => {
+  const { industry, location, title, count, pitch } = req.body;
+  if (!industry || !location) {
+    return res.status(400).json({ error: 'Industry and location are required' });
+  }
+
+  const GMAPS_KEY = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyBwySl5_bATGb2cpLnZS2c0DFAsznj2xRQ';
+  const requestedCount = Math.min(parseInt(count) || 50, 200);
+
+  try {
+    // Step 1: Geocode the location
+    const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GMAPS_KEY}`;
+    const geoRes = await fetch(geoUrl);
+    const geoData = await geoRes.json();
+    
+    let lat, lng;
+    if (geoData.results && geoData.results.length > 0) {
+      lat = geoData.results[0].geometry.location.lat;
+      lng = geoData.results[0].geometry.location.lng;
+    } else {
+      return res.json({ success: false, error: 'Could not find that location. Try a more specific city or country.' });
+    }
+
+    // Step 2: Search for businesses
+    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(industry + ' in ' + location)}&location=${lat},${lng}&radius=50000&key=${GMAPS_KEY}`;
+    const searchRes = await fetch(searchUrl);
+    const searchData = await searchRes.json();
+
+    if (!searchData.results || searchData.results.length === 0) {
+      return res.json({ success: false, error: 'No businesses found for that search. Try a broader industry term.' });
+    }
+
+    // Step 3: Get details for each place (phone, website, etc.)
+    const leads = [];
+    const places = searchData.results.slice(0, Math.min(requestedCount, 20)); // Places API returns max 20 per page
+    
+    for (const place of places) {
+      try {
+        const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_phone_number,website,formatted_address,types,rating,user_ratings_total&key=${GMAPS_KEY}`;
+        const detailRes = await fetch(detailUrl);
+        const detailData = await detailRes.json();
+        const d = detailData.result || {};
+        
+        leads.push({
+          id: crypto.randomBytes(4).toString('hex'),
+          company: d.name || place.name,
+          email: '', // Google Maps doesn't provide email — we'll enrich later
+          phone: d.formatted_phone_number || '',
+          website: d.website || '',
+          address: d.formatted_address || place.formatted_address || '',
+          rating: d.rating || null,
+          reviews: d.user_ratings_total || 0,
+          source: 'google_maps',
+          industry: industry,
+          addedAt: new Date().toISOString(),
+          status: 'new'
+        });
+      } catch (e) {
+        // Skip failed detail lookups
+      }
+    }
+
+    // Step 4: Try to get more results with next_page_token
+    if (searchData.next_page_token && leads.length < requestedCount) {
+      // Google requires ~2sec delay before next_page_token works
+      await new Promise(r => setTimeout(r, 2500));
+      try {
+        const nextUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${searchData.next_page_token}&key=${GMAPS_KEY}`;
+        const nextRes = await fetch(nextUrl);
+        const nextData = await nextRes.json();
+        if (nextData.results) {
+          for (const place of nextData.results.slice(0, requestedCount - leads.length)) {
+            leads.push({
+              id: crypto.randomBytes(4).toString('hex'),
+              company: place.name,
+              email: '',
+              phone: '',
+              website: '',
+              address: place.formatted_address || '',
+              rating: place.rating || null,
+              reviews: place.user_ratings_total || 0,
+              source: 'google_maps',
+              industry: industry,
+              addedAt: new Date().toISOString(),
+              status: 'new'
+            });
+          }
+        }
+      } catch (e) { /* next page failed, that's fine */ }
+    }
+
+    // Step 5: Save to client's leads file
+    const leadsFile = path.join(LEADS_DIR, `${req.client.clientId}.json`);
+    let existing = [];
+    try { existing = JSON.parse(fs.readFileSync(leadsFile, 'utf8')); } catch {}
+    const all = [...existing, ...leads];
+    fs.writeFileSync(leadsFile, JSON.stringify(all, null, 2));
+
+    // Step 6: Save the search criteria for future enrichment
+    const searchLog = path.join(LEADS_DIR, `${req.client.clientId}-searches.json`);
+    let searches = [];
+    try { searches = JSON.parse(fs.readFileSync(searchLog, 'utf8')); } catch {}
+    searches.push({ industry, location, title, count: requestedCount, pitch, foundCount: leads.length, timestamp: new Date().toISOString() });
+    fs.writeFileSync(searchLog, JSON.stringify(searches, null, 2));
+
+    res.json({ success: true, leadsFound: leads.length, total: all.length });
+  } catch (err) {
+    console.error('Lead find error:', err);
+    res.json({ success: false, error: 'Search failed. Our team has been notified and will find leads manually.' });
+  }
+});
+
+// === LEADS (manual upload) ===
 router.post('/api/leads/upload', authMiddleware, (req, res) => {
   const { leads } = req.body;
   if (!leads || !Array.isArray(leads) || leads.length === 0) {
