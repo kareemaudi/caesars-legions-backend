@@ -590,11 +590,20 @@ app.get('/api/metrics', async (req, res) => {
 // ============================================
 app.post('/api/makhlab/signup', async (req, res) => {
   try {
-    const { businessName, ownerName, phone, email, businessType, language, plan } = req.body;
+    const { businessName, ownerName, name, phone, email, businessType, language, preferredLanguage, plan, personality, assistantName, telegramUsername, tasks, billing, paymentMethod, price } = req.body;
+
+    // Use ownerName or name (frontend sends both for compatibility)
+    const finalName = ownerName || name || '';
 
     // Validate
-    if (!businessName || !ownerName || (!phone && !email)) {
-      return res.status(400).json({ success: false, error: 'Business name, owner name, and contact (phone or email) are required.' });
+    if (!finalName || String(finalName).trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Name is required (min 2 chars)' });
+    }
+    if (!businessName || String(businessName).trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Business name is required (min 2 chars)' });
+    }
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
     }
 
     const signupId = `makhlab_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -603,17 +612,23 @@ app.post('/api/makhlab/signup', async (req, res) => {
     const signup = {
       signupId,
       businessName: String(businessName).trim().slice(0, 200),
-      ownerName: String(ownerName).trim().slice(0, 100),
+      ownerName: String(finalName).trim().slice(0, 100),
       phone: phone ? String(phone).trim().slice(0, 20) : null,
       email: email ? String(email).toLowerCase().trim().slice(0, 200) : null,
+      telegramUsername: telegramUsername ? String(telegramUsername).trim().replace(/^@/, '').slice(0, 100) : null,
       businessType: (businessType || 'general').slice(0, 100),
-      language: language || 'ar',
+      language: preferredLanguage || language || 'ar',
+      personality: personality || 'friendly',
+      assistantName: assistantName ? String(assistantName).trim().slice(0, 100) : null,
+      tasks: Array.isArray(tasks) ? tasks : [],
       plan: selectedPlan,
+      billing: billing || 'monthly',
+      paymentMethod: paymentMethod || 'free',
       status: 'pending_provisioning',
       createdAt: new Date().toISOString(),
       provisionedAt: null,
       botUsername: null,
-      trialExpiry: selectedPlan === 'free_trial' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null
+      trialExpiry: selectedPlan === 'free_trial' || selectedPlan === 'free' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null
     };
 
     // Save to makhlab-signups.json
@@ -639,7 +654,10 @@ app.post('/api/makhlab/signup', async (req, res) => {
 👤 Owner: ${signup.ownerName}
 📱 Phone: ${signup.phone || 'N/A'}
 📧 Email: ${signup.email || 'N/A'}
+💬 Telegram: ${signup.telegramUsername ? '@' + signup.telegramUsername : 'N/A'}
 🏷️ Type: ${signup.businessType}
+🎭 Personality: ${signup.personality}
+🤖 Assistant: ${signup.assistantName || 'Default'}
 💰 Plan: ${signup.plan}
 🆔 ID: ${signup.signupId}
 
