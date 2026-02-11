@@ -937,6 +937,60 @@ function authenticateToken(req, res, next) {
   });
 }
 
+// ─── Multi-tenant: enforceOwnership middleware ────────────────────
+function enforceOwnership(req, res, next) {
+  const requestedUserId = req.params.userId || req.body.userId;
+  if (requestedUserId && requestedUserId !== req.user.id) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  if (!req.body.userId && req.method !== 'GET') req.body.userId = req.user.id;
+  if (!req.params.userId) req.userId = req.user.id;
+  next();
+}
+
+// ─── Multi-tenant: Global auth for /api/* routes ──────────────────
+const API_PUBLIC_PATHS = new Set([
+  '/api/auth/signup',
+  '/api/auth/login',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
+  '/api/health',
+  '/api/version',
+]);
+
+const API_PUBLIC_PATTERNS = [
+  { method: 'GET',  pattern: /^\/api\/website\/preview\/[^/]+$/ },
+  { method: 'GET',  pattern: /^\/api\/csa\/widget\/[^/]+$/ },
+  { method: 'GET',  pattern: /^\/api\/widget\.js/ },
+  { method: 'POST', pattern: /^\/api\/csa\/respond$/ },
+  { method: 'POST', pattern: /^\/api\/widget\/event$/ },
+  { method: 'OPTIONS', pattern: /^\/api\/csa\/respond$/ },
+  { method: 'POST', pattern: /^\/api\/csa\/telegram\/webhook\// },
+  { method: 'POST', pattern: /^\/api\/csa\/whatsapp\/webhook/ },
+  { method: 'GET',  pattern: /^\/api\/csa\/whatsapp\/webhook/ },
+  { method: 'GET',  pattern: /^\/api\/csa\/email\/oauth\/google\/callback/ },
+  { method: 'GET',  pattern: /^\/api\/integrations\/shopify\/oauth\/callback/ },
+  { method: 'GET',  pattern: /^\/api\/integrations\/meta\/oauth\/callback/ },
+  { method: 'GET',  pattern: /^\/api\/integrations\/google-ads\/oauth\/callback/ },
+  { method: 'GET',  pattern: /^\/api\/settings\/logo\/[^/]+$/ },
+  { method: 'GET',  pattern: /^\/site\// },
+  { method: 'GET',  pattern: /^\/health$/ },
+];
+
+app.use('/api', (req, res, next) => {
+  const fullPath = '/api' + req.path;
+  // Check exact public paths
+  if (API_PUBLIC_PATHS.has(fullPath)) return next();
+  // Check pattern matches
+  for (const p of API_PUBLIC_PATTERNS) {
+    if (p.method === req.method && p.pattern.test(fullPath)) return next();
+  }
+  // Not public — require auth + ownership
+  authenticateToken(req, res, () => {
+    enforceOwnership(req, res, next);
+  });
+});
+
 // ============================================
 // 1. AUTH ENDPOINTS
 // ============================================
@@ -1046,7 +1100,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // GET /api/auth/me
-app.get('/api/auth/me', authenticateToken, async (req, res) => {
+app.get('/api/auth/me', async (req, res) => {
   try {
     const usersFile = path.join(__dirname, 'data/users.json');
     const users = await loadJSON(usersFile, []);
