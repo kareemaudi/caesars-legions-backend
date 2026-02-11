@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// v2.0.0 Ã¢â'¬â€ JSON-based signup flow (no SQLite dependency)
+// v2.0.0 '¬â€ JSON-based signup flow (no SQLite dependency)
 
 const express = require('express');
 const crypto = require('crypto');
@@ -8,14 +8,14 @@ const path = require('path');
 
 require('dotenv').config();
 
-// Graceful imports Ã¢â'¬â€ some may fail on Railway if native modules aren't available
+// Graceful imports '¬â€ some may fail on Railway if native modules aren't available
 let db, webhookHandler, unsubscribeHandler, stripeIntegration, signupHandler, dashboardApi;
-try { db = require('../lib/db'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â db module unavailable:', e.message); }
-try { webhookHandler = require('../lib/webhook-handler'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â webhook-handler unavailable:', e.message); }
-try { unsubscribeHandler = require('../lib/unsubscribe'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â unsubscribe unavailable:', e.message); }
-try { stripeIntegration = require('../lib/stripe-integration'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â stripe-integration unavailable:', e.message); }
-try { signupHandler = require('../lib/signup-handler'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â signup-handler unavailable:', e.message); }
-try { dashboardApi = require('../lib/dashboard-api'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â dashboard-api unavailable:', e.message); }
+try { db = require('../lib/db'); } catch(e) { console.warn('  db module unavailable:', e.message); }
+try { webhookHandler = require('../lib/webhook-handler'); } catch(e) { console.warn('  webhook-handler unavailable:', e.message); }
+try { unsubscribeHandler = require('../lib/unsubscribe'); } catch(e) { console.warn('  unsubscribe unavailable:', e.message); }
+try { stripeIntegration = require('../lib/stripe-integration'); } catch(e) { console.warn('  stripe-integration unavailable:', e.message); }
+try { signupHandler = require('../lib/signup-handler'); } catch(e) { console.warn('  signup-handler unavailable:', e.message); }
+try { dashboardApi = require('../lib/dashboard-api'); } catch(e) { console.warn('  dashboard-api unavailable:', e.message); }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -189,12 +189,12 @@ app.get('/api/health', (req, res) => {
 try {
   const dashboardRoutes = require('../api/dashboard-routes.js');
   app.use('/dashboard', dashboardRoutes);
-  console.log('Ã¢Å"â€¦ Dashboard routes mounted at /dashboard');
+  console.log('" Dashboard routes mounted at /dashboard');
 } catch (dashErr) {
-  console.warn('Ã¢Å¡Â Ã¯Â¸Â Dashboard routes failed to load:', dashErr.message);
+  console.warn('  Dashboard routes failed to load:', dashErr.message);
 }
 
-// Webhook routes (conditional Ã¢â'¬â€ may not be available on Railway)
+// Webhook routes (conditional '¬â€ may not be available on Railway)
 if (webhookHandler) {
   // webhookHandler is an object with named functions, not a Router
   if (typeof webhookHandler === 'function') {
@@ -204,7 +204,7 @@ if (webhookHandler) {
   } else if (webhookHandler.router) {
     app.use('/webhooks', webhookHandler.router);
   } else {
-    console.warn('Ã¢Å¡Â Ã¯Â¸Â webhookHandler loaded but not a middleware Ã¢â'¬â€ skipping mount');
+    console.warn('webhookHandler loaded but not a middleware - skipping mount');
   }
 }
 
@@ -274,7 +274,7 @@ app.post('/api/signup', async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error('Ã¢ÂÅ' Signup error:', error.message);
+    console.error('Signup error:', error.message);
     res.status(400).json({
       success: false,
       error: error.message
@@ -283,10 +283,10 @@ app.post('/api/signup', async (req, res) => {
 });
 
 // =============================================================================
-// CLIENT SIGNUP & STATUS ENDPOINTS (public Ã¢â'¬â€ no auth required)
+// CLIENT SIGNUP & STATUS ENDPOINTS (public '¬â€ no auth required)
 // =============================================================================
 
-// POST /api/clients/signup Ã¢â'¬â€ New client self-service signup
+// POST /api/clients/signup '¬â€ New client self-service signup
 app.post('/api/clients/signup', async (req, res) => {
   try {
     const {
@@ -388,7 +388,7 @@ app.post('/api/clients/signup', async (req, res) => {
       } catch(e) { console.warn('db.insertClient fallback failed:', e.message); }
     }
 
-    console.log(`Ã°Å¸Å½â€° New client signup: ${sanitized.companyName} (${sanitized.email}) Ã¢â€ â€™ ID ${clientId}`);
+    console.log(` New client signup: ${sanitized.companyName} (${sanitized.email})   ID ${clientId}`);
 
     // Log to new-signups.json for heartbeat notification
     const signupsFile = path.join(__dirname, '..', 'data', 'new-signups.json');
@@ -438,7 +438,7 @@ app.post('/api/clients/signup', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Ã¢ÂÅ' Client signup error:', error.message);
+    console.error('Client signup error:', error.message);
     res.status(500).json({
       success: false,
       error: 'Something went wrong. Please try again or email support@mubyn.com'
@@ -446,7 +446,7 @@ app.post('/api/clients/signup', async (req, res) => {
   }
 });
 
-// GET /api/clients/:id/status Ã¢â'¬â€ Public client status lookup (by id or email)
+// GET /api/clients/:id/status '¬â€ Public client status lookup (by id or email)
 app.get('/api/clients/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
@@ -540,12 +540,12 @@ app.get('/api/clients/:id/status', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Ã¢ÂÅ' Client status error:', error.message);
+    console.error('Client status error:', error.message);
     res.status(500).json({ success: false, error: 'Something went wrong.' });
   }
 });
 
-// GET /api/clients/lookup/:email Ã¢â'¬â€ Lookup by email (convenience endpoint)
+// GET /api/clients/lookup/:email '¬â€ Lookup by email (convenience endpoint)
 app.get('/api/clients/lookup/:email', async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email).toLowerCase().trim();
@@ -581,7 +581,7 @@ app.post('/api/leads', async (req, res) => {
     // Log the lead (sanitized)
     const safeEmail = email.toLowerCase().trim();
     const safeCompany = escapeHtml((company || '').slice(0, 100));
-    console.log(`Ã°Å¸â€œÂ¥ New lead: ${safeEmail} (${safeCompany})`);
+    console.log(` New lead: ${safeEmail} (${safeCompany})`);
 
     // Store in leads.json (simple file-based storage)
     const leadsDir = path.join(__dirname, '..', 'data');
@@ -627,7 +627,7 @@ app.get('/api/dashboard/:clientId', authMiddleware, async (req, res) => {
     const data = await dashboardApi.getDashboardData(clientId);
     res.json(data);
   } catch (error) {
-    console.error('Ã¢ÂÅ' Dashboard API error:', error.message);
+    console.error('Dashboard API error:', error.message);
     res.status(error.message.includes('not found') ? 404 : 500).json({
       success: false,
       error: error.message
@@ -775,7 +775,7 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
     </head>
     <body>
       <div class="container">
-        <h1>Ã°Å¸Ââ€ºÃ¯Â¸Â Mubyn OS</h1>
+        <h1> Mubyn OS</h1>
         <div class="subtitle">${safeCompany} Campaign Dashboard</div>
 
         <div class="stats">
@@ -799,12 +799,12 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
 
         ${replies.length > 0 ? `
         <div class="section">
-          <h2>Ã°Å¸â€œÂ¬ Recent Replies</h2>
+          <h2> Recent Replies</h2>
           ${replies.map(r => `
             <div class="reply-box">
               <div class="reply-meta">
                 <strong>${r.first_name} ${r.last_name}</strong> from ${r.company}
-                Ã'Â· ${new Date(r.received_at * 1000).toLocaleDateString()}
+                - ${new Date(r.received_at * 1000).toLocaleDateString()}
               </div>
               <div class="reply-body">${r.body.substring(0, 200)}...</div>
             </div>
@@ -813,7 +813,7 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
         ` : ''}
 
         <div class="section">
-          <h2>Ã°Å¸â€œÂ§ Recent Emails</h2>
+          <h2> Recent Emails</h2>
           <table>
             <thead>
               <tr>
@@ -879,7 +879,7 @@ app.get('/', (req, res) => {
       </style>
     </head>
     <body>
-      <h1>Ã°Å¸Ââ€ºÃ¯Â¸Â Mubyn OS - Clients</h1>
+      <h1> Mubyn OS - Clients</h1>
       ${clients.map(c => `
         <a href="/dashboard/${c.id}">
           <strong>${c.company}</strong> (${c.name})
@@ -921,7 +921,7 @@ function generateMakhlabId() {
   return 'makhlab_' + crypto.randomBytes(6).toString('hex');
 }
 
-// POST /api/makhlab/signup Ã¢â'¬â€ New Makhlab customer signup
+// POST /api/makhlab/signup '¬â€ New Makhlab customer signup
 app.post('/api/makhlab/signup', async (req, res) => {
   try {
     const {
@@ -931,19 +931,19 @@ app.post('/api/makhlab/signup', async (req, res) => {
 
     // Validate required fields
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
-      return res.status(400).json({ success: false, error: 'Name is required (min 2 chars)', errorAr: 'Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨ (Ã˜Â­Ã˜Â±Ã™ÂÃ™Å Ã™â€  Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ™â€ž)' });
+      return res.status(400).json({ success: false, error: 'Name is required (min 2 chars)', errorAr: 'Error' });
     }
     if (!email || !validateEmail(email)) {
-      return res.status(400).json({ success: false, error: 'Valid email is required', errorAr: 'Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ'Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å  Ã˜ÂºÃ™Å Ã˜Â± Ã˜ÂµÃ˜Â§Ã™â€žÃ˜Â­' });
+      return res.status(400).json({ success: false, error: 'Valid email is required', errorAr: 'Error' });
     }
     if (!businessName || typeof businessName !== 'string' || businessName.trim().length < 2) {
-      return res.status(400).json({ success: false, error: 'Business name is required (min 2 chars)', errorAr: 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨' });
+      return res.status(400).json({ success: false, error: 'Business name is required (min 2 chars)', errorAr: 'Error' });
     }
     if (!businessType || !['restaurant', 'ecommerce', 'realestate', 'services', 'other'].includes(businessType)) {
-      return res.status(400).json({ success: false, error: 'Valid business type is required', errorAr: 'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨' });
+      return res.status(400).json({ success: false, error: 'Valid business type is required', errorAr: 'Error' });
     }
     if (!plan || !['free', 'starter', 'professional', 'enterprise', 'pro', 'max'].includes(plan)) {
-      return res.status(400).json({ success: false, error: 'Valid plan is required', errorAr: 'Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â®Ã˜Â·Ã˜Â© Ã˜ÂµÃ˜Â§Ã™â€žÃ˜Â­Ã˜Â©' });
+      return res.status(400).json({ success: false, error: 'Valid plan is required', errorAr: '     ' });
     }
 
     // Sanitize all inputs
@@ -970,7 +970,7 @@ app.post('/api/makhlab/signup', async (req, res) => {
       return res.json({
         success: true,
         signupId: existing.signupId,
-        message: 'Ã™â€žÃ˜Â¯Ã™Å Ã™Æ' Ã˜Â·Ã™â€žÃ˜Â¨ Ã™â€¦Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž! Ã˜Â³Ã™â€ Ã˜ÂªÃ™Ë†Ã˜Â§Ã˜ÂµÃ™â€ž Ã™â€¦Ã˜Â¹Ã™Æ' Ã™â€šÃ˜Â±Ã™Å Ã˜Â¨Ã˜Â§Ã™â€¹.',
+        message: 'You already have a signup on file',
         messageEn: 'You already have a signup on file! We\'ll be in touch soon.',
         existing: true
       });
@@ -1015,13 +1015,13 @@ app.post('/api/makhlab/signup', async (req, res) => {
     });
     saveMakhlabNewSignups(newSignups);
 
-    console.log(`Ã°Å¸Â§Âª Makhlab signup: ${sanitized.businessName} (${sanitized.email}) Ã¢â€ â€™ ${signupId} [${sanitized.plan}]`);
+    console.log(` Makhlab signup: ${sanitized.businessName} (${sanitized.email})   ${signupId} [${sanitized.plan}]`);
 
-    // Ã°Å¸â€â€ INSTANT Telegram notification to Kareem
+    //  INSTANT Telegram notification to Kareem
     const notifyBot = process.env.MAKHLAB_NOTIFY_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
     const notifyChatId = process.env.TELEGRAM_CHAT_ID || '7189807915';
     if (notifyBot) {
-      const alertMsg = `Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨ NEW MAKHLAB SIGNUP! Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨\n\nÃ°Å¸ÂÂª Business: ${sanitized.businessName}\nÃ°Å¸â€˜Â¤ Owner: ${sanitized.name}\nÃ°Å¸â€œÂ§ Email: ${sanitized.email}\nÃ°Å¸ÂÂ·Ã¯Â¸Â Type: ${sanitized.businessType}\nÃ°Å¸â€™Â° Plan: ${sanitized.plan}\nÃ°Å¸â€ â€ ID: ${signupId}\n\nÃ¢ÂÂ³ Status: Pending provisioning`;
+      const alertMsg = ` NEW MAKHLAB SIGNUP! \n\n Business: ${sanitized.businessName}\n Owner: ${sanitized.name}\n Email: ${sanitized.email}\n Type: ${sanitized.businessType}\n Plan: ${sanitized.plan}\n  ID: ${signupId}\n\n Status: Pending provisioning`;
       fetch(`https://api.telegram.org/bot${notifyBot}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1032,21 +1032,21 @@ app.post('/api/makhlab/signup', async (req, res) => {
     res.json({
       success: true,
       signupId,
-      message: 'Ã˜ÂªÃ™â€¦ Ã˜Â§Ã˜Â³Ã˜ÂªÃ™â€žÃ˜Â§Ã™â€¦ Ã˜Â·Ã™â€žÃ˜Â¨Ã™Æ'! Ã˜Â³Ã™â€ Ã˜Â±Ã˜Â³Ã™â€ž Ã™â€žÃ™Æ' Ã˜Â±Ã˜Â§Ã˜Â¨Ã˜Â· Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â§Ã˜Â¹Ã˜Â¯ Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž Ã˜Â¯Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€š.',
+      message: 'Request received successfully',
       messageEn: 'Request received! We\'ll send you your assistant link within minutes.'
     });
 
   } catch (error) {
-    console.error('Ã¢ÂÅ' Makhlab signup error:', error.message);
+    console.error('Makhlab signup error:', error.message);
     res.status(500).json({
       success: false,
       error: 'Something went wrong. Please try again.',
-      errorAr: 'Ã˜Â­Ã˜Â¯Ã˜Â« Ã˜Â®Ã˜Â·Ã˜Â£. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ã™â€žÃ˜Â© Ã™â€¦Ã˜Â±Ã˜Â© Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€°.'
+      errorAr: 'Error'
     });
   }
 });
 
-// GET /api/makhlab/signups Ã¢â'¬â€ List all Makhlab signups (for Caesar to check)
+// GET /api/makhlab/signups '¬â€ List all Makhlab signups (for Caesar to check)
 app.get('/api/makhlab/signups', (req, res) => {
   try {
     const signups = loadMakhlabSignups();
@@ -1056,12 +1056,12 @@ app.get('/api/makhlab/signups', (req, res) => {
       signups: signups.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     });
   } catch (error) {
-    console.error('Ã¢ÂÅ' Makhlab signups list error:', error.message);
+    console.error('Makhlab signups list error:', error.message);
     res.status(500).json({ success: false, error: 'Failed to load signups' });
   }
 });
 
-// GET /api/makhlab/signup/:id Ã¢â'¬â€ Get a specific Makhlab signup by ID
+// GET /api/makhlab/signup/:id '¬â€ Get a specific Makhlab signup by ID
 app.get('/api/makhlab/signup/:id', (req, res) => {
   try {
     const { id } = req.params;
@@ -1069,12 +1069,12 @@ app.get('/api/makhlab/signup/:id', (req, res) => {
     const signup = signups.find(s => s.signupId === id);
 
     if (!signup) {
-      return res.status(404).json({ success: false, error: 'Signup not found', errorAr: 'Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨' });
+      return res.status(404).json({ success: false, error: 'Signup not found', errorAr: 'Error' });
     }
 
     res.json({ success: true, signup });
   } catch (error) {
-    console.error('Ã¢ÂÅ' Makhlab signup lookup error:', error.message);
+    console.error('Makhlab signup lookup error:', error.message);
     res.status(500).json({ success: false, error: 'Failed to load signup' });
   }
 });
@@ -1085,12 +1085,12 @@ app.get('/api/makhlab/signup/:id', (req, res) => {
 try {
   const mubynRoutes = require('../lib/mubyn-routes');
   app.use('/api', mubynRoutes);
-  console.log('Ã¢Å"â€¦ Mubyn OS routes mounted at /api');
-} catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â Mubyn routes unavailable:', e.message); }
+  console.log('" Mubyn OS routes mounted at /api');
+} catch(e) { console.warn('  Mubyn routes unavailable:', e.message); }
 
 // =============================================================================
 
-// GET /site/:subdomain Ã¢â'¬â€ Serve published websites
+// GET /site/:subdomain '¬â€ Serve published websites
 app.get('/site/:subdomain', async (req, res) => {
   try {
     const { subdomain } = req.params;
@@ -1098,7 +1098,7 @@ app.get('/site/:subdomain', async (req, res) => {
     let mapping = {};
     try { mapping = JSON.parse(require('fs').readFileSync(mappingFile, 'utf8')); } catch(e) {}
     const userId = mapping[subdomain];
-    if (!userId) return res.status(404).send('<!DOCTYPE html><html><head><title>Site Not Found</title><style>body{font-family:Inter,sans-serif;background:#0B0B0F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}a{color:#D4A843;}</style></head><body><div><h1>Site Not Found</h1><p><a href="https://mubyn.com">Build yours with Mubyn Ã¢â€ â€™</a></p></div></body></html>');
+    if (!userId) return res.status(404).send('<!DOCTYPE html><html><head><title>Site Not Found</title><style>body{font-family:Inter,sans-serif;background:#0B0B0F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}a{color:#D4A843;}</style></head><body><div><h1>Site Not Found</h1><p><a href="https://mubyn.com">Build yours with Mubyn  â€™</a></p></div></body></html>');
     const html = require('fs').readFileSync(path.join(__dirname, '..', 'data', 'websites', userId, 'index.html'), 'utf8');
     res.set('Content-Type', 'text/html; charset=utf-8');
     res.set('Cache-Control', 'public, max-age=300');
@@ -1107,7 +1107,7 @@ app.get('/site/:subdomain', async (req, res) => {
 });
 
 // =============================================================================
-// SEED DATA Ã¢â'¬â€ Auto-create essential accounts on startup (Railway ephemeral FS)
+// SEED DATA '¬â€ Auto-create essential accounts on startup (Railway ephemeral FS)
 // =============================================================================
 async function seedAccounts() {
   const bcrypt = require('bcryptjs');
@@ -1147,14 +1147,14 @@ async function seedAccounts() {
   
   if (created > 0) {
     await storage.saveJSON(usersFile, users);
-    console.log(`   🌱 Seeded ${created} account(s)`);
+    console.log(`    Seeded ${created} account(s)`);
   }
 }
 
 app.listen(PORT, async () => {
-  console.log(`\nÃ°Å¸Ââ€ºÃ¯Â¸Â  Mubyn OS Dashboard running on http://localhost:${PORT}`);
-  console.log(`   Ã°Å¸Å¡â'¬ Mubyn OS endpoints ready at /api!`);
-  console.log(`   Ã¢Å"â€¦ Build: 2026-02-11-1825`);
+  console.log(`\n  Mubyn OS Dashboard running on http://localhost:${PORT}`);
+  console.log(`   ' Mubyn OS endpoints ready at /api!`);
+  console.log(`   " Build: 2026-02-11-1825`);
   await seedAccounts();
-  console.log(`   Ã¢Å"â€¦ Ready!\n`);
+  console.log(`   " Ready!\n`);
 });
