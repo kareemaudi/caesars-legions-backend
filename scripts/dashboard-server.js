@@ -1087,5 +1087,6 @@ try {
 
 app.listen(PORT, () => {
   console.log(`\n🏛️  Caesar's Legions Dashboard running on http://localhost:${PORT}`);
-  console.log(`   🚀 Mubyn OS endpoints ready!\n`);
+  console.log(`   🚀 Mubyn OS endpoints ready at /api!`);
+  console.log(`   ✅ Build: 2026-02-11-1551\n`);
 });
