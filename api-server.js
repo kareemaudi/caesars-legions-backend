@@ -9,7 +9,14 @@ const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
 const { handleOnboarding, Client, saveClient } = require('./api/onboard.js');
-const dashboardRoutes = require('./api/dashboard-routes.js');
+let dashboardRoutes;
+try {
+  dashboardRoutes = require('./api/dashboard-routes.js');
+  console.log('✅ Dashboard routes loaded');
+} catch (e) {
+  console.error('❌ Dashboard routes failed to load:', e.message);
+  dashboardRoutes = require('express').Router();
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
