@@ -938,11 +938,75 @@ function authenticateToken(req, res, next) {
 }
 
 // ─── Multi-tenant: enforceOwnership middleware ────────────────────
+// Patterns where the userId is in the URL path (position after the prefix)
+// e.g. /api/leads/:userId, /api/cfo/:userId, /api/settings/:userId etc.
+const USERID_PATH_PATTERNS = [
+  /^\/leads\/([^/]+)$/,
+  /^\/leads\/([^/]+)\/[^/]+$/,
+  /^\/leads\/([^/]+)\/[^/]+\/[^/]+$/,
+  /^\/leads\/campaigns\/([^/]+)$/,
+  /^\/leads\/campaign\/([^/]+)\/[^/]+$/,
+  /^\/leads\/campaign\/([^/]+)\/[^/]+\/[^/]+$/,
+  /^\/cfo\/([^/]+)$/,
+  /^\/cfo\/transactions\/([^/]+)$/,
+  /^\/cfo\/transaction\/([^/]+)\/[^/]+$/,
+  /^\/content\/([^/]+)$/,
+  /^\/settings\/([^/]+)$/,
+  /^\/settings\/logo\/([^/]+)$/,
+  /^\/csa\/conversations\/([^/]+)$/,
+  /^\/csa\/knowledge\/([^/]+)$/,
+  /^\/csa\/knowledge\/([^/]+)\/[^/]+$/,
+  /^\/csa\/settings\/([^/]+)$/,
+  /^\/csa\/widget\/([^/]+)$/,
+  /^\/csa\/telegram\/status\/([^/]+)$/,
+  /^\/csa\/email\/status\/([^/]+)$/,
+  /^\/csa\/email\/disconnect\/([^/]+)$/,
+  /^\/csa\/email\/poll\/([^/]+)$/,
+  /^\/csa\/email\/conversations\/([^/]+)$/,
+  /^\/csa\/email\/oauth\/status\/([^/]+)$/,
+  /^\/csa\/whatsapp\/status\/([^/]+)$/,
+  /^\/csa\/whatsapp\/disconnect\/([^/]+)$/,
+  /^\/csa\/whatsapp\/auto-reply\/([^/]+)$/,
+  /^\/csa\/whatsapp\/conversations\/([^/]+)$/,
+  /^\/website\/preview\/([^/]+)$/,
+  /^\/website\/meta\/([^/]+)$/,
+  /^\/website\/widget\/([^/]+)$/,
+  /^\/integrations\/shopify\/status\/([^/]+)$/,
+  /^\/integrations\/shopify\/disconnect\/([^/]+)$/,
+  /^\/integrations\/shopify\/products\/([^/]+)$/,
+  /^\/integrations\/shopify\/orders\/([^/]+)$/,
+  /^\/integrations\/shopify\/analytics\/([^/]+)$/,
+  /^\/integrations\/meta\/status\/([^/]+)$/,
+  /^\/integrations\/meta\/disconnect\/([^/]+)$/,
+  /^\/integrations\/meta\/campaigns\/([^/]+)$/,
+  /^\/integrations\/meta\/insights\/([^/]+)$/,
+  /^\/integrations\/google-ads\/status\/([^/]+)$/,
+  /^\/integrations\/google-ads\/disconnect\/([^/]+)$/,
+  /^\/integrations\/google-ads\/campaigns\/([^/]+)$/,
+  /^\/integrations\/google-ads\/insights\/([^/]+)$/,
+];
+
 function enforceOwnership(req, res, next) {
-  const requestedUserId = req.params.userId || req.body.userId;
+  // Check userId from parsed route params first
+  let requestedUserId = req.params.userId || req.body.userId;
+  
+  // If no params parsed yet (global middleware), extract from URL path
+  if (!requestedUserId) {
+    // req.path inside app.use('/api', ...) is relative (e.g., '/leads/abc-123')
+    const relPath = req.path;
+    for (const pattern of USERID_PATH_PATTERNS) {
+      const match = relPath.match(pattern);
+      if (match) {
+        requestedUserId = match[1];
+        break;
+      }
+    }
+  }
+  
   if (requestedUserId && requestedUserId !== req.user.id) {
     return res.status(403).json({ error: 'Access denied' });
   }
+  // Inject userId from JWT if not specified in request
   if (!req.body.userId && req.method !== 'GET') req.body.userId = req.user.id;
   if (!req.params.userId) req.userId = req.user.id;
   next();
