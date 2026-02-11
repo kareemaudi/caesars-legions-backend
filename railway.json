@@ -7,6 +7,6 @@
     "numReplicas": 1,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
-    "startCommand": "NODE_ENV=production node scripts/dashboard-server.js"
+    "startCommand": "NODE_ENV=production node api-server.js"
   }
 }
