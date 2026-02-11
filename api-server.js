@@ -1349,6 +1349,8 @@ app.post('/api/content/image', async (req, res) => {
 
 // POST /api/csa/respond — with knowledge base + tone support
 app.post('/api/csa/respond', async (req, res) => {
+  // Allow cross-origin requests from widget embeds
+  res.set('Access-Control-Allow-Origin', '*');
   try {
     const { customer_message, business_context, userId, knowledge_base, tone, language } = req.body;
     
@@ -1492,7 +1494,8 @@ app.get('/api/csa/widget/:userId', async (req, res) => {
     const settingsFile = path.join(__dirname, `data/csa-settings-${userId}.json`);
     const settings = await loadJSON(settingsFile, {});
     const widget = settings.widget || {};
-    const embedCode = `<script src="https://app.mubyn.com/widget/${userId}.js" async></script>`;
+    const baseUrl = 'https://natural-energy-production-df04.up.railway.app';
+    const embedCode = `<!-- Mubyn OS Chat Widget -->\n<script src="${baseUrl}/api/widget.js?id=${userId}" async></script>`;
     res.json({ success: true, embed_code: embedCode, widget_id: userId, config: widget });
   } catch (e) { res.status(500).json({ error: 'Failed' }); }
 });
@@ -1881,6 +1884,258 @@ try {
   console.error('⚠️ Could not load mubyn-routes.js:', e.message);
 }
 
+// ============================================
+// WEBSITE WIDGET — Embeddable Chat for Any Site
+// ============================================
+
+// POST /api/website/widget/config — Save widget configuration
+app.post('/api/website/widget/config', async (req, res) => {
+  try {
+    const { userId, primaryColor, position, welcomeMessage, botName, buttonText } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    const settingsFile = path.join(__dirname, `data/csa-settings-${userId}.json`);
+    const settings = await loadJSON(settingsFile, {});
+    settings.widget = {
+      ...(settings.widget || {}),
+      primaryColor: primaryColor || settings.widget?.primaryColor || '#D4A843',
+      position: position || settings.widget?.position || 'bottom-right',
+      welcomeMessage: welcomeMessage !== undefined ? welcomeMessage : (settings.widget?.welcomeMessage || 'Hi! How can I help you today?'),
+      botName: botName !== undefined ? botName : (settings.widget?.botName || 'Support'),
+      buttonText: buttonText !== undefined ? buttonText : (settings.widget?.buttonText || 'Chat with us'),
+    };
+    settings.updated_at = new Date().toISOString();
+    await saveJSON(settingsFile, settings);
+    res.json({ success: true, config: settings.widget });
+  } catch (e) {
+    console.error('Widget config save error:', e);
+    res.status(500).json({ error: 'Failed to save widget config' });
+  }
+});
+
+// GET /api/website/widget/:userId — Returns embed code + config
+app.get('/api/website/widget/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const settingsFile = path.join(__dirname, `data/csa-settings-${userId}.json`);
+    const settings = await loadJSON(settingsFile, {});
+    const widget = settings.widget || {};
+    const baseUrl = 'https://natural-energy-production-df04.up.railway.app';
+    const embedCode = `<!-- Mubyn OS Chat Widget -->\n<script src="${baseUrl}/api/widget.js?id=${userId}" async></script>`;
+    res.json({ success: true, embed_code: embedCode, widget_id: userId, config: widget });
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+// GET /api/widget.js — Serve the self-contained chat widget JavaScript
+app.get('/api/widget.js', async (req, res) => {
+  const userId = req.query.id;
+  if (!userId) {
+    res.set('Content-Type', 'application/javascript');
+    return res.send('console.error("Mubyn Widget: Missing id parameter");');
+  }
+
+  // Allow from ANY origin
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Content-Type', 'application/javascript; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=300');
+
+  // Load widget config
+  let config = {};
+  try {
+    const settingsFile = path.join(__dirname, `data/csa-settings-${userId}.json`);
+    const settings = await loadJSON(settingsFile, {});
+    config = settings.widget || {};
+  } catch (e) { /* defaults */ }
+
+  // Load user business name
+  let businessName = 'Support';
+  try {
+    const users = await loadJSON(path.join(__dirname, 'data/users.json'), []);
+    const user = users.find(u => u.id === userId);
+    if (user && user.business_name) businessName = user.business_name;
+  } catch (e) { /* default */ }
+
+  const primaryColor = config.primaryColor || '#D4A843';
+  const position = config.position || 'bottom-right';
+  const welcomeMessage = config.welcomeMessage || 'Hi! How can I help you today?';
+  const botName = config.botName || businessName || 'Support';
+  const apiBase = 'https://natural-energy-production-df04.up.railway.app';
+
+  const widgetJS = `(function(){
+  if(window.__mubynWidgetLoaded)return;
+  window.__mubynWidgetLoaded=true;
+  var USER_ID="${userId}";
+  var API="${apiBase}";
+  var COLOR="${primaryColor}";
+  var POS="${position}";
+  var WELCOME=${JSON.stringify(welcomeMessage)};
+  var BOT_NAME=${JSON.stringify(botName)};
+  var SESSION_KEY="mubyn_session_"+USER_ID;
+  var messages=[];
+  var isOpen=false;
+  var isLoading=false;
+
+  var host=document.createElement("div");
+  host.id="mubyn-widget-host";
+  host.style.cssText="position:fixed;bottom:0;${position === 'bottom-left' ? 'left' : 'right'}:0;z-index:2147483647;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
+  document.body.appendChild(host);
+
+  try{var saved=localStorage.getItem(SESSION_KEY);if(saved)messages=JSON.parse(saved);}catch(e){}
+  if(messages.length===0){messages.push({role:"agent",content:WELCOME,ts:Date.now()});}
+
+  function saveSession(){try{localStorage.setItem(SESSION_KEY,JSON.stringify(messages.slice(-50)));}catch(e){}}
+  function escHtml(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+  function render(){
+    var posStyle=POS==="bottom-left"?"left:20px":"right:20px";
+    var posStyleMob=POS==="bottom-left"?"left:16px":"right:16px";
+    var html='<style>'
+      +'#mw-bubble{position:fixed;bottom:20px;'+posStyle+';width:60px;height:60px;border-radius:50%;background:'+COLOR+';cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.3);transition:transform 0.2s,box-shadow 0.2s;border:none;z-index:2147483647;}'
+      +'#mw-bubble:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,0,0,0.4);}'
+      +'#mw-bubble svg{width:28px;height:28px;fill:white;}'
+      +'#mw-panel{position:fixed;bottom:90px;'+posStyle+';width:380px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 120px);background:#1C1C24;border-radius:16px;box-shadow:0 8px 48px rgba(0,0,0,0.5);display:'+(isOpen?'flex':'none')+';flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,0.08);z-index:2147483647;animation:'+(isOpen?'mwSlideUp 0.25s ease':'none')+';}'
+      +'@keyframes mwSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}'
+      +'#mw-header{padding:16px 20px;background:'+COLOR+';display:flex;align-items:center;gap:12px;flex-shrink:0;}'
+      +'#mw-header-avatar{width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;}'
+      +'#mw-header-avatar svg{width:20px;height:20px;fill:rgba(0,0,0,0.7);}'
+      +'#mw-header-info{flex:1;}'
+      +'#mw-header-name{font-size:15px;font-weight:600;color:rgba(0,0,0,0.87);margin:0;line-height:1.3;}'
+      +'#mw-header-status{font-size:11px;color:rgba(0,0,0,0.55);margin:0;}'
+      +'#mw-close{width:32px;height:32px;border-radius:8px;background:rgba(0,0,0,0.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}'
+      +'#mw-close:hover{background:rgba(0,0,0,0.2);}'
+      +'#mw-close svg{width:16px;height:16px;fill:rgba(0,0,0,0.6);}'
+      +'#mw-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}'
+      +'#mw-messages::-webkit-scrollbar{width:4px;}#mw-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}'
+      +'.mw-msg{max-width:85%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;word-wrap:break-word;white-space:pre-wrap;}'
+      +'.mw-msg-agent{align-self:flex-start;background:rgba(255,255,255,0.08);color:#e0e0e0;border-bottom-left-radius:4px;}'
+      +'.mw-msg-customer{align-self:flex-end;background:'+COLOR+';color:rgba(0,0,0,0.87);border-bottom-right-radius:4px;}'
+      +'.mw-typing{align-self:flex-start;padding:12px 18px;background:rgba(255,255,255,0.08);border-radius:16px;border-bottom-left-radius:4px;display:'+(isLoading?'flex':'none')+';gap:5px;align-items:center;}'
+      +'.mw-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.35);animation:mwBounce 1.2s infinite;}'
+      +'.mw-dot:nth-child(2){animation-delay:0.15s;}.mw-dot:nth-child(3){animation-delay:0.3s;}'
+      +'@keyframes mwBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}'
+      +'#mw-input-area{padding:12px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;flex-shrink:0;background:#1C1C24;}'
+      +'#mw-input{flex:1;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:10px 16px;font-size:14px;color:#fff;background:rgba(255,255,255,0.04);outline:none;font-family:inherit;resize:none;}'
+      +'#mw-input:focus{border-color:'+COLOR+';}'
+      +'#mw-input::placeholder{color:rgba(255,255,255,0.3);}'
+      +'#mw-send{width:40px;height:40px;border-radius:50%;background:'+COLOR+';border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;flex-shrink:0;}'
+      +'#mw-send:hover{opacity:0.85;}#mw-send:disabled{opacity:0.4;cursor:default;}'
+      +'#mw-send svg{width:18px;height:18px;fill:rgba(0,0,0,0.7);}'
+      +'#mw-powered{text-align:center;padding:6px;font-size:10px;color:rgba(255,255,255,0.2);flex-shrink:0;}'
+      +'#mw-powered a{color:rgba(255,255,255,0.3);text-decoration:none;}#mw-powered a:hover{color:rgba(255,255,255,0.5);}'
+      +'@media(max-width:480px){#mw-panel{width:100%;max-width:100%;height:100%;max-height:100%;bottom:0;left:0;right:0;border-radius:0;}#mw-bubble{bottom:16px;'+posStyleMob+';width:56px;height:56px;}}'
+      +'</style>';
+
+    html+='<div id="mw-panel">'
+      +'<div id="mw-header">'
+      +'<div id="mw-header-avatar"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg></div>'
+      +'<div id="mw-header-info"><p id="mw-header-name">'+escHtml(BOT_NAME)+'</p><p id="mw-header-status">Online \\u2014 typically replies instantly</p></div>'
+      +'<button id="mw-close" onclick="window.__mubynToggle()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>'
+      +'</div>';
+
+    html+='<div id="mw-messages">';
+    for(var i=0;i<messages.length;i++){
+      var m=messages[i];
+      html+='<div class="mw-msg mw-msg-'+m.role+'">'+escHtml(m.content)+'</div>';
+    }
+    html+='<div class="mw-typing"><div class="mw-dot"></div><div class="mw-dot"></div><div class="mw-dot"></div></div>';
+    html+='</div>';
+
+    html+='<div id="mw-input-area">'
+      +'<input id="mw-input" placeholder="Type your message..." autocomplete="off"/>'
+      +'<button id="mw-send" '+(isLoading?'disabled':'')+' onclick="window.__mubynSend()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>'
+      +'</div>';
+    html+='<div id="mw-powered">Powered by <a href="https://mubyn.com" target="_blank">Mubyn</a></div>';
+    html+='</div>';
+
+    html+='<button id="mw-bubble" onclick="window.__mubynToggle()">'
+      +(isOpen
+        ?'<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>'
+        :'<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/></svg>')
+      +'</button>';
+
+    host.innerHTML=html;
+
+    if(isOpen){
+      var msgs=host.querySelector("#mw-messages");
+      if(msgs)msgs.scrollTop=msgs.scrollHeight;
+      var inp=host.querySelector("#mw-input");
+      if(inp){
+        inp.addEventListener("keydown",function(e){
+          if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();window.__mubynSend();}
+        });
+        setTimeout(function(){inp.focus();},100);
+      }
+    }
+  }
+
+  window.__mubynToggle=function(){isOpen=!isOpen;render();};
+
+  window.__mubynSend=function(){
+    var inp=host.querySelector("#mw-input");
+    if(!inp)return;
+    var text=inp.value.trim();
+    if(!text||isLoading)return;
+    messages.push({role:"customer",content:text,ts:Date.now()});
+    isLoading=true;
+    saveSession();
+    render();
+
+    fetch(API+"/api/csa/respond",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({customer_message:text,userId:USER_ID,business_context:"Website visitor chat via Mubyn widget. Page: "+location.href})
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var reply=data.response||data.message||"Sorry, I couldn't process that. Please try again.";
+      messages.push({role:"agent",content:reply,ts:Date.now()});
+      isLoading=false;saveSession();render();
+    })
+    .catch(function(err){
+      messages.push({role:"agent",content:"Sorry, something went wrong. Please try again.",ts:Date.now()});
+      isLoading=false;saveSession();render();
+    });
+  };
+
+  render();
+
+  try{
+    fetch(API+"/api/widget/event",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({userId:USER_ID,event:"pageview",url:location.href,referrer:document.referrer,ua:navigator.userAgent,ts:Date.now()})
+    }).catch(function(){});
+  }catch(e){}
+})();`;
+
+  res.send(widgetJS);
+});
+
+// Widget CORS pre-flight for cross-origin widget chat
+app.options('/api/csa/respond', (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Max-Age', '86400');
+  res.status(204).end();
+});
+
+// Widget analytics event
+app.post('/api/widget/event', (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  const { userId, event, url, referrer, ua, ts } = req.body || {};
+  if (userId && event) {
+    const eventFile = path.join(__dirname, `data/widget-events-${userId}.jsonl`);
+    const entry = JSON.stringify({ event, url, referrer, ua, ts: ts || Date.now(), recorded: new Date().toISOString() });
+    fs.appendFile(eventFile, entry + '\n').catch(() => {});
+  }
+  res.json({ ok: true });
+});
+
+app.options('/api/widget/event', (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(204).end();
+});
+
 // SERVE DASHBOARD STATIC FILES
 // ============================================
 app.use('/dashboard', express.static(path.join(__dirname, 'dashboard')));
@@ -1890,4 +2145,5 @@ app.listen(PORT, () => {
   console.log(`   Health: http://localhost:${PORT}/health`);
   console.log(`   Dashboard: http://localhost:${PORT}/dashboard`);
   console.log(`   🚀 Mubyn OS endpoints ready for VC demo!`);
+  console.log(`   🔌 Widget: /api/widget.js?id=USER_ID`);
 });
