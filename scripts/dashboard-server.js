@@ -136,6 +136,11 @@ const ALLOWED_ORIGINS = [
   'https://www.promptabusiness.com',
   'https://makhlab.promptabusiness.com',
   'https://kareemaudi.github.io',
+  'https://mubyn.com',
+  'https://www.mubyn.com',
+  'https://app.mubyn.com',
+  'http://localhost:3500',
+  'http://localhost:5173',
   process.env.BASE_URL,
   process.env.FRONTEND_URL
 ].filter(Boolean);
@@ -1070,7 +1075,17 @@ app.get('/api/makhlab/signup/:id', (req, res) => {
 });
 
 // =============================================================================
+// MUBYN OS ENDPOINTS
+// =============================================================================
+try {
+  const mubynRoutes = require('../lib/mubyn-routes');
+  app.use('/api', mubynRoutes);
+  console.log('✅ Mubyn OS routes mounted at /api');
+} catch(e) { console.warn('⚠️ Mubyn routes unavailable:', e.message); }
+
+// =============================================================================
 
 app.listen(PORT, () => {
-  console.log(`\n🏛️  Caesar's Legions Dashboard running on http://localhost:${PORT}\n`);
+  console.log(`\n🏛️  Caesar's Legions Dashboard running on http://localhost:${PORT}`);
+  console.log(`   🚀 Mubyn OS endpoints ready!\n`);
 });
