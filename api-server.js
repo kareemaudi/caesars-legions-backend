@@ -47,7 +47,7 @@ app.use('/dashboard', dashboardRoutes);
 // HEALTH CHECK
 // ============================================
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: 'v2-dashboard', timestamp: new Date().toISOString() });
 });
 
 // ============================================
