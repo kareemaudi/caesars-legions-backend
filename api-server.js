@@ -944,7 +944,7 @@ function authenticateToken(req, res, next) {
 // POST /api/auth/signup
 app.post('/api/auth/signup', async (req, res) => {
   try {
-    const { email, password, name, business_name } = req.body;
+    const { email, password, name, business_name, industry, country, website, primaryNeed } = req.body;
     
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, password, and name are required' });
@@ -961,12 +961,16 @@ app.post('/api/auth/signup', async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Create user
+    // Create user with all profile fields
     const user = {
       id: crypto.randomUUID(),
       email,
       name,
       business_name: business_name || '',
+      industry: industry || '',
+      country: country || '',
+      website: website || '',
+      primaryNeed: primaryNeed || '',
       password: hashedPassword,
       created_at: new Date().toISOString()
     };
@@ -983,7 +987,11 @@ app.post('/api/auth/signup', async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        business_name: user.business_name
+        business_name: user.business_name,
+        industry: user.industry,
+        country: user.country,
+        website: user.website,
+        primaryNeed: user.primaryNeed
       }
     });
   } catch (error) {
@@ -1024,7 +1032,11 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        business_name: user.business_name
+        business_name: user.business_name,
+        industry: user.industry || '',
+        country: user.country || '',
+        website: user.website || '',
+        primaryNeed: user.primaryNeed || ''
       }
     });
   } catch (error) {
