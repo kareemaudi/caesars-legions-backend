@@ -1451,6 +1451,228 @@ app.get('/api/csa/widget/:userId', async (req, res) => {
 });
 
 // ============================================
+// 5b. CSA TELEGRAM BOT — Connect, Webhook, Disconnect, Status
+// ============================================
+
+const TELEGRAM_WEBHOOK_BASE = 'https://natural-energy-production-df04.up.railway.app/api/csa/telegram/webhook';
+
+async function validateTelegramToken(botToken) {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
+    const data = await r.json();
+    if (!data.ok) return { success: false, error: data.description || 'Invalid bot token' };
+    return { success: true, data: data.result };
+  } catch (err) {
+    return { success: false, error: 'Failed to reach Telegram API' };
+  }
+}
+
+async function setTelegramWebhookAPI(botToken, webhookUrl) {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message', 'callback_query'] }),
+    });
+    const data = await r.json();
+    if (!data.ok) return { success: false, error: data.description };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Failed to set webhook' };
+  }
+}
+
+async function deleteTelegramWebhookAPI(botToken) {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook`);
+    const data = await r.json();
+    if (!data.ok) return { success: false, error: data.description };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Failed to delete webhook' };
+  }
+}
+
+async function sendTelegramMessage(botToken, chatId, text) {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' }),
+    });
+    return await r.json();
+  } catch (err) {
+    console.error('Telegram send error:', err);
+    return null;
+  }
+}
+
+// POST /api/csa/telegram/connect
+app.post('/api/csa/telegram/connect', async (req, res) => {
+  try {
+    const { userId, bot_token } = req.body;
+    if (!userId || !bot_token) return res.status(400).json({ error: 'userId and bot_token required' });
+
+    const botInfo = await validateTelegramToken(bot_token);
+    if (!botInfo.success) return res.status(400).json({ success: false, error: botInfo.error });
+
+    const botId = String(botInfo.data.id);
+    const botUsername = botInfo.data.username;
+
+    const webhookUrl = `${TELEGRAM_WEBHOOK_BASE}/${userId}`;
+    const whResult = await setTelegramWebhookAPI(bot_token, webhookUrl);
+    if (!whResult.success) return res.status(400).json({ success: false, error: `Webhook failed: ${whResult.error}` });
+
+    const channelsFile = path.join(__dirname, `data/csa-telegram-${userId}.json`);
+    const channelData = {
+      userId, channel_type: 'telegram', bot_token, bot_id: botId,
+      bot_username: botUsername, bot_first_name: botInfo.data.first_name,
+      webhook_url: webhookUrl, webhook_set: true, is_active: true,
+      connected_at: new Date().toISOString(),
+    };
+    await saveJSON(channelsFile, channelData);
+
+    console.log(`✅ Telegram bot @${botUsername} connected for user ${userId}`);
+    res.json({ success: true, channel: { bot_username: botUsername, bot_id: botId, bot_first_name: botInfo.data.first_name, webhook_url: webhookUrl } });
+  } catch (e) {
+    console.error('Telegram connect error:', e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/csa/telegram/disconnect
+app.post('/api/csa/telegram/disconnect', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+
+    const channelsFile = path.join(__dirname, `data/csa-telegram-${userId}.json`);
+    const channel = await loadJSON(channelsFile, null);
+    if (!channel || !channel.is_active) return res.status(404).json({ success: false, error: 'No active Telegram channel found' });
+
+    if (channel.bot_token) await deleteTelegramWebhookAPI(channel.bot_token);
+
+    channel.is_active = false;
+    channel.webhook_set = false;
+    channel.disconnected_at = new Date().toISOString();
+    await saveJSON(channelsFile, channel);
+
+    console.log(`🔌 Telegram bot @${channel.bot_username} disconnected for user ${userId}`);
+    res.json({ success: true, message: 'Telegram bot disconnected' });
+  } catch (e) {
+    console.error('Telegram disconnect error:', e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// GET /api/csa/telegram/status/:userId
+app.get('/api/csa/telegram/status/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const channelsFile = path.join(__dirname, `data/csa-telegram-${userId}.json`);
+    const channel = await loadJSON(channelsFile, null);
+
+    if (!channel || !channel.is_active) return res.json({ connected: false });
+
+    res.json({
+      connected: true,
+      bot_username: channel.bot_username,
+      bot_id: channel.bot_id,
+      bot_first_name: channel.bot_first_name,
+      connected_at: channel.connected_at,
+    });
+  } catch (e) {
+    res.status(500).json({ connected: false, error: e.message });
+  }
+});
+
+// POST /api/csa/telegram/webhook/:userId — Receives Telegram messages, auto-responds
+app.post('/api/csa/telegram/webhook/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const body = req.body;
+
+    const message = body.message || body.edited_message;
+    if (!message || !message.text) return res.json({ ok: true });
+
+    const chatId = message.chat.id.toString();
+    const messageText = message.text;
+    const userName = [message.from?.first_name, message.from?.last_name].filter(Boolean).join(' ') || message.from?.username || 'Customer';
+    const telegramUserId = message.from?.id?.toString();
+
+    console.log(`📨 Telegram message from ${userName} (chat ${chatId}) for user ${userId}: ${messageText.substring(0, 100)}`);
+
+    const channelsFile = path.join(__dirname, `data/csa-telegram-${userId}.json`);
+    const channel = await loadJSON(channelsFile, null);
+    if (!channel || !channel.is_active || !channel.bot_token) {
+      console.error(`❌ No active Telegram channel for user ${userId}`);
+      return res.json({ ok: true });
+    }
+
+    // Load KB
+    const kbFile = path.join(__dirname, `data/csa-kb-${userId}.json`);
+    const savedKb = await loadJSON(kbFile, []);
+    const activeKb = savedKb.filter(kb => kb.is_active !== false);
+    let kbContext = '';
+    if (activeKb.length > 0) {
+      kbContext = '\n\nKnowledge Base (use this to answer accurately):\n' +
+        activeKb.map(kb => `Q: ${kb.title}\nA: ${kb.content}`).join('\n\n');
+    }
+
+    // Load tone
+    const settingsFile = path.join(__dirname, `data/csa-settings-${userId}.json`);
+    const settings = await loadJSON(settingsFile, {});
+    let toneInstructions = '';
+    if (settings.tone) toneInstructions += `\nTone: ${settings.tone}.`;
+    if (settings.language) toneInstructions += `\nLanguage: ${settings.language}.`;
+    if (settings.response_length) toneInstructions += `\nResponse length: ${settings.response_length}.`;
+    if (settings.custom_instructions) toneInstructions += `\nAdditional instructions: ${settings.custom_instructions}`;
+
+    const users = await loadJSON(path.join(__dirname, 'data/users.json'), []);
+    const user = users.find(u => u.id === userId);
+    const businessName = user?.business_name || 'our business';
+
+    const systemPrompt = `You are a professional customer support agent for ${businessName}. You help customers via Telegram.
+Be empathetic, clear, and solution-oriented. Keep responses concise and mobile-friendly.
+Customer name: ${userName}.${toneInstructions}${kbContext}`;
+
+    const aiResponse = await openaiChat(systemPrompt, messageText, 512);
+    await sendTelegramMessage(channel.bot_token, chatId, aiResponse);
+
+    // Store conversation
+    const convoFile = path.join(__dirname, `data/csa-telegram-convos-${userId}.json`);
+    const convos = await loadJSON(convoFile, []);
+    convos.push({
+      id: crypto.randomUUID(), channel: 'telegram', chat_id: chatId,
+      telegram_user_id: telegramUserId, user_name: userName,
+      customer_message: messageText, ai_response: aiResponse,
+      timestamp: new Date().toISOString(),
+    });
+    if (convos.length > 500) convos.splice(0, convos.length - 500);
+    await saveJSON(convoFile, convos);
+
+    // Also save to main CSA conversations
+    const csaFile = path.join(__dirname, `data/csa-${userId}.json`);
+    const csaConvos = await loadJSON(csaFile, []);
+    csaConvos.push({
+      id: crypto.randomUUID(),
+      customer_message: `[Telegram - ${userName}] ${messageText}`,
+      ai_response: aiResponse,
+      business_context: `Telegram bot @${channel.bot_username}`,
+      channel: 'telegram',
+      timestamp: new Date().toISOString(),
+    });
+    await saveJSON(csaFile, csaConvos);
+
+    console.log(`✅ AI replied to ${userName} on Telegram`);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Telegram webhook error:', e);
+    res.json({ ok: true, error: e.message });
+  }
+});
+
+// ============================================
 // 6. CFO — AI Financial Intelligence
 // ============================================
 
