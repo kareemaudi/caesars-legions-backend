@@ -878,13 +878,35 @@ app.get('/api/makhlab/status/:signupId', async (req, res) => {
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Anthropic = require('@anthropic-ai/sdk');
-
 const JWT_SECRET = process.env.JWT_SECRET || 'mubyn-demo-secret-2026';
 const APOLLO_API_KEY = process.env.APOLLO_API_KEY || 'vndGs9TB42TIG7zcdO6zVQ';
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY // fallback
-});
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+// OpenAI chat helper
+async function openaiChat(systemPrompt, userMessage, maxTokens = 1024) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.7
+    })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`OpenAI API error: ${res.status} ${err}`);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
 
 // Helper: Load/save JSON data files
 async function loadJSON(filePath, defaultValue = []) {
@@ -1049,16 +1071,7 @@ app.post('/api/chat', async (req, res) => {
     
     const systemPrompt = `You are Caesar (قيصر), an AI CEO running the client's business via Mubyn OS. You can find leads, create content, manage customer service, and provide financial insights. Be professional but personable. Respond in the same language the user writes in (Arabic or English). Keep responses concise and actionable.`;
     
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: message }
-      ]
-    });
-    
-    const reply = response.content[0].text;
+    const reply = await openaiChat(systemPrompt, message, 1024);
     
     // Save conversation history
     if (userId) {
@@ -1167,16 +1180,7 @@ app.post('/api/content/generate', async (req, res) => {
     
     const userPrompt = `Create a ${platform} post about: ${topic}. Language: ${language || 'en'}`;
     
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 512,
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: userPrompt }
-      ]
-    });
-    
-    const content = response.content[0].text;
+    const content = await openaiChat(systemPrompt, userPrompt, 512);
     
     const contentItem = {
       id: crypto.randomUUID(),
@@ -1200,6 +1204,63 @@ app.post('/api/content/generate', async (req, res) => {
   } catch (error) {
     console.error('Content generation error:', error);
     res.status(500).json({ error: 'Content generation failed', details: error.message });
+  }
+});
+
+// POST /api/content/calendar — Generate FULL month content calendar
+app.post('/api/content/calendar', async (req, res) => {
+  try {
+    const { business_name, industry, language, userId } = req.body;
+    
+    const systemPrompt = `You are a world-class social media strategist. Generate a full month content calendar (4 weeks, 3 posts per week across Twitter, LinkedIn, and Instagram = 12 posts total). Return JSON array format.`;
+    
+    const userPrompt = `Create a full month content calendar for:
+Business: ${business_name || 'A growing business'}
+Industry: ${industry || 'Technology'}
+Language: ${language || 'en'}
+
+Return a JSON array with exactly 12 posts, each having:
+- week (1-4)
+- day (Monday/Wednesday/Friday)
+- platform (twitter/linkedin/instagram)
+- content (the actual post text, ready to publish)
+- hashtags (array of relevant hashtags)
+- type (thought-leadership/case-study/tips/behind-scenes/engagement/promotional)
+
+${language === 'ar' ? 'Write ALL content in Arabic.' : 'Write in English.'}
+Return ONLY the JSON array, no other text.`;
+    
+    const calendarText = await openaiChat(systemPrompt, userPrompt, 4096);
+    
+    // Try to parse JSON from response
+    let calendar;
+    try {
+      // Extract JSON from response (might be wrapped in markdown)
+      const jsonMatch = calendarText.match(/\[[\s\S]*\]/);
+      calendar = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(calendarText);
+    } catch {
+      calendar = [{ week: 1, day: 'Monday', platform: 'twitter', content: calendarText, hashtags: [], type: 'general' }];
+    }
+    
+    // Add IDs and metadata
+    const enrichedCalendar = calendar.map((post, i) => ({
+      id: crypto.randomUUID(),
+      ...post,
+      status: 'draft',
+      created_at: new Date().toISOString(),
+      order: i + 1
+    }));
+    
+    // Save calendar
+    if (userId) {
+      const contentFile = path.join(__dirname, `data/content-${userId}.json`);
+      await saveJSON(contentFile, enrichedCalendar);
+    }
+    
+    res.json({ calendar: enrichedCalendar, total: enrichedCalendar.length });
+  } catch (error) {
+    console.error('Calendar generation error:', error);
+    res.status(500).json({ error: 'Calendar generation failed', details: error.message });
   }
 });
 
@@ -1231,16 +1292,7 @@ app.post('/api/csa/respond', async (req, res) => {
     
     const systemPrompt = `You are a professional customer support agent. ${business_context || 'Help the customer with their inquiry.'} Be empathetic, clear, and solution-oriented.`;
     
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 512,
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: customer_message }
-      ]
-    });
-    
-    const reply = response.content[0].text;
+    const reply = await openaiChat(systemPrompt, customer_message, 512);
     
     // Save conversation
     if (userId) {
