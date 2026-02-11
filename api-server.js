@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
 const { handleOnboarding, Client, saveClient } = require('./api/onboard.js');
+const dashboardRoutes = require('./api/dashboard-routes.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,12 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ============================================
+// DASHBOARD (self-serve cold email platform)
+// ============================================
+app.use('/dashboard', dashboardRoutes);
 
 // ============================================
 // HEALTH CHECK

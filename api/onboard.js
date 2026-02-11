@@ -239,6 +239,23 @@ async function handleOnboarding(req, res) {
         // Save client
         await saveClient(client);
         
+        // Auto-create dashboard account with SMTP pre-configured
+        let dashboardCreds = null;
+        try {
+            const dashboardRoutes = require('./dashboard-routes.js');
+            if (dashboardRoutes.createClientFromOnboarding) {
+                const dashClient = dashboardRoutes.createClientFromOnboarding(data);
+                dashboardCreds = {
+                    email: dashClient.email,
+                    password: dashClient.generatedPassword,
+                    dashboardUrl: '/dashboard'
+                };
+                console.log(`[DASHBOARD] Auto-created account for ${dashClient.email}`);
+            }
+        } catch (dashErr) {
+            console.error('[DASHBOARD] Auto-create failed:', dashErr.message);
+        }
+        
         // Notify team
         await notifyNewClient(client);
         
@@ -246,11 +263,12 @@ async function handleOnboarding(req, res) {
         res.status(200).json({
             success: true,
             clientId: client.id,
-            message: 'Onboarding complete! We\'ll start researching your prospects within 24 hours.',
+            dashboardCredentials: dashboardCreds,
+            message: 'Onboarding complete! Your dashboard is ready.',
             nextSteps: [
-                'We research and build your prospect list (24-48 hours)',
-                'We craft personalized sequences and send for your approval',
-                'Campaigns go live with weekly reports'
+                'Log in to your dashboard to upload leads and send campaigns',
+                'Your SMTP is already configured — start sending immediately',
+                'Track opens and replies from your dashboard'
             ]
         });
         

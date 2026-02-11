@@ -3,68 +3,541 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caesar's Legions - Live Metrics</title>
-  <link rel="stylesheet" href="dashboard.css">
+  <title>Prompta - AI Cold Email Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  </style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>🏛️ Caesar's Legions</h1>
-      <p class="subtitle">Building in public: $0 → $1M ARR in 90 days</p>
-    </header>
-
-    <div id="loading" class="loading">Loading metrics...</div>
-    <div id="error" class="error" style="display: none;"></div>
-
-    <main id="dashboard" style="display: none;">
-      <section class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">Monthly Recurring Revenue</div>
-          <div class="metric-value" id="mrr">$0</div>
-          <div class="metric-change" id="mrr-change">Day 1</div>
+<body class="bg-gray-50 min-h-screen">
+  <div id="app">
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="min-h-screen flex items-center justify-center">
+      <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-800">Prompta</h1>
+          <p class="text-gray-500 mt-2">AI-Powered Cold Email Platform</p>
+        </div>
+        
+        <div id="login-form">
+          <h2 class="text-xl font-semibold mb-4">Sign In</h2>
+          <input type="email" id="login-email" placeholder="Email" class="w-full p-3 border rounded-lg mb-3">
+          <input type="password" id="login-password" placeholder="Password" class="w-full p-3 border rounded-lg mb-4">
+          <button onclick="login()" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90">Sign In</button>
+          <p class="text-center mt-4 text-gray-500">
+            Don't have an account? <a href="#" onclick="showSignup()" class="text-purple-600 hover:underline">Sign Up</a>
+          </p>
         </div>
 
-        <div class="metric-card">
-          <div class="metric-label">Active Clients</div>
-          <div class="metric-value" id="clients">0</div>
-          <div class="metric-change" id="clients-change">Target: 83</div>
+        <div id="signup-form" class="hidden">
+          <h2 class="text-xl font-semibold mb-4">Create Account</h2>
+          <input type="text" id="signup-company" placeholder="Company Name" class="w-full p-3 border rounded-lg mb-3">
+          <input type="email" id="signup-email" placeholder="Email" class="w-full p-3 border rounded-lg mb-3">
+          <input type="password" id="signup-password" placeholder="Password" class="w-full p-3 border rounded-lg mb-4">
+          <button onclick="signup()" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90">Create Account</button>
+          <p class="text-center mt-4 text-gray-500">
+            Already have an account? <a href="#" onclick="showLogin()" class="text-purple-600 hover:underline">Sign In</a>
+          </p>
         </div>
 
-        <div class="metric-card">
-          <div class="metric-label">Features Shipped</div>
-          <div class="metric-value" id="features">0</div>
-          <div class="metric-change" id="features-change">This week</div>
+        <div id="auth-error" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg"></div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard-screen" class="hidden">
+      <!-- Header -->
+      <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 class="text-2xl font-bold text-gray-800">Prompta</h1>
+          <div class="flex items-center gap-4">
+            <span id="user-email" class="text-gray-600"></span>
+            <button onclick="logout()" class="text-gray-500 hover:text-gray-700">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- SMTP Warning -->
+        <div id="smtp-warning" class="hidden mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p class="text-yellow-800">⚠️ Configure your SMTP to start sending emails. <a href="#" onclick="showTab('settings')" class="underline font-semibold">Set up now →</a></p>
         </div>
 
-        <div class="metric-card">
-          <div class="metric-label">Tests Passing</div>
-          <div class="metric-value" id="tests">0/0</div>
-          <div class="metric-change" id="tests-change">Production ready</div>
+        <!-- Stats -->
+        <div class="grid grid-cols-4 gap-4 mb-8">
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <p class="text-gray-500 text-sm">Total Leads</p>
+            <p id="stat-leads" class="text-3xl font-bold text-gray-800">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <p class="text-gray-500 text-sm">Emails Sent</p>
+            <p id="stat-sent" class="text-3xl font-bold text-gray-800">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <p class="text-gray-500 text-sm">Opens</p>
+            <p id="stat-opened" class="text-3xl font-bold text-gray-800">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <p class="text-gray-500 text-sm">Replies</p>
+            <p id="stat-replied" class="text-3xl font-bold text-green-600">0</p>
+          </div>
         </div>
-      </section>
 
-      <section class="chart-section">
-        <h2>Revenue Trajectory</h2>
-        <canvas id="revenueChart"></canvas>
-      </section>
+        <!-- Tabs -->
+        <div class="flex border-b mb-6">
+          <button onclick="showTab('leads')" class="tab-btn px-4 py-2 border-b-2 border-purple-600 text-purple-600 font-semibold" data-tab="leads">Leads</button>
+          <button onclick="showTab('campaigns')" class="tab-btn px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="campaigns">Campaigns</button>
+          <button onclick="showTab('settings')" class="tab-btn px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="settings">Settings</button>
+        </div>
 
-      <section class="mission">
-        <h2>The Mission</h2>
-        <p>Caesar is the world's first AI-founded cold email agency. Fully autonomous. Radically transparent.</p>
-        <p><strong>Goal:</strong> $1M ARR in 90 days</p>
-        <p><strong>Method:</strong> AI-powered cold email that actually works</p>
-        <p><a href="https://promptabusiness.com" target="_blank">Learn more →</a></p>
-      </section>
+        <!-- Tab Content -->
+        <div id="tab-leads" class="tab-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-semibold">Your Leads</h2>
+              <button onclick="showAddLeads()" class="gradient-bg text-white px-4 py-2 rounded-lg">+ Add Leads</button>
+            </div>
+            
+            <!-- Add Leads Form -->
+            <div id="add-leads-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 class="font-semibold mb-3">Paste leads (one per line: email, firstName, lastName, company)</h3>
+              <textarea id="leads-input" rows="6" class="w-full p-3 border rounded-lg font-mono text-sm" placeholder="john@company.com, John, Smith, Acme Inc&#10;jane@startup.io, Jane, Doe, StartupCo"></textarea>
+              <div class="flex gap-3 mt-3">
+                <button onclick="uploadLeads()" class="gradient-bg text-white px-4 py-2 rounded-lg">Upload Leads</button>
+                <button onclick="hideAddLeads()" class="text-gray-500">Cancel</button>
+              </div>
+            </div>
 
-      <footer>
-        <p class="timestamp">Last updated: <span id="timestamp">—</span></p>
-        <p class="refresh">Auto-refreshes every 30 seconds</p>
-        <p class="signature">Built by Caesar | <a href="https://x.com/agenticCaesar" target="_blank">@agenticCaesar</a></p>
-      </footer>
-    </main>
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-gray-500 text-sm border-b">
+                  <th class="pb-3">Email</th>
+                  <th class="pb-3">Name</th>
+                  <th class="pb-3">Company</th>
+                  <th class="pb-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table"></tbody>
+            </table>
+            <p id="no-leads" class="text-gray-400 text-center py-8 hidden">No leads yet. Add some to get started.</p>
+          </div>
+        </div>
+
+        <div id="tab-campaigns" class="tab-content hidden">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-semibold">Campaigns</h2>
+              <button onclick="showNewCampaign()" class="gradient-bg text-white px-4 py-2 rounded-lg">+ New Campaign</button>
+            </div>
+
+            <!-- New Campaign Form -->
+            <div id="new-campaign-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 class="font-semibold mb-3">Create Campaign</h3>
+              <input id="campaign-name" placeholder="Campaign Name" class="w-full p-3 border rounded-lg mb-3">
+              <input id="campaign-subject" placeholder="Email Subject (use {{firstName}}, {{company}} for personalization)" class="w-full p-3 border rounded-lg mb-3">
+              <textarea id="campaign-body" rows="6" class="w-full p-3 border rounded-lg mb-3" placeholder="Email body (HTML supported, use {{firstName}}, {{company}} for personalization)"></textarea>
+              <div class="flex gap-3">
+                <button onclick="createCampaign()" class="gradient-bg text-white px-4 py-2 rounded-lg">Create Campaign</button>
+                <button onclick="hideNewCampaign()" class="text-gray-500">Cancel</button>
+              </div>
+            </div>
+
+            <div id="campaigns-list"></div>
+            <p id="no-campaigns" class="text-gray-400 text-center py-8">No campaigns yet. Create one to start sending.</p>
+          </div>
+        </div>
+
+        <div id="tab-settings" class="tab-content hidden">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-semibold mb-6">📧 Connect your email</h2>
+            <p class="text-gray-500 mb-2">We'll send cold emails from your domain to build your reputation.</p>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+              <p class="text-amber-800 text-sm">ℹ️ <strong>Why we need this:</strong> Cold emails must come from YOUR domain to build sender reputation and ensure deliverability. We never share or store credentials beyond secure campaign execution.</p>
+            </div>
+
+            <!-- Provider Selector -->
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email Provider</label>
+            <select id="smtp-provider" onchange="onProviderChange()" class="w-full p-3 border rounded-lg mb-4 bg-white">
+              <option value="">— Select your provider —</option>
+              <option value="google">Google Workspace / Gmail</option>
+              <option value="zoho">Zoho Mail</option>
+              <option value="outlook">Microsoft 365 / Outlook</option>
+              <option value="sendgrid">SendGrid</option>
+              <option value="amazonses">Amazon SES</option>
+              <option value="custom">Custom SMTP</option>
+            </select>
+
+            <!-- Provider Help (shown dynamically) -->
+            <div id="provider-help" class="hidden mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800"></div>
+
+            <div class="space-y-4">
+              <!-- SMTP Host + Port (auto-filled, readonly for presets) -->
+              <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-2">
+                  <label class="block text-xs text-gray-500 mb-1">SMTP Host</label>
+                  <input id="smtp-host" placeholder="smtp.gmail.com" class="w-full p-3 border rounded-lg bg-gray-50" readonly>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Port</label>
+                  <input id="smtp-port" placeholder="587" class="w-full p-3 border rounded-lg bg-gray-50" readonly>
+                </div>
+              </div>
+
+              <!-- Email + Password -->
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Email / Username *</label>
+                <input id="smtp-user" placeholder="outreach@yourcompany.com" class="w-full p-3 border rounded-lg">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Password / App Key *</label>
+                <input id="smtp-pass" type="password" placeholder="••••••••••" class="w-full p-3 border rounded-lg">
+              </div>
+
+              <!-- Sender Name -->
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Sender Name</label>
+                <input id="smtp-sender" placeholder="John from Acme" class="w-full p-3 border rounded-lg">
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button onclick="saveSMTP()" class="gradient-bg text-white px-6 py-3 rounded-lg font-medium">Save & Verify</button>
+              <button onclick="testSMTP()" class="border border-purple-600 text-purple-600 px-6 py-3 rounded-lg font-medium">Send Test Email</button>
+            </div>
+            <div id="smtp-status" class="mt-4"></div>
+          </div>
+        </div>
+      </main>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="dashboard-script.js"></script>
+  <script>
+    const API = '/dashboard';
+    let token = localStorage.getItem('prompta_token');
+
+    // Auth
+    function showLogin() {
+      document.getElementById('login-form').classList.remove('hidden');
+      document.getElementById('signup-form').classList.add('hidden');
+    }
+
+    function showSignup() {
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('signup-form').classList.remove('hidden');
+    }
+
+    async function login() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      try {
+        const res = await fetch(API + '/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          token = data.token;
+          localStorage.setItem('prompta_token', token);
+          showDashboard(data.client);
+        } else {
+          showError(data.error);
+        }
+      } catch (e) { showError('Connection failed'); }
+    }
+
+    async function signup() {
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const companyName = document.getElementById('signup-company').value;
+      try {
+        const res = await fetch(API + '/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, companyName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          token = data.token;
+          localStorage.setItem('prompta_token', token);
+          showDashboard(data.client);
+        } else {
+          showError(data.error);
+        }
+      } catch (e) { showError('Connection failed'); }
+    }
+
+    function logout() {
+      localStorage.removeItem('prompta_token');
+      token = null;
+      location.reload();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    // Dashboard
+    async function showDashboard(client) {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('dashboard-screen').classList.remove('hidden');
+      document.getElementById('user-email').textContent = client.email;
+      
+      if (!client.smtpConfigured) {
+        document.getElementById('smtp-warning').classList.remove('hidden');
+      }
+      
+      loadStats();
+      loadLeads();
+      loadCampaigns();
+    }
+
+    async function loadStats() {
+      const res = await fetch(API + '/api/dashboard', { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+      document.getElementById('stat-leads').textContent = data.stats.totalLeads;
+      document.getElementById('stat-sent').textContent = data.stats.totalSent;
+      document.getElementById('stat-opened').textContent = data.stats.totalOpened;
+      document.getElementById('stat-replied').textContent = data.stats.totalReplied;
+    }
+
+    async function loadLeads() {
+      const res = await fetch(API + '/api/leads', { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+      const tbody = document.getElementById('leads-table');
+      const noLeads = document.getElementById('no-leads');
+      
+      if (data.leads.length === 0) {
+        noLeads.classList.remove('hidden');
+        tbody.innerHTML = '';
+        return;
+      }
+      
+      noLeads.classList.add('hidden');
+      tbody.innerHTML = data.leads.map(l => `
+        <tr class="border-b">
+          <td class="py-3">${l.email}</td>
+          <td class="py-3">${l.firstName || ''} ${l.lastName || ''}</td>
+          <td class="py-3">${l.company || ''}</td>
+          <td class="py-3"><span class="px-2 py-1 text-xs rounded-full ${l.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">${l.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadCampaigns() {
+      const res = await fetch(API + '/api/campaigns', { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+      const list = document.getElementById('campaigns-list');
+      const noCampaigns = document.getElementById('no-campaigns');
+      
+      if (data.campaigns.length === 0) {
+        noCampaigns.classList.remove('hidden');
+        list.innerHTML = '';
+        return;
+      }
+      
+      noCampaigns.classList.add('hidden');
+      list.innerHTML = data.campaigns.map(c => `
+        <div class="border rounded-lg p-4 mb-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-semibold">${c.name}</h3>
+              <p class="text-sm text-gray-500">${c.subject}</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-sm text-gray-500">Sent: ${c.stats.sent}</span>
+              ${c.status === 'draft' ? `<button onclick="sendCampaign('${c.campaignId}')" class="gradient-bg text-white px-4 py-1 rounded text-sm">Send Now</button>` : `<span class="text-green-600 text-sm">✓ Sent</span>`}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Tabs
+    function showTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('border-b-2', 'border-purple-600', 'text-purple-600');
+        el.classList.add('text-gray-500');
+      });
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('border-b-2', 'border-purple-600', 'text-purple-600');
+    }
+
+    // Leads
+    function showAddLeads() { document.getElementById('add-leads-form').classList.remove('hidden'); }
+    function hideAddLeads() { document.getElementById('add-leads-form').classList.add('hidden'); }
+
+    async function uploadLeads() {
+      const input = document.getElementById('leads-input').value;
+      const lines = input.trim().split('\n').filter(l => l.trim());
+      const leads = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return { email: parts[0], firstName: parts[1], lastName: parts[2], company: parts[3] };
+      });
+
+      const res = await fetch(API + '/api/leads/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ leads })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Added ${data.added} leads!`);
+        hideAddLeads();
+        loadLeads();
+        loadStats();
+      }
+    }
+
+    // Campaigns
+    function showNewCampaign() { document.getElementById('new-campaign-form').classList.remove('hidden'); }
+    function hideNewCampaign() { document.getElementById('new-campaign-form').classList.add('hidden'); }
+
+    async function createCampaign() {
+      const name = document.getElementById('campaign-name').value;
+      const subject = document.getElementById('campaign-subject').value;
+      const body = document.getElementById('campaign-body').value;
+
+      const res = await fetch(API + '/api/campaigns/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ name, subject, body })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Campaign created!');
+        hideNewCampaign();
+        loadCampaigns();
+      }
+    }
+
+    async function sendCampaign(id) {
+      if (!confirm('Send this campaign now?')) return;
+      const res = await fetch(API + '/api/campaigns/' + id + '/send', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Sent ${data.sent} emails!`);
+        loadCampaigns();
+        loadStats();
+      } else {
+        alert('Error: ' + data.error);
+      }
+    }
+
+    // SMTP Provider Presets
+    const SMTP_PROVIDERS = {
+      google: {
+        host: 'smtp.gmail.com', port: '587',
+        help: '⚠️ <strong>Google Workspace:</strong> You need an <a href="https://myaccount.google.com/apppasswords" target="_blank" class="underline">App Password</a>. Go to Google Account → Security → 2-Step Verification → App Passwords. Use that as your password below.'
+      },
+      zoho: {
+        host: 'smtp.zoho.com', port: '587',
+        help: '🔑 <strong>Zoho:</strong> Use your Zoho email and password. If 2FA is enabled, generate an <a href="https://accounts.zoho.com/home#security/security_pwd" target="_blank" class="underline">App-Specific Password</a>.'
+      },
+      outlook: {
+        host: 'smtp.office365.com', port: '587',
+        help: '🔑 <strong>Microsoft 365:</strong> Use your email and password. If MFA is on, generate an <a href="https://mysignins.microsoft.com/security-info" target="_blank" class="underline">App Password</a>.'
+      },
+      sendgrid: {
+        host: 'smtp.sendgrid.net', port: '587',
+        help: '🔑 <strong>SendGrid:</strong> Username is always <code>apikey</code>. Password is your <a href="https://app.sendgrid.com/settings/api_keys" target="_blank" class="underline">SendGrid API Key</a>.'
+      },
+      amazonses: {
+        host: 'email-smtp.us-east-1.amazonaws.com', port: '587',
+        help: '🔑 <strong>Amazon SES:</strong> Create SMTP credentials in the <a href="https://console.aws.amazon.com/ses" target="_blank" class="underline">SES Console</a>. Region in the host must match your SES region.'
+      },
+      custom: {
+        host: '', port: '',
+        help: '⚙️ Enter your SMTP server details manually.'
+      }
+    };
+
+    function onProviderChange() {
+      const sel = document.getElementById('smtp-provider').value;
+      const hostEl = document.getElementById('smtp-host');
+      const portEl = document.getElementById('smtp-port');
+      const helpEl = document.getElementById('provider-help');
+
+      if (sel && SMTP_PROVIDERS[sel]) {
+        const p = SMTP_PROVIDERS[sel];
+        hostEl.value = p.host;
+        portEl.value = p.port;
+        
+        if (sel === 'custom') {
+          hostEl.readOnly = false;
+          portEl.readOnly = false;
+          hostEl.classList.remove('bg-gray-50');
+          portEl.classList.remove('bg-gray-50');
+        } else {
+          hostEl.readOnly = true;
+          portEl.readOnly = true;
+          hostEl.classList.add('bg-gray-50');
+          portEl.classList.add('bg-gray-50');
+        }
+
+        helpEl.innerHTML = p.help;
+        helpEl.classList.remove('hidden');
+      } else {
+        hostEl.value = '';
+        portEl.value = '';
+        helpEl.classList.add('hidden');
+      }
+    }
+
+    // SMTP
+    async function saveSMTP() {
+      const host = document.getElementById('smtp-host').value;
+      const port = document.getElementById('smtp-port').value;
+      const user = document.getElementById('smtp-user').value;
+      const pass = document.getElementById('smtp-pass').value;
+
+      const res = await fetch(API + '/api/smtp/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ host, port, user, pass, secure: true })
+      });
+      const data = await res.json();
+      document.getElementById('smtp-status').innerHTML = data.success 
+        ? '<p class="text-green-600">✓ SMTP configured successfully!</p>'
+        : '<p class="text-red-600">✗ ' + data.error + '</p>';
+      
+      if (data.success) {
+        document.getElementById('smtp-warning').classList.add('hidden');
+      }
+    }
+
+    async function testSMTP() {
+      const res = await fetch(API + '/api/smtp/test', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await res.json();
+      document.getElementById('smtp-status').innerHTML = data.success
+        ? '<p class="text-green-600">✓ Test email sent! Check your inbox.</p>'
+        : '<p class="text-red-600">✗ ' + data.error + '</p>';
+    }
+
+    // Init
+    async function init() {
+      if (token) {
+        try {
+          const res = await fetch(API + '/api/me', { headers: { Authorization: 'Bearer ' + token } });
+          const data = await res.json();
+          if (data.email) {
+            showDashboard(data);
+          } else {
+            localStorage.removeItem('prompta_token');
+          }
+        } catch { localStorage.removeItem('prompta_token'); }
+      }
+    }
+    init();
+  </script>
 </body>
 </html>
