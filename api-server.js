@@ -590,7 +590,7 @@ app.get('/api/metrics', async (req, res) => {
 // ============================================
 app.post('/api/makhlab/signup', async (req, res) => {
   try {
-    const { businessName, ownerName, name, phone, email, businessType, language, preferredLanguage, plan, personality, assistantName, telegramUsername, tasks, billing, paymentMethod, price } = req.body;
+    const { businessName, ownerName, name, phone, email, businessType, language, preferredLanguage, plan, personality, assistantName, telegramUsername, apiKey, tasks, billing, paymentMethod, price } = req.body;
 
     // Use ownerName or name (frontend sends both for compatibility)
     const finalName = ownerName || name || '';
@@ -621,6 +621,7 @@ app.post('/api/makhlab/signup', async (req, res) => {
       personality: personality || 'friendly',
       assistantName: assistantName ? String(assistantName).trim().slice(0, 100) : null,
       tasks: Array.isArray(tasks) ? tasks : [],
+      apiKey: apiKey || null,
       plan: selectedPlan,
       billing: billing || 'monthly',
       paymentMethod: paymentMethod || 'free',
