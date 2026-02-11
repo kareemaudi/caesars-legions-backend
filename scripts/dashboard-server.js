@@ -175,6 +175,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'caesars-legions', timestamp: new Date().toISOString() });
 });
 
+// Self-serve dashboard routes
+try {
+  const dashboardRoutes = require('../api/dashboard-routes.js');
+  app.use('/dashboard', dashboardRoutes);
+  console.log('✅ Dashboard routes mounted at /dashboard');
+} catch (dashErr) {
+  console.warn('⚠️ Dashboard routes failed to load:', dashErr.message);
+}
+
 // Webhook routes (conditional — may not be available on Railway)
 if (webhookHandler) {
   // webhookHandler is an object with named functions, not a Router
