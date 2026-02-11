@@ -1146,7 +1146,7 @@ async function seedAccounts() {
 app.listen(PORT, async () => {
   console.log(`\n🏛️  Caesar's Legions Dashboard running on http://localhost:${PORT}`);
   console.log(`   🚀 Mubyn OS endpoints ready at /api!`);
-  console.log(`   ✅ Build: 2026-02-11-1840`);
+  console.log(`   ✅ Build: 2026-02-11-1825`);
   await seedAccounts();
   console.log(`   ✅ Ready!\n`);
 });
