@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// v2.0.0 Ã¢â‚¬â€ JSON-based signup flow (no SQLite dependency)
+// v2.0.0 Ã¢â'¬â€ JSON-based signup flow (no SQLite dependency)
 
 const express = require('express');
 const crypto = require('crypto');
@@ -8,14 +8,14 @@ const path = require('path');
 
 require('dotenv').config();
 
-// Graceful imports Ã¢â‚¬â€ some may fail on Railway if native modules aren't available
+// Graceful imports Ã¢â'¬â€ some may fail on Railway if native modules aren't available
 let db, webhookHandler, unsubscribeHandler, stripeIntegration, signupHandler, dashboardApi;
-try { db = require('../lib/db'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â db module unavailable:', e.message); }
-try { webhookHandler = require('../lib/webhook-handler'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â webhook-handler unavailable:', e.message); }
-try { unsubscribeHandler = require('../lib/unsubscribe'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â unsubscribe unavailable:', e.message); }
-try { stripeIntegration = require('../lib/stripe-integration'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â stripe-integration unavailable:', e.message); }
-try { signupHandler = require('../lib/signup-handler'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â signup-handler unavailable:', e.message); }
-try { dashboardApi = require('../lib/dashboard-api'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â dashboard-api unavailable:', e.message); }
+try { db = require('../lib/db'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â db module unavailable:', e.message); }
+try { webhookHandler = require('../lib/webhook-handler'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â webhook-handler unavailable:', e.message); }
+try { unsubscribeHandler = require('../lib/unsubscribe'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â unsubscribe unavailable:', e.message); }
+try { stripeIntegration = require('../lib/stripe-integration'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â stripe-integration unavailable:', e.message); }
+try { signupHandler = require('../lib/signup-handler'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â signup-handler unavailable:', e.message); }
+try { dashboardApi = require('../lib/dashboard-api'); } catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â dashboard-api unavailable:', e.message); }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,19 +33,19 @@ function rateLimit(req, res, next) {
   const ip = req.ip || req.connection.remoteAddress;
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW;
-  
+
   if (!rateLimitStore.has(ip)) {
     rateLimitStore.set(ip, []);
   }
-  
+
   const requests = rateLimitStore.get(ip).filter(time => time > windowStart);
   requests.push(now);
   rateLimitStore.set(ip, requests);
-  
+
   if (requests.length > RATE_LIMIT_MAX) {
     return res.status(429).json({ error: 'Too many requests. Please slow down.' });
   }
-  
+
   next();
 }
 
@@ -72,17 +72,17 @@ function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   const tokenParam = req.query.token;
   const token = authHeader?.replace('Bearer ', '') || tokenParam;
-  
+
   if (!token) {
     return res.status(401).json({ error: 'Authentication required' });
   }
-  
+
   // Validate token format (should be clientId:hash)
   const [clientId, hash] = (token || '').split(':');
   if (!clientId || !hash) {
     return res.status(401).json({ error: 'Invalid token format' });
   }
-  
+
   if (!db) {
     return res.status(503).json({ error: 'Database not available' });
   }
@@ -90,18 +90,18 @@ function authMiddleware(req, res, next) {
   if (!client) {
     return res.status(401).json({ error: 'Invalid token' });
   }
-  
+
   // Verify hash (simple HMAC of clientId + email)
   const secret = process.env.DASHBOARD_SECRET || 'change-this-in-production';
   const expectedHash = crypto.createHmac('sha256', secret)
     .update(`${clientId}:${client.email}`)
     .digest('hex')
     .slice(0, 32);
-  
+
   if (hash !== expectedHash) {
     return res.status(401).json({ error: 'Invalid token' });
   }
-  
+
   req.client = client;
   req.clientId = parseInt(clientId);
   next();
@@ -189,12 +189,12 @@ app.get('/api/health', (req, res) => {
 try {
   const dashboardRoutes = require('../api/dashboard-routes.js');
   app.use('/dashboard', dashboardRoutes);
-  console.log('Ã¢Å“â€¦ Dashboard routes mounted at /dashboard');
+  console.log('Ã¢Å"â€¦ Dashboard routes mounted at /dashboard');
 } catch (dashErr) {
-  console.warn('Ã¢Å¡Â Ã¯Â¸Â Dashboard routes failed to load:', dashErr.message);
+  console.warn('Ã¢Å¡Â Ã¯Â¸Â Dashboard routes failed to load:', dashErr.message);
 }
 
-// Webhook routes (conditional Ã¢â‚¬â€ may not be available on Railway)
+// Webhook routes (conditional Ã¢â'¬â€ may not be available on Railway)
 if (webhookHandler) {
   // webhookHandler is an object with named functions, not a Router
   if (typeof webhookHandler === 'function') {
@@ -204,7 +204,7 @@ if (webhookHandler) {
   } else if (webhookHandler.router) {
     app.use('/webhooks', webhookHandler.router);
   } else {
-    console.warn('Ã¢Å¡Â Ã¯Â¸Â webhookHandler loaded but not a middleware Ã¢â‚¬â€ skipping mount');
+    console.warn('Ã¢Å¡Â Ã¯Â¸Â webhookHandler loaded but not a middleware Ã¢â'¬â€ skipping mount');
   }
 }
 
@@ -229,7 +229,7 @@ app.post('/api/confirm-payment', authMiddleware, async (req, res) => {
   try {
     const { clientId, paymentMethod, transactionId, amount } = req.body;
     const { confirmPayment } = require('../lib/payment-handler');
-    
+
     const result = await confirmPayment({ clientId, paymentMethod, transactionId, amount });
     res.json(result);
   } catch (error) {
@@ -242,7 +242,7 @@ app.post('/api/confirm-payment', authMiddleware, async (req, res) => {
 app.post('/api/signup', async (req, res) => {
   try {
     const { name, email, company, website, pain_point, target_audience } = req.body;
-    
+
     // Input validation
     if (!name || typeof name !== 'string' || name.length < 2 || name.length > 100) {
       return res.status(400).json({ success: false, error: 'Invalid name' });
@@ -256,7 +256,7 @@ app.post('/api/signup', async (req, res) => {
     if (!website || typeof website !== 'string' || !website.match(/^https?:\/\/.+/)) {
       return res.status(400).json({ success: false, error: 'Invalid website URL' });
     }
-    
+
     // Sanitize inputs
     const sanitized = {
       name: escapeHtml(name.trim()),
@@ -266,27 +266,27 @@ app.post('/api/signup', async (req, res) => {
       pain_point: escapeHtml((pain_point || '').slice(0, 500)),
       target_audience: escapeHtml((target_audience || '').slice(0, 500))
     };
-    
+
     if (!signupHandler) {
       return res.status(503).json({ success: false, error: 'Signup module not available. Use /api/clients/signup instead.' });
     }
     const result = await signupHandler.handleSignup(sanitized);
-    
+
     res.json(result);
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Signup error:', error.message);
-    res.status(400).json({ 
+    console.error('Ã¢ÂÅ' Signup error:', error.message);
+    res.status(400).json({
       success: false,
-      error: error.message 
+      error: error.message
     });
   }
 });
 
 // =============================================================================
-// CLIENT SIGNUP & STATUS ENDPOINTS (public Ã¢â‚¬â€ no auth required)
+// CLIENT SIGNUP & STATUS ENDPOINTS (public Ã¢â'¬â€ no auth required)
 // =============================================================================
 
-// POST /api/clients/signup Ã¢â‚¬â€ New client self-service signup
+// POST /api/clients/signup Ã¢â'¬â€ New client self-service signup
 app.post('/api/clients/signup', async (req, res) => {
   try {
     const {
@@ -388,7 +388,7 @@ app.post('/api/clients/signup', async (req, res) => {
       } catch(e) { console.warn('db.insertClient fallback failed:', e.message); }
     }
 
-    console.log(`Ã°Å¸Å½â€° New client signup: ${sanitized.companyName} (${sanitized.email}) Ã¢â€ â€™ ID ${clientId}`);
+    console.log(`Ã°Å¸Å½â€° New client signup: ${sanitized.companyName} (${sanitized.email}) Ã¢â€ â€™ ID ${clientId}`);
 
     // Log to new-signups.json for heartbeat notification
     const signupsFile = path.join(__dirname, '..', 'data', 'new-signups.json');
@@ -438,7 +438,7 @@ app.post('/api/clients/signup', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Client signup error:', error.message);
+    console.error('Ã¢ÂÅ' Client signup error:', error.message);
     res.status(500).json({
       success: false,
       error: 'Something went wrong. Please try again or email support@mubyn.com'
@@ -446,12 +446,12 @@ app.post('/api/clients/signup', async (req, res) => {
   }
 });
 
-// GET /api/clients/:id/status Ã¢â‚¬â€ Public client status lookup (by id or email)
+// GET /api/clients/:id/status Ã¢â'¬â€ Public client status lookup (by id or email)
 app.get('/api/clients/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
     const { email: queryEmail } = req.query;
-    
+
     // Load clients from JSON file (primary source of truth for this endpoint)
     const clientsFile = path.join(__dirname, '..', 'data', 'clients.json');
     let clients = [];
@@ -497,8 +497,8 @@ app.get('/api/clients/:id/status', async (req, res) => {
         emailsSent: client.emailsSent || 0,
         emailsOpened: client.emailsOpened || 0,
         repliesReceived: client.repliesReceived || 0,
-        replyRate: client.emailsSent > 0 
-          ? (((client.repliesReceived || 0) / client.emailsSent) * 100).toFixed(1) + '%' 
+        replyRate: client.emailsSent > 0
+          ? (((client.repliesReceived || 0) / client.emailsSent) * 100).toFixed(1) + '%'
           : '0%',
         statusMessage: 'Your campaign is live and sending.',
         nextStep: 'Check back daily for new replies and leads.'
@@ -540,12 +540,12 @@ app.get('/api/clients/:id/status', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Client status error:', error.message);
+    console.error('Ã¢ÂÅ' Client status error:', error.message);
     res.status(500).json({ success: false, error: 'Something went wrong.' });
   }
 });
 
-// GET /api/clients/lookup/:email Ã¢â‚¬â€ Lookup by email (convenience endpoint)
+// GET /api/clients/lookup/:email Ã¢â'¬â€ Lookup by email (convenience endpoint)
 app.get('/api/clients/lookup/:email', async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email).toLowerCase().trim();
@@ -572,17 +572,17 @@ app.get('/api/clients/lookup/:email', async (req, res) => {
 app.post('/api/leads', async (req, res) => {
   try {
     const { name, email, company, website, pain_point, target_audience } = req.body;
-    
+
     // Validate email at minimum
     if (!email || !validateEmail(email)) {
       return res.status(400).json({ success: false, error: 'Invalid email' });
     }
-    
+
     // Log the lead (sanitized)
     const safeEmail = email.toLowerCase().trim();
     const safeCompany = escapeHtml((company || '').slice(0, 100));
     console.log(`Ã°Å¸â€œÂ¥ New lead: ${safeEmail} (${safeCompany})`);
-    
+
     // Store in leads.json (simple file-based storage)
     const leadsDir = path.join(__dirname, '..', 'data');
     const leadsFile = path.join(leadsDir, 'leads.json');
@@ -592,7 +592,7 @@ app.post('/api/leads', async (req, res) => {
     } catch (e) {
       // File doesn't exist yet
     }
-    
+
     leads.push({
       name: escapeHtml((name || '').slice(0, 100)),
       email: safeEmail,
@@ -603,10 +603,10 @@ app.post('/api/leads', async (req, res) => {
       source: 'signup_form',
       timestamp: new Date().toISOString()
     });
-    
+
     fs.mkdirSync(leadsDir, { recursive: true });
     fs.writeFileSync(leadsFile, JSON.stringify(leads, null, 2));
-    
+
     res.json({ success: true, message: 'Lead captured' });
   } catch (error) {
     console.error('Lead capture error:', error.message);
@@ -618,16 +618,16 @@ app.post('/api/leads', async (req, res) => {
 app.get('/api/dashboard/:clientId', authMiddleware, async (req, res) => {
   try {
     const { clientId } = req.params;
-    
+
     // Verify client can only access their own dashboard
     if (parseInt(clientId) !== req.clientId) {
       return res.status(403).json({ error: 'Access denied' });
     }
-    
+
     const data = await dashboardApi.getDashboardData(clientId);
     res.json(data);
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Dashboard API error:', error.message);
+    console.error('Ã¢ÂÅ' Dashboard API error:', error.message);
     res.status(error.message.includes('not found') ? 404 : 500).json({
       success: false,
       error: error.message
@@ -638,36 +638,36 @@ app.get('/api/dashboard/:clientId', authMiddleware, async (req, res) => {
 // Serve dashboard for a client (REQUIRES AUTH via token query param)
 app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
   const clientId = parseInt(req.params.clientId);
-  
+
   // Verify client can only access their own dashboard
   if (clientId !== req.clientId) {
     return res.status(403).send('Access denied');
   }
-  
+
   // Get client (already verified in authMiddleware)
   const client = req.client;
-  
+
   // Get stats
   const stats = db.getEmailStats(clientId);
-  
+
   // Get recent emails
   const recentEmails = db.getRecentEmails(clientId, 20);
-  
+
   // Get replies
   const replies = db.getReplies(clientId, 10);
-  
-  const openRate = stats.total_sent > 0 
+
+  const openRate = stats.total_sent > 0
     ? ((stats.opened / stats.total_sent) * 100).toFixed(1)
     : 0;
-  
+
   const replyRate = stats.total_sent > 0
     ? ((stats.replied / stats.total_sent) * 100).toFixed(1)
     : 0;
-  
+
   // Render HTML dashboard (with XSS protection)
   const safeCompany = escapeHtml(client.company);
   const safeName = escapeHtml(client.name);
-  
+
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -675,20 +675,20 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
       <title>${safeCompany} - Mubyn OS Dashboard</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
+        body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           background: #0a0a0a;
           color: #e0e0e0;
           padding: 40px;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        h1 { 
-          font-size: 32px; 
+        h1 {
+          font-size: 32px;
           margin-bottom: 8px;
           color: #fff;
         }
-        .subtitle { 
-          color: #888; 
+        .subtitle {
+          color: #888;
           margin-bottom: 40px;
           font-size: 14px;
         }
@@ -777,7 +777,7 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
       <div class="container">
         <h1>Ã°Å¸Ââ€ºÃ¯Â¸Â Mubyn OS</h1>
         <div class="subtitle">${safeCompany} Campaign Dashboard</div>
-        
+
         <div class="stats">
           <div class="stat-card">
             <div class="stat-value">${stats.total_sent}</div>
@@ -796,7 +796,7 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
             <div class="stat-label">Replies</div>
           </div>
         </div>
-        
+
         ${replies.length > 0 ? `
         <div class="section">
           <h2>Ã°Å¸â€œÂ¬ Recent Replies</h2>
@@ -804,14 +804,14 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
             <div class="reply-box">
               <div class="reply-meta">
                 <strong>${r.first_name} ${r.last_name}</strong> from ${r.company}
-                Ã‚Â· ${new Date(r.received_at * 1000).toLocaleDateString()}
+                Ã'Â· ${new Date(r.received_at * 1000).toLocaleDateString()}
               </div>
               <div class="reply-body">${r.body.substring(0, 200)}...</div>
             </div>
           `).join('')}
         </div>
         ` : ''}
-        
+
         <div class="section">
           <h2>Ã°Å¸â€œÂ§ Recent Emails</h2>
           <table>
@@ -833,7 +833,7 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
                   <td>${e.subject}</td>
                   <td>${new Date(e.sent_at * 1000).toLocaleDateString()}</td>
                   <td>
-                    ${e.replied ? '<span class="badge badge-success">Replied</span>' : 
+                    ${e.replied ? '<span class="badge badge-success">Replied</span>' :
                       e.opened ? '<span class="badge badge-neutral">Opened</span>' :
                       '<span class="badge badge-neutral">Sent</span>'}
                   </td>
@@ -851,22 +851,22 @@ app.get('/dashboard/:clientId', authMiddleware, (req, res) => {
 // List all clients
 app.get('/', (req, res) => {
   const clients = db ? db.getAllClients().sort((a, b) => b.created_at - a.created_at) : [];
-  
+
   res.send(`
     <!DOCTYPE html>
     <html>
     <head>
       <title>Mubyn OS - Clients</title>
       <style>
-        body { 
-          font-family: sans-serif; 
-          padding: 40px; 
-          background: #0a0a0a; 
+        body {
+          font-family: sans-serif;
+          padding: 40px;
+          background: #0a0a0a;
           color: #e0e0e0;
         }
         h1 { color: #fff; margin-bottom: 20px; }
-        a { 
-          color: #4ade80; 
+        a {
+          color: #4ade80;
           text-decoration: none;
           display: block;
           padding: 16px;
@@ -921,7 +921,7 @@ function generateMakhlabId() {
   return 'makhlab_' + crypto.randomBytes(6).toString('hex');
 }
 
-// POST /api/makhlab/signup Ã¢â‚¬â€ New Makhlab customer signup
+// POST /api/makhlab/signup Ã¢â'¬â€ New Makhlab customer signup
 app.post('/api/makhlab/signup', async (req, res) => {
   try {
     const {
@@ -931,19 +931,19 @@ app.post('/api/makhlab/signup', async (req, res) => {
 
     // Validate required fields
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
-      return res.status(400).json({ success: false, error: 'Name is required (min 2 chars)', errorAr: 'Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨ (Ã˜Â­Ã˜Â±Ã™ÂÃ™Å Ã™â€  Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ™â€ž)' });
+      return res.status(400).json({ success: false, error: 'Name is required (min 2 chars)', errorAr: 'Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨ (Ã˜Â­Ã˜Â±Ã™ÂÃ™Å Ã™â€  Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ™â€ž)' });
     }
     if (!email || !validateEmail(email)) {
-      return res.status(400).json({ success: false, error: 'Valid email is required', errorAr: 'Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å  Ã˜ÂºÃ™Å Ã˜Â± Ã˜ÂµÃ˜Â§Ã™â€žÃ˜Â­' });
+      return res.status(400).json({ success: false, error: 'Valid email is required', errorAr: 'Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ'Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å  Ã˜ÂºÃ™Å Ã˜Â± Ã˜ÂµÃ˜Â§Ã™â€žÃ˜Â­' });
     }
     if (!businessName || typeof businessName !== 'string' || businessName.trim().length < 2) {
-      return res.status(400).json({ success: false, error: 'Business name is required (min 2 chars)', errorAr: 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨' });
+      return res.status(400).json({ success: false, error: 'Business name is required (min 2 chars)', errorAr: 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨' });
     }
     if (!businessType || !['restaurant', 'ecommerce', 'realestate', 'services', 'other'].includes(businessType)) {
-      return res.status(400).json({ success: false, error: 'Valid business type is required', errorAr: 'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨' });
+      return res.status(400).json({ success: false, error: 'Valid business type is required', errorAr: 'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â´Ã˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨' });
     }
     if (!plan || !['free', 'starter', 'professional', 'enterprise', 'pro', 'max'].includes(plan)) {
-      return res.status(400).json({ success: false, error: 'Valid plan is required', errorAr: 'Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â®Ã˜Â·Ã˜Â© Ã˜ÂµÃ˜Â§Ã™â€žÃ˜Â­Ã˜Â©' });
+      return res.status(400).json({ success: false, error: 'Valid plan is required', errorAr: 'Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â®Ã˜Â·Ã˜Â© Ã˜ÂµÃ˜Â§Ã™â€žÃ˜Â­Ã˜Â©' });
     }
 
     // Sanitize all inputs
@@ -970,7 +970,7 @@ app.post('/api/makhlab/signup', async (req, res) => {
       return res.json({
         success: true,
         signupId: existing.signupId,
-        message: 'Ã™â€žÃ˜Â¯Ã™Å Ã™Æ’ Ã˜Â·Ã™â€žÃ˜Â¨ Ã™â€¦Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž! Ã˜Â³Ã™â€ Ã˜ÂªÃ™Ë†Ã˜Â§Ã˜ÂµÃ™â€ž Ã™â€¦Ã˜Â¹Ã™Æ’ Ã™â€šÃ˜Â±Ã™Å Ã˜Â¨Ã˜Â§Ã™â€¹.',
+        message: 'Ã™â€žÃ˜Â¯Ã™Å Ã™Æ' Ã˜Â·Ã™â€žÃ˜Â¨ Ã™â€¦Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž! Ã˜Â³Ã™â€ Ã˜ÂªÃ™Ë†Ã˜Â§Ã˜ÂµÃ™â€ž Ã™â€¦Ã˜Â¹Ã™Æ' Ã™â€šÃ˜Â±Ã™Å Ã˜Â¨Ã˜Â§Ã™â€¹.',
         messageEn: 'You already have a signup on file! We\'ll be in touch soon.',
         existing: true
       });
@@ -1015,13 +1015,13 @@ app.post('/api/makhlab/signup', async (req, res) => {
     });
     saveMakhlabNewSignups(newSignups);
 
-    console.log(`Ã°Å¸Â§Âª Makhlab signup: ${sanitized.businessName} (${sanitized.email}) Ã¢â€ â€™ ${signupId} [${sanitized.plan}]`);
+    console.log(`Ã°Å¸Â§Âª Makhlab signup: ${sanitized.businessName} (${sanitized.email}) Ã¢â€ â€™ ${signupId} [${sanitized.plan}]`);
 
     // Ã°Å¸â€â€ INSTANT Telegram notification to Kareem
     const notifyBot = process.env.MAKHLAB_NOTIFY_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
     const notifyChatId = process.env.TELEGRAM_CHAT_ID || '7189807915';
     if (notifyBot) {
-      const alertMsg = `Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨ NEW MAKHLAB SIGNUP! Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨\n\nÃ°Å¸ÂÂª Business: ${sanitized.businessName}\nÃ°Å¸â€˜Â¤ Owner: ${sanitized.name}\nÃ°Å¸â€œÂ§ Email: ${sanitized.email}\nÃ°Å¸ÂÂ·Ã¯Â¸Â Type: ${sanitized.businessType}\nÃ°Å¸â€™Â° Plan: ${sanitized.plan}\nÃ°Å¸â€ â€ ID: ${signupId}\n\nÃ¢ÂÂ³ Status: Pending provisioning`;
+      const alertMsg = `Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨ NEW MAKHLAB SIGNUP! Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨Ã°Å¸Å¡Â¨\n\nÃ°Å¸ÂÂª Business: ${sanitized.businessName}\nÃ°Å¸â€˜Â¤ Owner: ${sanitized.name}\nÃ°Å¸â€œÂ§ Email: ${sanitized.email}\nÃ°Å¸ÂÂ·Ã¯Â¸Â Type: ${sanitized.businessType}\nÃ°Å¸â€™Â° Plan: ${sanitized.plan}\nÃ°Å¸â€ â€ ID: ${signupId}\n\nÃ¢ÂÂ³ Status: Pending provisioning`;
       fetch(`https://api.telegram.org/bot${notifyBot}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1032,21 +1032,21 @@ app.post('/api/makhlab/signup', async (req, res) => {
     res.json({
       success: true,
       signupId,
-      message: 'Ã˜ÂªÃ™â€¦ Ã˜Â§Ã˜Â³Ã˜ÂªÃ™â€žÃ˜Â§Ã™â€¦ Ã˜Â·Ã™â€žÃ˜Â¨Ã™Æ’! Ã˜Â³Ã™â€ Ã˜Â±Ã˜Â³Ã™â€ž Ã™â€žÃ™Æ’ Ã˜Â±Ã˜Â§Ã˜Â¨Ã˜Â· Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â§Ã˜Â¹Ã˜Â¯ Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž Ã˜Â¯Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€š.',
+      message: 'Ã˜ÂªÃ™â€¦ Ã˜Â§Ã˜Â³Ã˜ÂªÃ™â€žÃ˜Â§Ã™â€¦ Ã˜Â·Ã™â€žÃ˜Â¨Ã™Æ'! Ã˜Â³Ã™â€ Ã˜Â±Ã˜Â³Ã™â€ž Ã™â€žÃ™Æ' Ã˜Â±Ã˜Â§Ã˜Â¨Ã˜Â· Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â§Ã˜Â¹Ã˜Â¯ Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž Ã˜Â¯Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€š.',
       messageEn: 'Request received! We\'ll send you your assistant link within minutes.'
     });
 
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Makhlab signup error:', error.message);
+    console.error('Ã¢ÂÅ' Makhlab signup error:', error.message);
     res.status(500).json({
       success: false,
       error: 'Something went wrong. Please try again.',
-      errorAr: 'Ã˜Â­Ã˜Â¯Ã˜Â« Ã˜Â®Ã˜Â·Ã˜Â£. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ã™â€žÃ˜Â© Ã™â€¦Ã˜Â±Ã˜Â© Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€°.'
+      errorAr: 'Ã˜Â­Ã˜Â¯Ã˜Â« Ã˜Â®Ã˜Â·Ã˜Â£. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ã™â€žÃ˜Â© Ã™â€¦Ã˜Â±Ã˜Â© Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€°.'
     });
   }
 });
 
-// GET /api/makhlab/signups Ã¢â‚¬â€ List all Makhlab signups (for Caesar to check)
+// GET /api/makhlab/signups Ã¢â'¬â€ List all Makhlab signups (for Caesar to check)
 app.get('/api/makhlab/signups', (req, res) => {
   try {
     const signups = loadMakhlabSignups();
@@ -1056,12 +1056,12 @@ app.get('/api/makhlab/signups', (req, res) => {
       signups: signups.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     });
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Makhlab signups list error:', error.message);
+    console.error('Ã¢ÂÅ' Makhlab signups list error:', error.message);
     res.status(500).json({ success: false, error: 'Failed to load signups' });
   }
 });
 
-// GET /api/makhlab/signup/:id Ã¢â‚¬â€ Get a specific Makhlab signup by ID
+// GET /api/makhlab/signup/:id Ã¢â'¬â€ Get a specific Makhlab signup by ID
 app.get('/api/makhlab/signup/:id', (req, res) => {
   try {
     const { id } = req.params;
@@ -1069,12 +1069,12 @@ app.get('/api/makhlab/signup/:id', (req, res) => {
     const signup = signups.find(s => s.signupId === id);
 
     if (!signup) {
-      return res.status(404).json({ success: false, error: 'Signup not found', errorAr: 'Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨' });
+      return res.status(404).json({ success: false, error: 'Signup not found', errorAr: 'Ã™â€žÃ™â€¦ Ã™Å Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â«Ã™Ë†Ã˜Â± Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨' });
     }
 
     res.json({ success: true, signup });
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Makhlab signup lookup error:', error.message);
+    console.error('Ã¢ÂÅ' Makhlab signup lookup error:', error.message);
     res.status(500).json({ success: false, error: 'Failed to load signup' });
   }
 });
@@ -1085,12 +1085,12 @@ app.get('/api/makhlab/signup/:id', (req, res) => {
 try {
   const mubynRoutes = require('../lib/mubyn-routes');
   app.use('/api', mubynRoutes);
-  console.log('Ã¢Å“â€¦ Mubyn OS routes mounted at /api');
-} catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â Mubyn routes unavailable:', e.message); }
+  console.log('Ã¢Å"â€¦ Mubyn OS routes mounted at /api');
+} catch(e) { console.warn('Ã¢Å¡Â Ã¯Â¸Â Mubyn routes unavailable:', e.message); }
 
 // =============================================================================
 
-// GET /site/:subdomain Ã¢â‚¬â€ Serve published websites
+// GET /site/:subdomain Ã¢â'¬â€ Serve published websites
 app.get('/site/:subdomain', async (req, res) => {
   try {
     const { subdomain } = req.params;
@@ -1098,7 +1098,7 @@ app.get('/site/:subdomain', async (req, res) => {
     let mapping = {};
     try { mapping = JSON.parse(require('fs').readFileSync(mappingFile, 'utf8')); } catch(e) {}
     const userId = mapping[subdomain];
-    if (!userId) return res.status(404).send('<!DOCTYPE html><html><head><title>Site Not Found</title><style>body{font-family:Inter,sans-serif;background:#0B0B0F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}a{color:#D4A843;}</style></head><body><div><h1>Site Not Found</h1><p><a href="https://mubyn.com">Build yours with Mubyn Ã¢â€ â€™</a></p></div></body></html>');
+    if (!userId) return res.status(404).send('<!DOCTYPE html><html><head><title>Site Not Found</title><style>body{font-family:Inter,sans-serif;background:#0B0B0F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}a{color:#D4A843;}</style></head><body><div><h1>Site Not Found</h1><p><a href="https://mubyn.com">Build yours with Mubyn Ã¢â€ â€™</a></p></div></body></html>');
     const html = require('fs').readFileSync(path.join(__dirname, '..', 'data', 'websites', userId, 'index.html'), 'utf8');
     res.set('Content-Type', 'text/html; charset=utf-8');
     res.set('Cache-Control', 'public, max-age=300');
@@ -1107,16 +1107,19 @@ app.get('/site/:subdomain', async (req, res) => {
 });
 
 // =============================================================================
-// SEED DATA Ã¢â‚¬â€ Auto-create essential accounts on startup (Railway ephemeral FS)
+// SEED DATA Ã¢â'¬â€ Auto-create essential accounts on startup (Railway ephemeral FS)
 // =============================================================================
 async function seedAccounts() {
   const bcrypt = require('bcryptjs');
+  const storage = require('../lib/storage');
+  await storage.init();
+  
   const DATA_DIR = path.join(__dirname, '..', 'data');
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   
   const usersFile = path.join(DATA_DIR, 'users.json');
-  let users = [];
-  try { users = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch { users = []; }
+  // Load from storage (PG or JSON)
+  let users = await storage.loadJSON(usersFile, []);
   
   const seedUsers = [
     { email: 'kareem@cmonkeytribe.com', password: 'cmt2026', name: 'Kareem', business_name: 'CMonkey Tribe', industry: 'Technology / SaaS', country: 'Lebanon', website: 'cmonkeytribe.com' },
@@ -1143,15 +1146,15 @@ async function seedAccounts() {
   }
   
   if (created > 0) {
-    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-    console.log(`   Ã°Å¸Å’Â± Seeded ${created} account(s)`);
+    await storage.saveJSON(usersFile, users);
+    console.log(`   🌱 Seeded ${created} account(s)`);
   }
 }
 
 app.listen(PORT, async () => {
   console.log(`\nÃ°Å¸Ââ€ºÃ¯Â¸Â  Mubyn OS Dashboard running on http://localhost:${PORT}`);
-  console.log(`   Ã°Å¸Å¡â‚¬ Mubyn OS endpoints ready at /api!`);
-  console.log(`   Ã¢Å“â€¦ Build: 2026-02-11-1825`);
+  console.log(`   Ã°Å¸Å¡â'¬ Mubyn OS endpoints ready at /api!`);
+  console.log(`   Ã¢Å"â€¦ Build: 2026-02-11-1825`);
   await seedAccounts();
-  console.log(`   Ã¢Å“â€¦ Ready!\n`);
+  console.log(`   Ã¢Å"â€¦ Ready!\n`);
 });
