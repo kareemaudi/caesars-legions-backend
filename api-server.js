@@ -1093,7 +1093,11 @@ app.post('/api/chat', async (req, res) => {
         if (content.length > 0) active.push(`Content Calendar (${content.length} posts)`); else inactive.push('Content Calendar (go to CMO tab)');
         if (cfo) active.push('Financial Analysis'); else inactive.push('Financial Analysis (go to CFO tab)');
         if (csaSettings || kb.length > 0) active.push(`Customer Support (${kb.length} KB entries)`); else inactive.push('Customer Support Agent (go to CS tab)');
-        inactive.push('Website Builder (coming soon)');
+        // Check if website exists
+        try {
+          const wsMeta = await loadJSON(path.join(__dirname, `data/websites/${userData?.id || userId}/meta.json`), null);
+          if (wsMeta) active.push(`Website (${wsMeta.status} — ${wsMeta.businessName})`); else inactive.push('Website Builder (go to Website tab)');
+        } catch { inactive.push('Website Builder (go to Website tab)'); }
         if (parts.length) userContext += `\n\nCLIENT INFO: ${parts.join(' | ')}`;
         if (active.length) userContext += `\nACTIVE MODULES: ${active.join(', ')}`;
         if (inactive.length) userContext += `\nNOT SET UP YET: ${inactive.join(', ')}`;
@@ -1107,7 +1111,7 @@ You manage 5 departments for each client:
 2. **Content Marketing** (CMO tab) — Generates full month content calendars across Twitter, LinkedIn, Instagram with AI images
 3. **Financial Intelligence** (CFO tab) — Revenue tracking, expense management, projections, AI insights
 4. **Customer Support** (CS tab) — AI chat agent with knowledge base, tone settings, embeddable website widget
-5. **Website Builder** (Website tab) — Coming soon: AI builds complete websites in 60 seconds
+5. **Website Builder** (Website tab) — AI generates a complete, beautiful website in 60 seconds. User fills business info → AI creates a stunning site → publish it live
 
 YOUR BEHAVIOR:
 - If user just signed up: Welcome them warmly, summarize what Mubyn can do, suggest starting with Lead Gen or CMO
@@ -2136,6 +2140,315 @@ app.options('/api/widget/event', (req, res) => {
   res.status(204).end();
 });
 
+// ============================================
+// 🌐 AI WEBSITE BUILDER — Generate + Preview + Publish + Edit
+// ============================================
+
+function slugify(text) {
+  return text.toString().toLowerCase().trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50);
+}
+
+// POST /api/website/generate — AI generates a full website
+app.post('/api/website/generate', async (req, res) => {
+  try {
+    const { userId, businessName, description, industry, style, language, phone, email: bizEmail, address, whatsapp } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    if (!businessName) return res.status(400).json({ error: 'businessName required' });
+
+    const subdomain = slugify(businessName);
+    const lang = language || 'en';
+    const dir = lang === 'ar' ? 'rtl' : 'ltr';
+    const fontLink = lang === 'ar'
+      ? `<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">`
+      : `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">`;
+    const fontFamily = lang === 'ar' ? 'Tajawal' : 'Inter';
+
+    console.log(`🌐 [Website Builder] Generating site for "${businessName}" (${industry || 'general'}) — user ${userId}`);
+
+    const systemPrompt = `You are a world-class web designer and developer. You create stunning, modern, 2026-quality single-page websites.
+
+CRITICAL RULES:
+1. Return ONLY the complete HTML document. No markdown fences, no explanation — just raw HTML starting with <!DOCTYPE html>.
+2. Use Tailwind CSS via CDN (<script src="https://cdn.tailwindcss.com"></script>).
+3. The site MUST be responsive (mobile-first), visually stunning, and production-ready.
+4. Use modern design: subtle gradients, glassmorphism effects, smooth scroll, hover animations, CSS transitions.
+5. Include a Tailwind config script to define custom colors based on the business industry.
+6. All images use placeholder URLs from https://images.unsplash.com (pick relevant search terms and use source.unsplash.com/800x600/?keyword format).
+7. Include smooth scroll behavior, intersection observer animations (fade-in on scroll), and a mobile hamburger menu.
+8. Language: ${lang}. Direction: ${dir}. Font: ${fontFamily}.
+9. Must include these sections: Navigation (sticky), Hero (full viewport, gradient overlay on image), About/Story, Services/Features (grid), Testimonials (carousel or cards), Stats/Numbers, CTA section, Contact info, Footer with "Powered by Mubyn" link.
+10. The design quality should match Vercel, Linear, or Stripe's website — clean, modern, premium feel.
+11. Use the business's industry to pick appropriate colors, imagery keywords, and tone.
+12. Add subtle CSS animations: @keyframes for fade-in, slide-up effects. Use Tailwind's animate utilities and custom ones.
+13. Include meta tags for SEO (title, description, og:tags).
+14. WhatsApp CTA button (floating, bottom-right) if whatsapp number is provided.
+15. Make the hero section impactful — large text, gradient overlay on a relevant background image, compelling CTA.
+16. Include a mobile hamburger menu that works with pure CSS/JS (no frameworks needed).
+17. Ensure text contrast is readable, buttons have hover states, and spacing is generous.`;
+
+    const userPrompt = `Create a complete, stunning website for this business:
+
+Business Name: ${businessName}
+Industry: ${industry || 'General Business'}
+Description: ${description || `A professional ${industry || 'business'} providing quality services.`}
+Language: ${lang}
+${phone ? `Phone: ${phone}` : ''}
+${bizEmail ? `Email: ${bizEmail}` : ''}
+${address ? `Address: ${address}` : ''}
+${whatsapp ? `WhatsApp: ${whatsapp}` : ''}
+${style ? `Style preference: ${style}` : ''}
+
+Generate the COMPLETE HTML file. Start with <!DOCTYPE html> and end with </html>. No explanations.`;
+
+    const htmlResponse = await openaiChat(systemPrompt, userPrompt, 16000);
+
+    // Extract HTML — strip markdown fences if present
+    let html = htmlResponse.trim();
+    if (html.startsWith('```')) {
+      html = html.replace(/^```(?:html)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+    }
+
+    // Ensure it starts with DOCTYPE
+    if (!html.toLowerCase().startsWith('<!doctype')) {
+      const dtIdx = html.toLowerCase().indexOf('<!doctype');
+      if (dtIdx > -1) html = html.slice(dtIdx);
+    }
+
+    // Inject "Powered by Mubyn" if not present
+    if (!html.includes('mubyn.com') && !html.includes('Mubyn')) {
+      html = html.replace('</body>', `
+<!-- Powered by Mubyn -->
+<div style="text-align:center;padding:12px;font-size:11px;color:#888;border-top:1px solid rgba(255,255,255,0.05);">
+  <a href="https://mubyn.com" target="_blank" style="color:#D4A843;text-decoration:none;">Powered by Mubyn</a>
+</div>
+</body>`);
+    }
+
+    // Save the generated HTML
+    const websiteDir = path.join(__dirname, 'data', 'websites', userId);
+    await fs.mkdir(websiteDir, { recursive: true });
+    await fs.writeFile(path.join(websiteDir, 'index.html'), html, 'utf8');
+
+    // Save metadata
+    const metaFile = path.join(websiteDir, 'meta.json');
+    const meta = {
+      userId,
+      businessName,
+      subdomain,
+      industry: industry || 'general',
+      description: description || '',
+      language: lang,
+      style: style || '',
+      phone: phone || '',
+      email: bizEmail || '',
+      address: address || '',
+      whatsapp: whatsapp || '',
+      status: 'draft',
+      generatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      publishedAt: null,
+    };
+    await saveJSON(metaFile, meta);
+
+    const baseUrl = process.env.BASE_URL || `https://natural-energy-production-df04.up.railway.app`;
+    const previewUrl = `${baseUrl}/api/website/preview/${userId}`;
+    const siteUrl = `${baseUrl}/site/${subdomain}`;
+
+    console.log(`✅ [Website Builder] Generated for "${businessName}" → ${siteUrl}`);
+
+    res.json({
+      success: true,
+      html,
+      subdomain,
+      previewUrl,
+      siteUrl,
+      meta,
+    });
+  } catch (error) {
+    console.error('❌ Website generate error:', error);
+    res.status(500).json({ error: 'Website generation failed', details: error.message });
+  }
+});
+
+// GET /api/website/preview/:userId — Returns the generated HTML
+app.get('/api/website/preview/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const htmlFile = path.join(__dirname, 'data', 'websites', userId, 'index.html');
+    const html = await fs.readFile(htmlFile, 'utf8');
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (error) {
+    res.status(404).send('<html><body><h1>No website generated yet</h1><p>Use Mubyn OS to generate your website.</p></body></html>');
+  }
+});
+
+// GET /api/website/meta/:userId — Returns website metadata
+app.get('/api/website/meta/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const metaFile = path.join(__dirname, 'data', 'websites', userId, 'meta.json');
+    const meta = await loadJSON(metaFile, null);
+    if (!meta) return res.json({ exists: false });
+    res.json({ exists: true, meta });
+  } catch (error) {
+    res.json({ exists: false });
+  }
+});
+
+// POST /api/website/publish — Makes the site live at /site/:subdomain
+app.post('/api/website/publish', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+
+    const websiteDir = path.join(__dirname, 'data', 'websites', userId);
+    const metaFile = path.join(websiteDir, 'meta.json');
+    const meta = await loadJSON(metaFile, null);
+    if (!meta) return res.status(404).json({ error: 'No website found. Generate one first.' });
+
+    // Check for subdomain collision
+    const publishedDir = path.join(__dirname, 'data', 'websites', '_published');
+    await fs.mkdir(publishedDir, { recursive: true });
+
+    let subdomain = meta.subdomain;
+    const mappingFile = path.join(publishedDir, 'subdomain-map.json');
+    const mapping = await loadJSON(mappingFile, {});
+
+    // If another user already has this subdomain, add a suffix
+    if (mapping[subdomain] && mapping[subdomain] !== userId) {
+      const suffix = Math.random().toString(36).slice(2, 6);
+      subdomain = `${subdomain}-${suffix}`;
+    }
+
+    // Register subdomain → userId mapping
+    mapping[subdomain] = userId;
+    await saveJSON(mappingFile, mapping);
+
+    // Update meta
+    meta.subdomain = subdomain;
+    meta.status = 'published';
+    meta.publishedAt = new Date().toISOString();
+    meta.updatedAt = new Date().toISOString();
+    await saveJSON(metaFile, meta);
+
+    const baseUrl = process.env.BASE_URL || 'https://natural-energy-production-df04.up.railway.app';
+    const siteUrl = `${baseUrl}/site/${subdomain}`;
+
+    console.log(`🚀 [Website Builder] Published "${meta.businessName}" → ${siteUrl}`);
+
+    res.json({
+      success: true,
+      subdomain,
+      siteUrl,
+      publishedAt: meta.publishedAt,
+    });
+  } catch (error) {
+    console.error('❌ Website publish error:', error);
+    res.status(500).json({ error: 'Publish failed', details: error.message });
+  }
+});
+
+// PUT /api/website/edit — AI modifies the existing site based on instruction
+app.put('/api/website/edit', async (req, res) => {
+  try {
+    const { userId, instruction } = req.body;
+    if (!userId || !instruction) return res.status(400).json({ error: 'userId and instruction required' });
+
+    const htmlFile = path.join(__dirname, 'data', 'websites', userId, 'index.html');
+    let currentHtml;
+    try {
+      currentHtml = await fs.readFile(htmlFile, 'utf8');
+    } catch {
+      return res.status(404).json({ error: 'No website found. Generate one first.' });
+    }
+
+    console.log(`✏️ [Website Builder] Editing site for user ${userId}: "${instruction}"`);
+
+    const systemPrompt = `You are a world-class web designer editing an existing HTML website. 
+The user will give you the current HTML and an edit instruction.
+
+RULES:
+1. Return the COMPLETE modified HTML. Start with <!DOCTYPE html>, end with </html>.
+2. Make ONLY the requested changes — preserve everything else.
+3. Maintain the same design quality and consistency.
+4. No markdown fences, no explanation — just the raw HTML.
+5. Keep all existing animations, responsive design, and functionality.
+6. If the edit is about style (colors, fonts, sizes), apply it tastefully.
+7. If the edit is about content (text, images, sections), update accordingly.`;
+
+    const userPrompt = `Here is the current website HTML:
+
+${currentHtml}
+
+---
+
+EDIT INSTRUCTION: ${instruction}
+
+Return the complete modified HTML. No explanation, just the HTML starting with <!DOCTYPE html>.`;
+
+    const editedHtml = await openaiChat(systemPrompt, userPrompt, 16000);
+
+    // Extract HTML
+    let html = editedHtml.trim();
+    if (html.startsWith('```')) {
+      html = html.replace(/^```(?:html)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+    }
+    if (!html.toLowerCase().startsWith('<!doctype')) {
+      const dtIdx = html.toLowerCase().indexOf('<!doctype');
+      if (dtIdx > -1) html = html.slice(dtIdx);
+    }
+
+    // Save
+    await fs.writeFile(htmlFile, html, 'utf8');
+
+    // Update meta
+    const metaFile = path.join(__dirname, 'data', 'websites', userId, 'meta.json');
+    const meta = await loadJSON(metaFile, {});
+    meta.updatedAt = new Date().toISOString();
+    meta.lastEdit = instruction;
+    await saveJSON(metaFile, meta);
+
+    console.log(`✅ [Website Builder] Edit applied for user ${userId}`);
+
+    res.json({ success: true, html });
+  } catch (error) {
+    console.error('❌ Website edit error:', error);
+    res.status(500).json({ error: 'Edit failed', details: error.message });
+  }
+});
+
+// GET /site/:subdomain — Serve published websites (the actual live site!)
+app.get('/site/:subdomain', async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+
+    // Look up subdomain → userId
+    const mappingFile = path.join(__dirname, 'data', 'websites', '_published', 'subdomain-map.json');
+    const mapping = await loadJSON(mappingFile, {});
+    const userId = mapping[subdomain];
+
+    if (!userId) {
+      return res.status(404).send(`<!DOCTYPE html><html><head><title>Site Not Found</title><style>body{font-family:Inter,sans-serif;background:#0B0B0F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}a{color:#D4A843;}</style></head><body><div><h1>🔍 Site Not Found</h1><p>No site exists at this address.</p><p><a href="https://mubyn.com">Build yours with Mubyn →</a></p></div></body></html>`);
+    }
+
+    const htmlFile = path.join(__dirname, 'data', 'websites', userId, 'index.html');
+    const html = await fs.readFile(htmlFile, 'utf8');
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=300');
+    res.send(html);
+  } catch (error) {
+    res.status(500).send('<html><body><h1>Error loading site</h1></body></html>');
+  }
+});
+
+// ============================================
+
 // SERVE DASHBOARD STATIC FILES
 // ============================================
 app.use('/dashboard', express.static(path.join(__dirname, 'dashboard')));
@@ -2146,4 +2459,5 @@ app.listen(PORT, () => {
   console.log(`   Dashboard: http://localhost:${PORT}/dashboard`);
   console.log(`   🚀 Mubyn OS endpoints ready for VC demo!`);
   console.log(`   🔌 Widget: /api/widget.js?id=USER_ID`);
+  console.log(`   🌐 Website Builder: /api/website/generate, /site/:subdomain`);
 });
