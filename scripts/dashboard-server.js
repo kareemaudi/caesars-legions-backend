@@ -52,7 +52,12 @@ function rateLimit(req, res, next) {
 // Security headers
 function securityHeaders(req, res, next) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  // Allow iframe embedding for website preview and published sites
+  if (req.path.startsWith('/api/website/preview') || req.path.startsWith('/site/')) {
+    res.removeHeader('X-Frame-Options');
+  } else {
+    res.setHeader('X-Frame-Options', 'DENY');
+  }
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   if (process.env.NODE_ENV === 'production') {
