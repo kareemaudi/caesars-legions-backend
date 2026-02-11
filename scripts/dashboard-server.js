@@ -1085,8 +1085,24 @@ try {
 
 // =============================================================================
 
+// GET /site/:subdomain — Serve published websites
+app.get('/site/:subdomain', async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const mappingFile = path.join(__dirname, '..', 'data', 'websites', '_published', 'subdomain-map.json');
+    let mapping = {};
+    try { mapping = JSON.parse(require('fs').readFileSync(mappingFile, 'utf8')); } catch(e) {}
+    const userId = mapping[subdomain];
+    if (!userId) return res.status(404).send('<!DOCTYPE html><html><head><title>Site Not Found</title><style>body{font-family:Inter,sans-serif;background:#0B0B0F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}a{color:#D4A843;}</style></head><body><div><h1>Site Not Found</h1><p><a href="https://mubyn.com">Build yours with Mubyn →</a></p></div></body></html>');
+    const html = require('fs').readFileSync(path.join(__dirname, '..', 'data', 'websites', userId, 'index.html'), 'utf8');
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=300');
+    res.send(html);
+  } catch (error) { res.status(500).send('<html><body><h1>Error loading site</h1></body></html>'); }
+});
+
 app.listen(PORT, () => {
   console.log(`\n🏛️  Caesar's Legions Dashboard running on http://localhost:${PORT}`);
   console.log(`   🚀 Mubyn OS endpoints ready at /api!`);
-  console.log(`   ✅ Build: 2026-02-11-1710-telegram\n`);
+  console.log(`   ✅ Build: 2026-02-11-1745\n`);
 });
