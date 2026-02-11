@@ -317,12 +317,42 @@ app.post('/api/clients/signup', async (req, res) => {
     // Generate a simple dashboard token
     const dashboardToken = `${clientId}:${crypto.createHash('sha256').update(`${clientId}:${safeEmail}:prompta-secret`).digest('hex').slice(0, 16)}`;
 
+    // Auto-create dashboard account with SMTP pre-configured
+    let dashboardCredentials = null;
+    try {
+      const { smtpHost, smtpPort, smtpUser, smtpPass, senderName } = req.body;
+      if (smtpUser && smtpPass) {
+        const dashClient = dashboardRoutes.createClientFromOnboarding({
+          companyName: safeCompany,
+          email: safeEmail,
+          smtpHost: smtpHost || '',
+          smtpPort: smtpPort || '587',
+          smtpUser,
+          smtpPass,
+          senderName: senderName || safeName
+        });
+        if (dashClient) {
+          dashboardCredentials = {
+            email: dashClient.email,
+            password: dashClient.generatedPassword,
+            dashboardUrl: '/dashboard'
+          };
+          console.log(`📊 Dashboard account created for ${dashClient.email} with SMTP pre-configured`);
+        }
+      }
+    } catch (dashErr) {
+      console.error('Dashboard auto-create error:', dashErr.message);
+    }
+
     res.json({
       success: true,
       clientId,
       dashboardToken,
+      dashboardCredentials,
       status: 'onboarding',
-      message: "Campaign setup in progress. We'll email you within 24 hours with your first leads."
+      message: dashboardCredentials 
+        ? "Your dashboard is ready! SMTP is already connected."
+        : "Campaign setup in progress. We'll email you within 24 hours with your first leads."
     });
 
   } catch (error) {
